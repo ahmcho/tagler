@@ -1,0 +1,169 @@
+services:
+  tagler-cms-app:
+    container_name: tagler-cms-app
+    image: tagler-cms-app
+    build: &app-build
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PORT: "${APP_PORT:-8000}"
+        VITE_DEV_SERVER_PORT: "${VITE_DEV_SERVER_PORT:-5173}"
+    command: sh docker/entrypoint.sh
+    restart: unless-stopped
+    environment:
+      APP_PORT: "${APP_PORT:-8000}"
+    ports:
+      - "${APP_HOST_PORT:-8100}:${APP_PORT:-8000}"
+      - "${VITE_HOST_PORT:-5180}:${VITE_DEV_SERVER_PORT:-5173}"
+    volumes:
+      - .:/var/www/app
+      - vendor:/var/www/app/vendor
+      - node_modules:/var/www/app/node_modules
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:$${APP_PORT}/up || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    depends_on:
+      tagler-cms-postgres:
+        condition: service_healthy
+      tagler-cms-mongo:
+        condition: service_healthy
+    networks:
+      - tagler-cms
+
+  tagler-cms-queue:
+    container_name: tagler-cms-queue
+    image: tagler-cms-app
+    build: *app-build
+    command: php artisan queue:listen --tries=3 --timeout=90
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/app
+      - vendor:/var/www/app/vendor
+    depends_on:
+      tagler-cms-app:
+        condition: service_healthy
+      tagler-cms-postgres:
+        condition: service_healthy
+    networks:
+      - tagler-cms
+
+  tagler-cms-schedule:
+    container_name: tagler-cms-schedule
+    image: tagler-cms-app
+    build: *app-build
+    command: php artisan schedule:work
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/app
+      - vendor:/var/www/app/vendor
+    depends_on:
+      tagler-cms-app:
+        condition: service_healthy
+      tagler-cms-postgres:
+        condition: service_healthy
+    networks:
+      - tagler-cms
+
+  tagler-cms-reverb:
+    container_name: tagler-cms-reverb
+    image: tagler-cms-app
+    build: *app-build
+    command: php artisan reverb:start --host=0.0.0.0 --port=${REVERB_SERVER_PORT:-8080}
+    restart: unless-stopped
+    ports:
+      - "${REVERB_HOST_PORT:-8180}:${REVERB_SERVER_PORT:-8080}"
+    volumes:
+      - .:/var/www/app
+      - vendor:/var/www/app/vendor
+    depends_on:
+      tagler-cms-app:
+        condition: service_healthy
+      tagler-cms-postgres:
+        condition: service_healthy
+    networks:
+      - tagler-cms
+
+  tagler-cms-postgres:
+    image: postgres:17-alpine
+    container_name: tagler-cms-postgres
+    environment:
+      POSTGRES_DB: "${DB_DATABASE:?set DB_DATABASE in .env}"
+      POSTGRES_USER: "${DB_USERNAME:?set DB_USERNAME in .env}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD in .env}"
+    ports:
+      - "${POSTGRES_HOST_PORT:-5434}:5432"
+    volumes:
+      - tagler-cms-postgres:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 5s
+      retries: 15
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - tagler-cms
+
+  tagler-cms-mongo:
+    image: mongo:7
+    container_name: tagler-cms-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGODB_USERNAME:?set MONGODB_USERNAME in .env}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGODB_PASSWORD:?set MONGODB_PASSWORD in .env}"
+    ports:
+      - "${MONGO_HOST_PORT:-27019}:27017"
+    volumes:
+      - tagler-cms-mongo:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet -u \"$$MONGO_INITDB_ROOT_USERNAME\" -p \"$$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval \"db.adminCommand('ping').ok\" | grep -q 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - tagler-cms
+
+  tagler-cms-pgadmin:
+    image: dpage/pgadmin4:9.18
+    container_name: tagler-cms-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "${PGADMIN_DEFAULT_EMAIL:?set PGADMIN_DEFAULT_EMAIL in .env}"
+      PGADMIN_DEFAULT_PASSWORD: "${PGADMIN_DEFAULT_PASSWORD:?set PGADMIN_DEFAULT_PASSWORD in .env}"
+    ports:
+      - "${PGADMIN_HOST_PORT:-5050}:80"
+    volumes:
+      - tagler-cms-pgadmin:/var/lib/pgadmin
+    depends_on:
+      tagler-cms-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - tagler-cms
+
+networks:
+  tagler-cms:
+    name: tagler-cms_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${NETWORK_SUBNET:-172.60.0.0/24}
+
+volumes:
+  tagler-cms-postgres:
+    name: tagler-cms_postgres
+    driver: local
+  tagler-cms-mongo:
+    name: tagler-cms_mongo
+    driver: local
+  tagler-cms-pgadmin:
+    name: tagler-cms_pgadmin
+    driver: local
+  vendor:
+    name: tagler-cms_vendor
+  node_modules:
+    name: tagler-cms_node_modules
