@@ -37,6 +37,9 @@ export default defineConfig(({ mode }) => {
             strictPort: true,
             cors: true,
             origin: env.VITE_DEV_SERVER_ORIGIN || undefined,
+        hmr: {
+            host: env.VITE_DEV_SERVER_HMR_HOST || 'localhost',
+        },
         },
     };
 });

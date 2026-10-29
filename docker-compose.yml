@@ -14,7 +14,7 @@ services:
       APP_PORT: "${APP_PORT:-8000}"
     ports:
       - "${APP_HOST_PORT:-8100}:${APP_PORT:-8000}"
-      - "${VITE_HOST_PORT:-5180}:${VITE_DEV_SERVER_PORT:-5173}"
+      - "${VITE_HOST_PORT:-5173}:${VITE_DEV_SERVER_PORT:-5173}"
     volumes:
       - .:/var/www/app
       - vendor:/var/www/app/vendor
@@ -31,7 +31,8 @@ services:
       tagler-cms-mongo:
         condition: service_healthy
     networks:
-      - tagler-cms
+      tagler-cms:
+        ipv4_address: ${NETWORK_PREFIX:-172.60.0}.10
 
   tagler-cms-queue:
     container_name: tagler-cms-queue
@@ -48,7 +49,8 @@ services:
       tagler-cms-postgres:
         condition: service_healthy
     networks:
-      - tagler-cms
+      tagler-cms:
+        ipv4_address: ${NETWORK_PREFIX:-172.60.0}.11
 
   tagler-cms-schedule:
     container_name: tagler-cms-schedule
@@ -65,7 +67,8 @@ services:
       tagler-cms-postgres:
         condition: service_healthy
     networks:
-      - tagler-cms
+      tagler-cms:
+        ipv4_address: ${NETWORK_PREFIX:-172.60.0}.12
 
   tagler-cms-reverb:
     container_name: tagler-cms-reverb
@@ -84,7 +87,8 @@ services:
       tagler-cms-postgres:
         condition: service_healthy
     networks:
-      - tagler-cms
+      tagler-cms:
+        ipv4_address: ${NETWORK_PREFIX:-172.60.0}.13
 
   tagler-cms-postgres:
     image: postgres:17-alpine
@@ -106,7 +110,8 @@ services:
       start_period: 10s
     restart: unless-stopped
     networks:
-      - tagler-cms
+      tagler-cms:
+        ipv4_address: ${NETWORK_PREFIX:-172.60.0}.14
 
   tagler-cms-mongo:
     image: mongo:7
@@ -126,7 +131,8 @@ services:
       start_period: 15s
     restart: unless-stopped
     networks:
-      - tagler-cms
+      tagler-cms:
+        ipv4_address: ${NETWORK_PREFIX:-172.60.0}.15
 
   tagler-cms-pgadmin:
     image: dpage/pgadmin4:9.18
@@ -143,7 +149,8 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - tagler-cms
+      tagler-cms:
+        ipv4_address: ${NETWORK_PREFIX:-172.60.0}.16
 
 networks:
   tagler-cms:

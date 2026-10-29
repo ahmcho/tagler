@@ -14,7 +14,7 @@ trap 'kill -TERM $PHP_PID $VITE_PID 2>/dev/null' TERM INT
 php artisan serve --host=0.0.0.0 --port="${APP_PORT:-8000}" &
 PHP_PID=$!
 
-npm run dev -- --host &
+npm run dev &
 VITE_PID=$!
 
 wait $PHP_PID $VITE_PID
