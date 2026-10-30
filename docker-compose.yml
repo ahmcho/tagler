@@ -5,6 +5,8 @@ services:
     build: &app-build
       context: .
       dockerfile: Dockerfile
+      secrets:
+        - github_token
       args:
         APP_PORT: "${APP_PORT:-8000}"
         VITE_DEV_SERVER_PORT: "${VITE_DEV_SERVER_PORT:-5173}"
@@ -159,6 +161,10 @@ networks:
     ipam:
       config:
         - subnet: ${NETWORK_SUBNET:-172.60.0.0/24}
+
+secrets:
+  github_token:
+    file: ./secrets/github_token.txt
 
 volumes:
   tagler-cms-postgres:

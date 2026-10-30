@@ -29,6 +29,7 @@
         "typescript-eslint": "^8.23.0"
     },
     "dependencies": {
+        "@ahmcho/tailadmin-react": "github:ahmcho/TailAdminFullReact#master",
         "@headlessui/react": "^2.2.0",
         "@inertiajs/react": "^3.9.1",
         "@inertiajs/vite": "^3.9.1",
