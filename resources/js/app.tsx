@@ -1,7 +1,8 @@
-import { createInertiaApp } from '@inertiajs/react';
+import { TailAdminProvider } from '@ahmcho/tailadmin-react';
+import type { LinkComponentProps } from '@ahmcho/tailadmin-react';
+import { createInertiaApp, Link, usePage } from '@inertiajs/react';
 import { configureEcho } from '@laravel/echo-react';
-import { Toaster } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import type { ComponentProps } from 'react';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
@@ -12,6 +13,15 @@ configureEcho({
 });
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+const InertiaLink = ({ href, ...props }: LinkComponentProps) => (
+    <Link
+        href={href}
+        {...(props as Omit<ComponentProps<typeof Link>, 'href'>)}
+    />
+);
+
+const usePathnameWithoutQuery = (): string => usePage().url.split('?')[0];
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -30,14 +40,16 @@ createInertiaApp({
     strictMode: true,
     withApp(app) {
         return (
-            <TooltipProvider delayDuration={0}>
+            <TailAdminProvider
+                LinkComponent={InertiaLink}
+                usePathname={usePathnameWithoutQuery}
+            >
                 {app}
-                <Toaster />
-            </TooltipProvider>
+            </TailAdminProvider>
         );
     },
     progress: {
-        color: '#4B5563',
+        color: '#465FFF',
     },
 });
 

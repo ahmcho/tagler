@@ -1,8 +1,5 @@
-// Components
-import { Form, Head } from '@inertiajs/react';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
+import { Alert, Button } from '@ahmcho/tailadmin-react';
+import { Form, Head, Link } from '@inertiajs/react';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 
@@ -12,26 +9,32 @@ export default function VerifyEmail({ status }: { status?: string }) {
             <Head title="Email verification" />
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
-                </div>
+                <Alert
+                    variant="success"
+                    title="A new verification link has been sent to the email address you provided during registration."
+                    className="mb-5"
+                />
             )}
 
             <Form {...send.form()} className="space-y-6 text-center">
                 {({ processing }) => (
                     <>
-                        <Button disabled={processing} variant="secondary">
-                            {processing && <Spinner />}
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="secondary"
+                            isLoading={processing}
+                            disabled={processing}
+                        >
                             Resend verification email
                         </Button>
 
-                        <TextLink
+                        <Link
                             href={logout()}
-                            className="mx-auto block text-sm"
+                            className="mx-auto block text-sm font-medium text-brand-500 hover:text-brand-600"
                         >
                             Log out
-                        </TextLink>
+                        </Link>
                     </>
                 )}
             </Form>
