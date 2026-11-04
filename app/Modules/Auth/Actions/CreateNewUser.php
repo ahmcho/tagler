@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Fortify;
+namespace App\Modules\Auth\Actions;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;

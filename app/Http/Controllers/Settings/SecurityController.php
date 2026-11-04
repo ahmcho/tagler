@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\PasswordUpdateRequest;
-use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
+use App\Modules\Auth\Requests\TwoFactorAuthenticationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
