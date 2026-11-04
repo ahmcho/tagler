@@ -205,3 +205,9 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - IMPORTANT: Activate `inertia-react-development` when working with Inertia React client-side patterns.
 
 </laravel-boost-guidelines>
+
+## Project rules (.ai)
+
+- Before you plan or edit, open `.ai/rules/index.md` and read the rule files that match your paths.
+- Feature code lives in `app/Modules/{Module}` with its own models, migrations, routes and providers.
+- Do not run rollback or migrate commands against `tagler_cms` without approval. See `.ai/rules/general.md`.
