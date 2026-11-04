@@ -1,13 +1,9 @@
 import { Button, Card } from '@ahmcho/tailadmin-react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { BrandMark } from '@/components/brand-mark';
-import { dashboard, login, register } from '@/routes';
+import { dashboard, login } from '@/routes';
 
-export default function Welcome({
-    canRegister = true,
-}: {
-    canRegister?: boolean;
-}) {
+export default function Welcome() {
     const { auth, name } = usePage().props;
 
     return (
@@ -43,18 +39,7 @@ export default function Welcome({
                                     onClick={() => router.visit(login().url)}
                                 >
                                     Log in
-                                </Button>
-                                {canRegister && (
-                                    <Button
-                                        fullWidth
-                                        variant="outline"
-                                        onClick={() =>
-                                            router.visit(register().url)
-                                        }
-                                    >
-                                        Register
-                                    </Button>
-                                )}
+                                </Button>                                
                             </div>
                         )}
                     </Card>

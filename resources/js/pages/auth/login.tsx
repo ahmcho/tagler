@@ -6,21 +6,15 @@ import {
     PasswordInput,
 } from '@ahmcho/tailadmin-react';
 import { Form, Head, Link } from '@inertiajs/react';
-import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
 type Props = {
     status?: string;
     canResetPassword: boolean;
-    canRegister: boolean;
 };
 
-export default function Login({
-    status,
-    canResetPassword,
-    canRegister,
-}: Props) {
+export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
             <Head title="Log in" />
@@ -86,18 +80,6 @@ export default function Login({
                             Log in
                         </Button>
 
-                        {canRegister && (
-                            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-                                Don&apos;t have an account?{' '}
-                                <Link
-                                    href={register()}
-                                    tabIndex={6}
-                                    className="font-medium text-brand-500 hover:text-brand-600"
-                                >
-                                    Sign up
-                                </Link>
-                            </p>
-                        )}
                     </>
                 )}
             </Form>
