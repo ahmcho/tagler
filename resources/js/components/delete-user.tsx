@@ -12,7 +12,7 @@ import {
 } from '@ahmcho/tailadmin-react';
 import { Form } from '@inertiajs/react';
 import { useRef, useState } from 'react';
-import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
+import ProfileController from '@/actions/App/Modules/Auth/Controllers/ProfileController';
 
 export default function DeleteUser() {
     const passwordInput = useRef<HTMLInputElement>(null);

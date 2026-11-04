@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Requests\Settings;
+namespace App\Modules\Auth\Requests;
 
-use App\Concerns\PasswordValidationRules;
+use App\Modules\Auth\Concerns\PasswordValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 

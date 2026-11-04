@@ -6,7 +6,7 @@ import {
     Input,
 } from '@ahmcho/tailadmin-react';
 import { Form, Head, Link, usePage } from '@inertiajs/react';
-import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
+import ProfileController from '@/actions/App/Modules/Auth/Controllers/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
