@@ -37,6 +37,7 @@ return [
 
         'paths' => [
             resource_path('js/pages'),
+            ...glob(resource_path('js/modules/*/pages'), GLOB_ONLYDIR),
         ],
 
         'extensions' => [
