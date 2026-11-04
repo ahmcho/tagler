@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "355fea09f6e7119699f7a87d8d502bce",
+    "content-hash": "77337a4bcdfb01bae001e1fc55b96f29",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -8184,6 +8184,42 @@
             "time": "2026-10-26T21:55:04+00:00"
         },
         {
+            "name": "tagler/crud",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "packages/crud",
+                "reference": "f5c01ef7d1d564e02a40c406c2d55b06ad2668f0"
+            },
+            "require": {
+                "illuminate/database": "^13.0",
+                "illuminate/http": "^13.0",
+                "illuminate/support": "^13.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Crud\\Providers\\CrudServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Crud\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Repository, service and request layer for CRUD operations.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "tijsverkoyen/css-to-inline-styles",
             "version": "v2.4.0",
             "source": {
@@ -12468,12 +12504,14 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "tagler/crud": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.4"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.11.0"
 }

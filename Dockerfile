@@ -34,6 +34,7 @@ COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
 WORKDIR /var/www/app
 
 COPY composer.json composer.lock* ./
+COPY packages ./packages
 RUN composer install --no-interaction --no-scripts --no-autoloader
 
 COPY package.json package-lock.json ./
