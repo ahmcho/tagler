@@ -7,6 +7,7 @@ use App\Modules\Auth\Actions\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -28,9 +29,20 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
+        $this->loadModuleRoutes();
+
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+    }
+
+    /**
+     * Register the module's settings routes inside the web middleware group.
+     */
+    private function loadModuleRoutes(): void
+    {
+        Route::middleware('web')->group(__DIR__.'/../routes/settings.php');
     }
 
     /**
