@@ -166,6 +166,8 @@ return [
     'url' => 'The :attribute field must be a valid URL.',
     'ulid' => 'The :attribute field must be a valid ULID.',
     'uuid' => 'The :attribute field must be a valid UUID.',
+    'was_not_selected' => ':attribute was not selected',
+    'incorrect' => ':attribute is incorrect',
 
     /*
     |--------------------------------------------------------------------------
