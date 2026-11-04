@@ -82,6 +82,12 @@ return [
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
+    'supported_locales' => [
+        ['code' => 'az', 'name' => 'Azərbaycan dili'],
+        ['code' => 'en', 'name' => 'English'],
+        ['code' => 'ru', 'name' => 'Русский'],
+    ],
+
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
     /*

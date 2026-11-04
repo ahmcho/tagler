@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Translation;
+use App\Modules\Translation\Models\Translation;
+use App\Modules\Translation\Support\CachingTranslationLoader;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Throwable;
@@ -12,170 +13,199 @@ use Throwable;
 class SyncFileTranslationsToDatabase extends Command
 {
     protected $signature = 'tagler:translations:sync
-                            {--locale=en : The locale to sync}
-                            {--force : Override existing database translations}';
+                            {--locale= : Sync only this locale folder (default: every supported locale)}
+                            {--force : Overwrite translations that already exist in the database}';
 
-    protected $description = 'Sync file-based translations to database';
+    protected $description = 'Sync the lang/{locale} files into the translations table';
 
     /**
-     * Execute the console command.
+     * Sync every supported locale folder, or only the one given by --locale.
      */
     public function handle(): int
     {
-        $locale = $this->option('locale');
-        $force = $this->option('force');
+        $locales = $this->localesToSync();
 
-        $langPath = lang_path($locale);
-
-        if (! File::exists($langPath)) {
-            $this->error("Language directory not found: {$langPath}");
+        if ($locales === []) {
+            $this->error('No supported locale folders found in '.lang_path().'.');
 
             return Command::FAILURE;
         }
 
-        $files = File::files($langPath);
-        $synced = 0;
-        $skipped = 0;
-        $failed = 0;
+        foreach ($locales as $locale) {
+            $this->components->info("Syncing translations for locale: {$locale}");
 
-        $this->components->info("Syncing translations for locale: {$locale}");
-        $this->newLine();
+            $counts = $this->syncLocale($locale, (bool) $this->option('force'));
 
-        $this->output->progressStart(count($files));
-
-        foreach ($files as $file) {
-            $result = $this->processFile($file, $locale, $force);
-
-            $synced += $result['synced'];
-            $skipped += $result['skipped'];
-            $failed += $result['failed'];
-
-            $this->output->progressAdvance();
+            $this->table(
+                ['Status', 'Count'],
+                [
+                    ['Synced', $counts['synced']],
+                    ['Skipped (already in database)', $counts['skipped']],
+                    ['Failed', $counts['failed']],
+                ],
+                'box'
+            );
         }
 
-        $this->output->progressFinish();
+        $this->flushLoaderCache();
 
-        $this->newLine();
         $this->components->info('Sync complete!');
-        $this->table(
-            ['Status', 'Count'],
-            [
-                ['Synced', $synced],
-                ['Skipped', $skipped],
-                ['Failed', $failed],
-            ],
-            'box'
-        );
 
         return Command::SUCCESS;
     }
 
     /**
-     * Process a single translation file.
+     * The locale folders to sync: the --locale option, or every supported locale that has a folder.
      *
-     * @param  \SplFileInfo  $file  The file to process
-     * @param  string  $locale  The locale being synced
-     * @param  bool  $force  Whether to override existing translations
+     * @return array<int, string>
+     */
+    protected function localesToSync(): array
+    {
+        $supported = array_column(config('app.supported_locales'), 'code');
+
+        if ($this->option('locale') !== null) {
+            $locale = (string) $this->option('locale');
+
+            return File::isDirectory(lang_path($locale)) ? [$locale] : [];
+        }
+
+        return array_values(array_filter(
+            $supported,
+            fn (string $locale): bool => File::isDirectory(lang_path($locale)),
+        ));
+    }
+
+    /**
+     * Sync every group file in one locale folder.
+     *
+     * @return array{synced: int, skipped: int, failed: int}
+     */
+    protected function syncLocale(string $locale, bool $force): array
+    {
+        $counts = ['synced' => 0, 'skipped' => 0, 'failed' => 0];
+
+        foreach (File::files(lang_path($locale)) as $file) {
+            $fileCounts = $this->processFile($file, $locale, $force);
+
+            $counts['synced'] += $fileCounts['synced'];
+            $counts['skipped'] += $fileCounts['skipped'];
+            $counts['failed'] += $fileCounts['failed'];
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Process a single translation file. The file name is the group.
+     *
      * @return array{synced: int, skipped: int, failed: int}
      */
     protected function processFile(\SplFileInfo $file, string $locale, bool $force): array
     {
-        $synced = 0;
-        $skipped = 0;
-        $failed = 0;
+        $counts = ['synced' => 0, 'skipped' => 0, 'failed' => 0];
 
         $group = $file->getFilenameWithoutExtension();
 
-        $path = $file->getPathname();
-
-        if (! File::exists($path)) {
-            $this->components->warn("Skipping missing file: {$file->getFilename()}");
-            $failed++;
-
-            return ['synced' => $synced, 'skipped' => $skipped, 'failed' => $failed];
-        }
-
         try {
-            $translations = include $path;
+            $translations = include $file->getPathname();
         } catch (Throwable $e) {
             $this->components->warn("Skipping invalid file: {$file->getFilename()} - {$e->getMessage()}");
-            $failed++;
+            $counts['failed']++;
 
-            return ['synced' => $synced, 'skipped' => $skipped, 'failed' => $failed];
+            return $counts;
         }
 
         if (! is_array($translations)) {
             $this->components->warn("Skipping invalid file: {$file->getFilename()}");
+            $counts['failed']++;
 
-            return ['synced' => $synced, 'skipped' => $skipped, 'failed' => ++$failed];
+            return $counts;
         }
 
-        foreach ($this->flattenTranslations($translations, $group) as $key => $value) {
+        foreach ($this->flattenTranslations($translations) as $key => $value) {
             try {
-                $this->syncTranslation($key, $value, $locale, $group, $force);
-                $synced++;
+                if ($this->syncTranslation($key, $value, $locale, $group, $force)) {
+                    $counts['synced']++;
+                } else {
+                    $counts['skipped']++;
+                }
             } catch (Throwable $e) {
-                $this->components->warn("Failed to sync translation: {$key} - {$e->getMessage()}");
-                $failed++;
+                $this->components->warn("Failed to sync translation: {$group}.{$key} - {$e->getMessage()}");
+                $counts['failed']++;
             }
         }
 
-        return ['synced' => $synced, 'skipped' => $skipped, 'failed' => $failed];
+        return $counts;
     }
 
     /**
-     * Sync a single translation to the database.
+     * Writes one translation row. Returns false when the row exists and --force is not set.
      *
-     * @param  string  $key  The translation key
+     * @param  string  $key  The translation key, without the group prefix
      * @param  string  $value  The translation value
      * @param  string  $locale  The locale
      * @param  string  $group  The translation group
-     * @param  bool  $force  Whether to override existing translations
+     * @param  bool  $force  Whether to overwrite an existing row
      */
-    protected function syncTranslation(string $key, string $value, string $locale, string $group, bool $force): void
+    protected function syncTranslation(string $key, string $value, string $locale, string $group, bool $force): bool
     {
-        $existing = Translation::where('key', $key)
-            ->where('locale', $locale)
-            ->first();
+        $exists = Translation::query()
+            ->where('lang', $locale)
+            ->where('group', $group)
+            ->where('key', $key)
+            ->exists();
 
-        if ($existing && ! $force) {
-            return;
+        if ($exists && ! $force) {
+            return false;
         }
 
-        Translation::updateOrCreate(
+        Translation::query()->updateOrCreate(
             [
+                'lang' => $locale,
+                'group' => $group,
                 'key' => $key,
-                'locale' => $locale,
             ],
             [
-                'translation' => $value,
-                'group' => $group,
+                'value' => $value,
             ]
         );
+
+        return true;
     }
 
     /**
      * Flatten nested translation arrays into dot-notation keys.
      *
-     * @param  array<int, mixed>  $translations  The nested translations array
-     * @param  string  $group  The translation group
+     * @param  array<string, mixed>  $translations  The nested translations array
      * @param  string  $prefix  The current key prefix
      * @return array<string, string> Flattened translations with dot-notation keys
      */
-    protected function flattenTranslations(array $translations, string $group, string $prefix = ''): array
+    protected function flattenTranslations(array $translations, string $prefix = ''): array
     {
         $flattened = [];
 
         foreach ($translations as $key => $value) {
-            $fullKey = $prefix !== '' ? "{$prefix}.{$key}" : "{$group}.{$key}";
+            $fullKey = $prefix !== '' ? "{$prefix}.{$key}" : (string) $key;
 
             if (is_array($value)) {
-                $flattened += $this->flattenTranslations($value, $group, $fullKey);
+                $flattened += $this->flattenTranslations($value, $fullKey);
             } else {
-                $flattened[$fullKey] = $value;
+                $flattened[$fullKey] = (string) $value;
             }
         }
 
         return $flattened;
+    }
+
+    /**
+     * Forget cached group arrays so the next request reads the synced rows.
+     */
+    protected function flushLoaderCache(): void
+    {
+        $loader = app('translation.loader');
+
+        if ($loader instanceof CachingTranslationLoader) {
+            $loader->forgetAll();
+        }
     }
 }
