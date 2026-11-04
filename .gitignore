@@ -31,3 +31,6 @@ yarn-error.log
 # Build secrets (never commit)
 /secrets/*
 !/secrets/README.md
+
+# Playwright MCP browser output (snapshots, logs, screenshots)
+/.playwright-mcp
