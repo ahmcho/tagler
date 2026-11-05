@@ -137,7 +137,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-172.60.0}.15
 
   tagler-cms-pgadmin:
-    image: dpage/pgadmin4:9.18
+    image: dpage/pgadmin4:9.19
     container_name: tagler-cms-pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: "${PGADMIN_DEFAULT_EMAIL:?set PGADMIN_DEFAULT_EMAIL in .env}"
