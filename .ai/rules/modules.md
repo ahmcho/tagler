@@ -42,6 +42,21 @@ web: [
 
 `routes/settings.php` and `routes/web.php` keep only routes that belong to no module.
 
+## Console commands and broadcast channels
+
+Register these in the module provider. Do not add them to `bootstrap/app.php`. `withRouting(commands:)` and `withRouting(channels:)` take one string, not a glob.
+
+- Commands: put the class in `app/Modules/{Module}/Console/Commands` and register it in `boot()`:
+  ```php
+  $this->commands([SyncFileTranslationsToDatabase::class]);
+  ```
+- Channels: register them in `boot()` with `Broadcast::channel(...)`. Do not create a `channels.php` file in the module:
+  ```php
+  Broadcast::channel('translations.{id}', fn (User $user, int $id): bool => ...);
+  ```
+
+Do not put a console or channel file in `app/Modules/{Module}/routes/`. The `bootstrap/app.php` glob loads every file in that folder as web routes.
+
 ## Models
 
 A module's models live in `app/Modules/{Module}/Models`. Do not put them in `app/Models`. The only exception is `App\Models\User`, which Fortify and Laravel require.
