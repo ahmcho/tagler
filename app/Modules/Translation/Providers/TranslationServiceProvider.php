@@ -3,6 +3,7 @@
 namespace App\Modules\Translation\Providers;
 
 use App\Models\User;
+use App\Modules\Translation\Console\Commands\SyncFileTranslationsToDatabase;
 use App\Modules\Translation\Models\Translation;
 use App\Modules\Translation\Observers\TranslationObserver;
 use App\Modules\Translation\Repositories\Contracts\TranslationRepositoryContract;
@@ -47,6 +48,8 @@ class TranslationServiceProvider extends ModuleServiceProvider
         ));
 
         Translation::observe(TranslationObserver::class);
+
+        $this->commands([SyncFileTranslationsToDatabase::class]);
 
         $this->definePermissionGates();
     }

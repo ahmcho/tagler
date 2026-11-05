@@ -2,7 +2,6 @@
 paths:
   - 'app/Modules/Translation/**'
   - 'lang/**'
-  - 'app/Console/Commands/SyncFileTranslationsToDatabase.php'
 ---
 
 # Translations
