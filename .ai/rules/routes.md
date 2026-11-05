@@ -9,7 +9,7 @@ paths:
 
 ## Module routes stay in the module
 
-A module's routes go in `app/Modules/{Module}/routes/settings.php`. The module provider loads them with `Route::middleware('web')->group(...)`. See `.ai/rules/modules.md`.
+A module's routes go in `app/Modules/{Module}/routes/settings.php`. `bootstrap/app.php` loads every `app/Modules/*/routes/*.php` file in the web group. Do not load them in a provider. See `.ai/rules/modules.md`.
 
 ## Named routes
 

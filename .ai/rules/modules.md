@@ -31,10 +31,13 @@ Do not add a module's migration to `database/migrations`. Moving a file keeps it
 
 ## Module routes
 
-Routes live in `app/Modules/{Module}/routes/*.php`. The provider loads them inside the web group:
+Routes live in `app/Modules/{Module}/routes/*.php`. `bootstrap/app.php` loads every module route file automatically inside the web group. Do not load module routes in a provider, or the routes register twice:
 
 ```php
-Route::middleware('web')->group(__DIR__.'/../routes/settings.php');
+web: [
+    __DIR__.'/../routes/web.php',
+    ...glob(__DIR__.'/../app/Modules/*/routes/*.php'),
+],
 ```
 
 `routes/settings.php` and `routes/web.php` keep only routes that belong to no module.

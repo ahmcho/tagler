@@ -15,7 +15,6 @@ use App\Modules\Translation\Support\DatabaseTranslationLoader;
 use Crud\Providers\ModuleServiceProvider;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Route;
 
 class TranslationServiceProvider extends ModuleServiceProvider
 {
@@ -40,7 +39,6 @@ class TranslationServiceProvider extends ModuleServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
-        Route::middleware('web')->group(__DIR__.'/../routes/settings.php');
 
         $this->app->extend('translation.loader', fn ($fileLoader, Application $app) => new CachingTranslationLoader(
             new DatabaseTranslationLoader($fileLoader, $app['db']),
