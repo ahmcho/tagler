@@ -211,3 +211,4 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - Before you plan or edit, open `.ai/rules/index.md`. Read every rule file whose glob covers the paths you change.
 - Each feature is a module in `app/Modules/{Module}`. Its models, migrations, routes and providers stay in the module.
 - Never run `migrate:rollback`, `migrate:fresh` or a pending `migrate` against the dev database `tagler_cms` without approval. See `.ai/rules/general.md`.
+- Never create a new git branch unless the user explicitly asks for one. Commit on the current branch.
