@@ -11,7 +11,7 @@ Each feature lives in its own module under `app/Modules/{Module}`. The module ow
 
 ```
 app/Modules/{Module}/
-  Actions/ Concerns/ Controllers/ Enums/ Models/ Observers/
+  Actions/ Concerns/ Console/ Controllers/ Enums/ Models/ Observers/
   Providers/ Repositories/ Requests/ Resources/ Services/ Support/
   Database/Migrations/     module migrations
   routes/settings.php      module routes

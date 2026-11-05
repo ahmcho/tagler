@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Commands;
+namespace App\Modules\Translation\Console\Commands;
 
 use App\Modules\Translation\Models\Translation;
 use App\Modules\Translation\Support\CachingTranslationLoader;
