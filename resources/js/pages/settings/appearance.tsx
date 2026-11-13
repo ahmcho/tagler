@@ -1,6 +1,11 @@
-import { Button, Card, CardBody, CardHeader } from '@ahmcho/tailadmin-react';
 import { Head } from '@inertiajs/react';
 import { Monitor, Moon, Sun } from 'lucide-react';
+import { Button } from '@/components/tailgrids/core/button';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+} from '@/components/tailgrids/core/card';
 import { useAppearance } from '@/hooks/use-appearance';
 import type { Appearance } from '@/hooks/use-appearance';
 import { edit as editAppearance } from '@/routes/appearance';
@@ -33,20 +38,20 @@ export default function Appearance() {
                         </p>
                     </div>
                 </CardHeader>
-                <CardBody className="flex flex-wrap gap-3">
+                <CardContent className="flex flex-wrap gap-3">
                     {appearanceOptions.map(({ value, label, icon: Icon }) => (
                         <Button
                             key={value}
-                            variant={
-                                appearance === value ? 'primary' : 'outline'
+                            appearance={
+                                appearance === value ? 'fill' : 'outline'
                             }
-                            startIcon={<Icon size={18} />}
-                            onClick={() => updateAppearance(value)}
+                            onPress={() => updateAppearance(value)}
                         >
+                            <Icon size={18} />
                             {label}
                         </Button>
                     ))}
-                </CardBody>
+                </CardContent>
             </Card>
         </>
     );

@@ -1,18 +1,28 @@
-import {
-    Alert,
-    Button,
-    Card,
-    CardBody,
-    CardHeader,
-    Modal,
-    ModalBody,
-    ModalFooter,
-    ModalHeader,
-    PasswordInput,
-} from '@ahmcho/tailadmin-react';
 import { Form } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import ProfileController from '@/actions/App/Modules/Auth/Controllers/ProfileController';
+import { PasswordField } from '@/components/password-field';
+import {
+    Alert,
+    AlertContent,
+    AlertDescription,
+    AlertIndicator,
+    AlertTitle,
+} from '@/components/tailgrids/core/alert';
+import { Button } from '@/components/tailgrids/core/button';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+} from '@/components/tailgrids/core/card';
+import {
+    Dialog,
+    DialogBody,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/tailgrids/core/dialog';
 
 export default function DeleteUser() {
     const passwordInput = useRef<HTMLInputElement>(null);
@@ -30,33 +40,39 @@ export default function DeleteUser() {
                     </p>
                 </div>
             </CardHeader>
-            <CardBody className="space-y-4">
-                <Alert
-                    variant="error"
-                    title="Warning"
-                    description="Please proceed with caution, this cannot be undone."
-                />
+            <CardContent className="space-y-4">
+                <Alert status="error">
+                    <AlertIndicator />
+                    <AlertContent>
+                        <AlertTitle>Warning</AlertTitle>
+                        <AlertDescription>
+                            Please proceed with caution, this cannot be undone.
+                        </AlertDescription>
+                    </AlertContent>
+                </Alert>
 
                 <div>
                     <Button
                         variant="danger"
-                        onClick={() => setIsOpen(true)}
+                        onPress={() => setIsOpen(true)}
                         data-test="delete-user-button"
                     >
                         Delete account
                     </Button>
                 </div>
 
-                <Modal
-                    isOpen={isOpen}
-                    onClose={() => setIsOpen(false)}
-                    size="md"
-                >
-                    <ModalHeader
-                        title="Are you sure you want to delete your account?"
-                        subtitle="Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password to confirm you would like to permanently delete your account."
-                        onClose={() => setIsOpen(false)}
-                    />
+                <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
+                    <DialogHeader>
+                        <DialogTitle>
+                            Are you sure you want to delete your account?
+                        </DialogTitle>
+                        <DialogDescription>
+                            Once your account is deleted, all of its resources
+                            and data will also be permanently deleted. Please
+                            enter your password to confirm you would like to
+                            permanently delete your account.
+                        </DialogDescription>
+                    </DialogHeader>
 
                     <Form
                         {...ProfileController.destroy.form()}
@@ -69,22 +85,22 @@ export default function DeleteUser() {
                     >
                         {({ processing, errors }) => (
                             <>
-                                <ModalBody className="mt-4 mb-6">
-                                    <PasswordInput
+                                <DialogBody className="mt-4 mb-6">
+                                    <PasswordField
                                         name="password"
                                         label="Password"
-                                        ref={passwordInput}
+                                        inputRef={passwordInput}
                                         placeholder="Password"
                                         autoComplete="current-password"
                                         error={errors.password}
                                     />
-                                </ModalBody>
+                                </DialogBody>
 
-                                <ModalFooter align="right">
+                                <DialogFooter>
                                     <Button
                                         type="button"
-                                        variant="outline"
-                                        onClick={() => setIsOpen(false)}
+                                        appearance="outline"
+                                        onPress={() => setIsOpen(false)}
                                     >
                                         Cancel
                                     </Button>
@@ -92,17 +108,17 @@ export default function DeleteUser() {
                                         type="submit"
                                         variant="danger"
                                         disabled={processing}
-                                        isLoading={processing}
+                                        pending={processing}
                                         data-test="confirm-delete-user-button"
                                     >
                                         Delete account
                                     </Button>
-                                </ModalFooter>
+                                </DialogFooter>
                             </>
                         )}
                     </Form>
-                </Modal>
-            </CardBody>
+                </Dialog>
+            </CardContent>
         </Card>
     );
 }

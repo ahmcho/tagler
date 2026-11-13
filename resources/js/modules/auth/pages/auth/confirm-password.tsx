@@ -1,5 +1,6 @@
-import { Button, PasswordInput } from '@ahmcho/tailadmin-react';
 import { Form, Head } from '@inertiajs/react';
+import { PasswordField } from '@/components/password-field';
+import { Button } from '@/components/tailgrids/core/button';
 import { store } from '@/routes/password/confirm';
 
 export default function ConfirmPassword() {
@@ -14,7 +15,7 @@ export default function ConfirmPassword() {
             >
                 {({ processing, errors }) => (
                     <>
-                        <PasswordInput
+                        <PasswordField
                             name="password"
                             label="Password"
                             placeholder="Password"
@@ -25,8 +26,8 @@ export default function ConfirmPassword() {
 
                         <Button
                             type="submit"
-                            fullWidth
-                            isLoading={processing}
+                            className="w-full"
+                            pending={processing}
                             disabled={processing}
                             data-test="confirm-password-button"
                         >

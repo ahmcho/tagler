@@ -1,15 +1,24 @@
-import {
-    Alert,
-    Button,
-    Input,
-    Modal,
-    ModalBody,
-    ModalFooter,
-    ModalHeader,
-} from '@ahmcho/tailadmin-react';
 import { Form } from '@inertiajs/react';
 import { Check, Copy } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    Alert,
+    AlertContent,
+    AlertIndicator,
+    AlertTitle,
+} from '@/components/tailgrids/core/alert';
+import { Button } from '@/components/tailgrids/core/button';
+import {
+    Dialog,
+    DialogBody,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/tailgrids/core/dialog';
+import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import { Input } from '@/components/tailgrids/core/input';
+import { TextField } from '@/components/tailgrids/core/text-field';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
@@ -36,7 +45,12 @@ function TwoFactorSetupStep({
         return (
             <>
                 {errors.map((error) => (
-                    <Alert key={error} variant="error" title={error} />
+                    <Alert key={error} status="error">
+                        <AlertIndicator />
+                        <AlertContent>
+                            <AlertTitle>{error}</AlertTitle>
+                        </AlertContent>
+                    </Alert>
                 ))}
             </>
         );
@@ -63,7 +77,7 @@ function TwoFactorSetupStep({
                 )}
             </div>
 
-            <Button fullWidth onClick={onNextStep}>
+            <Button className="w-full" onPress={onNextStep}>
                 {buttonText}
             </Button>
 
@@ -83,9 +97,10 @@ function TwoFactorSetupStep({
                         variant="ghost"
                         size="sm"
                         aria-label="Copy setup key"
-                        startIcon={<CopyIcon size={18} />}
-                        onClick={() => copy(manualSetupKey)}
-                    />
+                        onPress={() => copy(manualSetupKey)}
+                    >
+                        <CopyIcon size={18} />
+                    </Button>
                 )}
             </div>
         </>
@@ -116,26 +131,35 @@ function TwoFactorVerificationStep({
                 errors?: { confirmTwoFactorAuthentication?: { code?: string } };
             }) => (
                 <>
-                    <Input
+                    <TextField
                         name="code"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        maxLength={OTP_MAX_LENGTH}
-                        placeholder="000000"
-                        className="text-center text-lg tracking-[0.5em]"
                         value={code}
-                        onChange={(event) => setCode(event.target.value)}
+                        onChange={setCode}
                         disabled={processing}
-                        autoFocus
-                        error={errors?.confirmTwoFactorAuthentication?.code}
-                    />
+                        invalid={Boolean(
+                            errors?.confirmTwoFactorAuthentication?.code,
+                        )}
+                        className="flex w-full flex-col gap-1.5"
+                    >
+                        <FieldLabel>Authentication code</FieldLabel>
+                        <Input
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            maxLength={OTP_MAX_LENGTH}
+                            placeholder="000000"
+                            className="w-full text-center text-lg tracking-[0.5em]"
+                            autoFocus
+                        />
+                        <FieldError>
+                            {errors?.confirmTwoFactorAuthentication?.code}
+                        </FieldError>
+                    </TextField>
 
-                    <ModalFooter align="space-between">
+                    <DialogFooter className="sm:justify-between">
                         <Button
                             type="button"
-                            variant="outline"
-                            onClick={onBack}
+                            appearance="outline"
+                            onPress={onBack}
                             disabled={processing}
                         >
                             Back
@@ -145,11 +169,11 @@ function TwoFactorVerificationStep({
                             disabled={
                                 processing || code.length < OTP_MAX_LENGTH
                             }
-                            isLoading={processing}
+                            pending={processing}
                         >
                             Confirm
                         </Button>
-                    </ModalFooter>
+                    </DialogFooter>
                 </>
             )}
         </Form>
@@ -242,14 +266,20 @@ export default function TwoFactorSetupModal({
     }, [isOpen, qrCodeSvg]);
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} size="md">
-            <ModalHeader
-                title={modalConfig.title}
-                subtitle={modalConfig.description}
-                onClose={handleClose}
-            />
+        <Dialog
+            isOpen={isOpen}
+            onOpenChange={(open) => {
+                if (!open) {
+                    handleClose();
+                }
+            }}
+        >
+            <DialogHeader>
+                <DialogTitle>{modalConfig.title}</DialogTitle>
+                <DialogDescription>{modalConfig.description}</DialogDescription>
+            </DialogHeader>
 
-            <ModalBody className="flex flex-col items-center space-y-5">
+            <DialogBody className="flex flex-col items-center space-y-5">
                 {showVerificationStep ? (
                     <TwoFactorVerificationStep
                         onClose={handleClose}
@@ -264,7 +294,7 @@ export default function TwoFactorSetupModal({
                         errors={errors}
                     />
                 )}
-            </ModalBody>
-        </Modal>
+            </DialogBody>
+        </Dialog>
     );
 }

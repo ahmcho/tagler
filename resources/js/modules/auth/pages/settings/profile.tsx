@@ -1,13 +1,15 @@
-import {
-    Button,
-    Card,
-    CardBody,
-    CardHeader,
-    Input,
-} from '@ahmcho/tailadmin-react';
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import ProfileController from '@/actions/App/Modules/Auth/Controllers/ProfileController';
 import DeleteUser from '@/components/delete-user';
+import { Button } from '@/components/tailgrids/core/button';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+} from '@/components/tailgrids/core/card';
+import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import { Input } from '@/components/tailgrids/core/input';
+import { TextField } from '@/components/tailgrids/core/text-field';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 
@@ -36,7 +38,7 @@ export default function Profile({
                             </p>
                         </div>
                     </CardHeader>
-                    <CardBody>
+                    <CardContent>
                         <Form
                             {...ProfileController.update.form()}
                             options={{
@@ -46,26 +48,38 @@ export default function Profile({
                         >
                             {({ processing, errors }) => (
                                 <>
-                                    <Input
+                                    <TextField
                                         name="name"
-                                        label="Name"
                                         defaultValue={auth.user.name}
                                         required
                                         autoComplete="name"
-                                        placeholder="Full name"
-                                        error={errors.name}
-                                    />
+                                        invalid={Boolean(errors.name)}
+                                        className="flex w-full flex-col gap-1.5"
+                                    >
+                                        <FieldLabel>Name</FieldLabel>
+                                        <Input
+                                            placeholder="Full name"
+                                            className="w-full"
+                                        />
+                                        <FieldError>{errors.name}</FieldError>
+                                    </TextField>
 
-                                    <Input
+                                    <TextField
                                         name="email"
                                         type="email"
-                                        label="Email address"
                                         defaultValue={auth.user.email}
                                         required
                                         autoComplete="username"
-                                        placeholder="Email address"
-                                        error={errors.email}
-                                    />
+                                        invalid={Boolean(errors.email)}
+                                        className="flex w-full flex-col gap-1.5"
+                                    >
+                                        <FieldLabel>Email address</FieldLabel>
+                                        <Input
+                                            placeholder="Email address"
+                                            className="w-full"
+                                        />
+                                        <FieldError>{errors.email}</FieldError>
+                                    </TextField>
 
                                     {mustVerifyEmail &&
                                         auth.user.email_verified_at ===
@@ -77,7 +91,7 @@ export default function Profile({
                                                     <Link
                                                         href={send()}
                                                         as="button"
-                                                        className="font-medium text-brand-500 hover:text-brand-600"
+                                                        className="font-medium text-primary-500 hover:text-primary-600"
                                                     >
                                                         Click here to resend the
                                                         verification email.
@@ -86,7 +100,7 @@ export default function Profile({
 
                                                 {status ===
                                                     'verification-link-sent' && (
-                                                    <p className="font-medium text-success-600 dark:text-success-500">
+                                                    <p className="text-success-600 font-medium dark:text-success-500">
                                                         A new verification link
                                                         has been sent to your
                                                         email address.
@@ -99,7 +113,7 @@ export default function Profile({
                                         <Button
                                             type="submit"
                                             disabled={processing}
-                                            isLoading={processing}
+                                            pending={processing}
                                             data-test="update-profile-button"
                                         >
                                             Save
@@ -108,7 +122,7 @@ export default function Profile({
                                 </>
                             )}
                         </Form>
-                    </CardBody>
+                    </CardContent>
                 </Card>
 
                 <DeleteUser />

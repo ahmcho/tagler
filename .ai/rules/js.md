@@ -5,9 +5,16 @@ paths:
 
 # Frontend
 
-## Use the TailAdmin theme
+## Use the TailGrids components
 
-Build UI from `@ahmcho/tailadmin-react` (`Card`, `CardHeader`, `CardBody`, `Table`, `Header`, `Body`, `Row`, `Cell`, `Button`, `Input`, `Select`, `Pagination`, `Alert`, `Modal`). Check the component's `.d.ts` in `node_modules/@ahmcho/tailadmin-react/dist` before you use a prop. Reuse an existing component before you write one.
+The UI comes from TailGrids (https://tailgrids.com). Its source is copied into `resources/js/components/tailgrids/core/`. It is not an npm component package. Import components from `@/components/tailgrids/core/...` and use them directly. Do not add wrappers that copy an older API. Do not edit those copies unless the user asks. Local changes to the copies, all documented here:
+- `dialog.tsx`: the modal is wrapped in `ModalOverlay` to draw the dimmed backdrop.
+- `button.tsx`: the defaults are `variant="primary"`, `appearance="fill"`, `size="md"`.
+- `input.tsx`: `ref` is added to the props type.
+- `sidebar.tsx`: `useIsMobile` uses `useSyncExternalStore`.
+- `tooltip.tsx`: the `react-hooks/refs` lint rule is disabled for the file.
+
+TailGrids uses react-aria. Check the source before you use a prop. For example, `Button` takes `onPress`, not `onClick`, and `isDisabled` is `disabled`. `TextField` passes its value to `onChange` as a string. Use `NativeSelect` for native selects. `PasswordField` in `components/password-field.tsx` is a local composition of TailGrids pieces, because TailGrids has no password input.
 
 ## Forms
 

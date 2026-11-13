@@ -38,14 +38,7 @@ COPY packages ./packages
 RUN composer install --no-interaction --no-scripts --no-autoloader
 
 COPY package.json package-lock.json ./
-# The lockfile pins @ahmcho/tailadmin-react to a private GitHub repo. The token
-# comes from a BuildKit secret and is passed to git through the environment only,
-# so it is not written to any file or image layer.
-RUN --mount=type=secret,id=github_token \
-    GIT_CONFIG_COUNT=1 \
-    GIT_CONFIG_KEY_0="url.https://x-access-token:$(cat /run/secrets/github_token)@github.com/.insteadOf" \
-    GIT_CONFIG_VALUE_0="https://github.com/" \
-    npm ci
+RUN npm ci
 
 COPY . .
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/framework/testing storage/logs bootstrap/cache

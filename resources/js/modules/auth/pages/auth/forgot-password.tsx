@@ -1,5 +1,14 @@
-import { Alert, Button, Input } from '@ahmcho/tailadmin-react';
 import { Form, Head, Link } from '@inertiajs/react';
+import {
+    Alert,
+    AlertContent,
+    AlertIndicator,
+    AlertTitle,
+} from '@/components/tailgrids/core/alert';
+import { Button } from '@/components/tailgrids/core/button';
+import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import { Input } from '@/components/tailgrids/core/input';
+import { TextField } from '@/components/tailgrids/core/text-field';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
@@ -9,26 +18,37 @@ export default function ForgotPassword({ status }: { status?: string }) {
             <Head title="Forgot password" />
 
             {status && (
-                <Alert variant="success" title={status} className="mb-5" />
+                <Alert status="success" className="mb-5">
+                    <AlertIndicator />
+                    <AlertContent>
+                        <AlertTitle>{status}</AlertTitle>
+                    </AlertContent>
+                </Alert>
             )}
 
             <Form {...email.form()} className="space-y-5">
                 {({ processing, errors }) => (
                     <>
-                        <Input
+                        <TextField
                             name="email"
                             type="email"
-                            label="Email address"
                             autoComplete="off"
                             autoFocus
-                            placeholder="email@example.com"
-                            error={errors.email}
-                        />
+                            invalid={Boolean(errors.email)}
+                            className="flex w-full flex-col gap-1.5"
+                        >
+                            <FieldLabel>Email address</FieldLabel>
+                            <Input
+                                placeholder="email@example.com"
+                                className="w-full"
+                            />
+                            <FieldError>{errors.email}</FieldError>
+                        </TextField>
 
                         <Button
                             type="submit"
-                            fullWidth
-                            isLoading={processing}
+                            className="w-full"
+                            pending={processing}
                             disabled={processing}
                             data-test="email-password-reset-link-button"
                         >
@@ -42,7 +62,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 Or, return to{' '}
                 <Link
                     href={login()}
-                    className="font-medium text-brand-500 hover:text-brand-600"
+                    className="font-medium text-primary-500 hover:text-primary-600"
                 >
                     log in
                 </Link>

@@ -1,5 +1,5 @@
-import { Card, CardHeader } from '@ahmcho/tailadmin-react';
 import { Head, usePage } from '@inertiajs/react';
+import { Card, CardHeader } from '@/components/tailgrids/core/card';
 import { dashboard } from '@/routes';
 
 export default function Dashboard() {

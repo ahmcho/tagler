@@ -1,8 +1,6 @@
-import { TailAdminProvider } from '@ahmcho/tailadmin-react';
-import type { LinkComponentProps } from '@ahmcho/tailadmin-react';
-import { createInertiaApp, Link, usePage } from '@inertiajs/react';
+import { createInertiaApp } from '@inertiajs/react';
 import { configureEcho } from '@laravel/echo-react';
-import type { ComponentProps, ComponentType } from 'react';
+import type { ComponentType } from 'react';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
@@ -13,15 +11,6 @@ configureEcho({
 });
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
-
-const InertiaLink = ({ href, ...props }: LinkComponentProps) => (
-    <Link
-        href={href}
-        {...(props as Omit<ComponentProps<typeof Link>, 'href'>)}
-    />
-);
-
-const usePathnameWithoutQuery = (): string => usePage().url.split('?')[0];
 
 const pages = import.meta.glob<{ default: ComponentType }>([
     './pages/**/*.tsx',
@@ -56,18 +45,8 @@ createInertiaApp({
         }
     },
     strictMode: true,
-    withApp(app) {
-        return (
-            <TailAdminProvider
-                LinkComponent={InertiaLink}
-                usePathname={usePathnameWithoutQuery}
-            >
-                {app}
-            </TailAdminProvider>
-        );
-    },
     progress: {
-        color: '#465FFF',
+        color: '#3758f9',
     },
 });
 

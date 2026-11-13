@@ -1,5 +1,9 @@
-import { Button, Input, PasswordInput } from '@ahmcho/tailadmin-react';
 import { Form, Head } from '@inertiajs/react';
+import { PasswordField } from '@/components/password-field';
+import { Button } from '@/components/tailgrids/core/button';
+import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import { Input } from '@/components/tailgrids/core/input';
+import { TextField } from '@/components/tailgrids/core/text-field';
 import { update } from '@/routes/password';
 
 type Props = {
@@ -20,17 +24,21 @@ export default function ResetPassword({ token, email }: Props) {
             >
                 {({ processing, errors }) => (
                     <>
-                        <Input
+                        <TextField
                             name="email"
                             type="email"
-                            label="Email"
                             autoComplete="email"
-                            value={email}
+                            defaultValue={email}
                             readOnly
-                            error={errors.email}
-                        />
+                            invalid={Boolean(errors.email)}
+                            className="flex w-full flex-col gap-1.5"
+                        >
+                            <FieldLabel>Email</FieldLabel>
+                            <Input className="w-full" />
+                            <FieldError>{errors.email}</FieldError>
+                        </TextField>
 
-                        <PasswordInput
+                        <PasswordField
                             name="password"
                             label="Password"
                             autoComplete="new-password"
@@ -39,7 +47,7 @@ export default function ResetPassword({ token, email }: Props) {
                             error={errors.password}
                         />
 
-                        <PasswordInput
+                        <PasswordField
                             name="password_confirmation"
                             label="Confirm password"
                             autoComplete="new-password"
@@ -49,8 +57,8 @@ export default function ResetPassword({ token, email }: Props) {
 
                         <Button
                             type="submit"
-                            fullWidth
-                            isLoading={processing}
+                            className="w-full"
+                            pending={processing}
                             disabled={processing}
                             data-test="reset-password-button"
                         >

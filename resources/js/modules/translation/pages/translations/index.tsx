@@ -1,21 +1,34 @@
+import { Head, Link, router } from '@inertiajs/react';
+import type { FormEvent } from 'react';
+import { useState } from 'react';
 import {
     Alert,
-    Body,
-    Button,
+    AlertContent,
+    AlertIndicator,
+    AlertTitle,
+} from '@/components/tailgrids/core/alert';
+import { Button } from '@/components/tailgrids/core/button';
+import {
     Card,
-    CardBody,
+    CardContent,
     CardHeader,
-    Cell,
-    Header,
-    Input,
-    Pagination,
-    Row,
-    Select,
-    Table,
-} from '@ahmcho/tailadmin-react';
-import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
-import type { FormEvent } from 'react';
+} from '@/components/tailgrids/core/card';
+import { FieldLabel } from '@/components/tailgrids/core/field';
+import { Input } from '@/components/tailgrids/core/input';
+import {
+    NativeSelect,
+    NativeSelectOption,
+} from '@/components/tailgrids/core/native-select';
+import { Pagination } from '@/components/tailgrids/core/pagination';
+import {
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRoot,
+    TableRow,
+} from '@/components/tailgrids/core/table';
+import { TextField } from '@/components/tailgrids/core/text-field';
 import { edit, index } from '@/routes/translations';
 
 type TranslationRecord = {
@@ -84,7 +97,14 @@ export default function Index({
             <Head title="Translations" />
 
             <div className="space-y-6">
-                {status && <Alert variant="success" title={status} />}
+                {status && (
+                    <Alert status="success">
+                        <AlertIndicator />
+                        <AlertContent>
+                            <AlertTitle>{status}</AlertTitle>
+                        </AlertContent>
+                    </Alert>
+                )}
 
                 <Card>
                     <CardHeader>
@@ -99,12 +119,12 @@ export default function Index({
                         </div>
                     </CardHeader>
 
-                    <CardBody>
+                    <CardContent>
                         <div className="mb-4 flex flex-wrap gap-2">
                             <Button
                                 size="sm"
-                                variant={filters.table ? 'outline' : 'primary'}
-                                onClick={() =>
+                                appearance={filters.table ? 'outline' : 'fill'}
+                                onPress={() =>
                                     visit({
                                         group: filters.group,
                                         key: filters.key,
@@ -117,12 +137,12 @@ export default function Index({
                                 <Button
                                     key={table}
                                     size="sm"
-                                    variant={
+                                    appearance={
                                         filters.table === table
-                                            ? 'primary'
+                                            ? 'fill'
                                             : 'outline'
                                     }
-                                    onClick={() => visit({ table })}
+                                    onPress={() => visit({ table })}
                                 >
                                     {table}
                                 </Button>
@@ -133,85 +153,105 @@ export default function Index({
                             onSubmit={submitFilters}
                             className="mb-6 grid gap-4 md:grid-cols-[1fr_2fr_auto]"
                         >
-                            <Select
-                                label="Group"
-                                value={group}
-                                onChange={(event) =>
-                                    setGroup(event.target.value)
-                                }
-                                options={[
-                                    { value: '', label: 'All groups' },
-                                    ...groups.map((item) => ({
-                                        value: item,
-                                        label: item,
-                                    })),
-                                ]}
-                            />
-                            <Input
-                                label="Key"
+                            <div className="flex w-full flex-col gap-1.5">
+                                <FieldLabel htmlFor="translation-group">
+                                    Group
+                                </FieldLabel>
+                                <NativeSelect
+                                    id="translation-group"
+                                    value={group}
+                                    onChange={(event) =>
+                                        setGroup(event.target.value)
+                                    }
+                                >
+                                    <NativeSelectOption value="">
+                                        All groups
+                                    </NativeSelectOption>
+                                    {groups.map((item) => (
+                                        <NativeSelectOption
+                                            key={item}
+                                            value={item}
+                                        >
+                                            {item}
+                                        </NativeSelectOption>
+                                    ))}
+                                </NativeSelect>
+                            </div>
+
+                            <TextField
                                 value={key}
-                                placeholder="e.g. common.save"
-                                onChange={(event) => setKey(event.target.value)}
-                            />
+                                onChange={setKey}
+                                className="flex w-full flex-col gap-1.5"
+                            >
+                                <FieldLabel>Key</FieldLabel>
+                                <Input
+                                    placeholder="e.g. common.save"
+                                    className="w-full"
+                                />
+                            </TextField>
+
                             <div className="flex items-end gap-2">
-                                <Button type="submit" variant="primary">
-                                    Search
-                                </Button>
+                                <Button type="submit">Search</Button>
                                 <Button
                                     type="button"
-                                    variant="outline"
-                                    onClick={clearFilters}
+                                    appearance="outline"
+                                    onPress={clearFilters}
                                 >
                                     Clear
                                 </Button>
                             </div>
                         </form>
 
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <Header>
-                                    <Row>
-                                        <Cell as="th">ID</Cell>
-                                        <Cell as="th">Group</Cell>
-                                        <Cell as="th">Key</Cell>
-                                        <Cell as="th">Value</Cell>
-                                        <Cell as="th">Updated</Cell>
-                                        <Cell as="th">Actions</Cell>
-                                    </Row>
-                                </Header>
-                                <Body>
-                                    {records.data.length === 0 && (
-                                        <Row>
-                                            <Cell colSpan={6}>
-                                                No translations found.
-                                            </Cell>
-                                        </Row>
-                                    )}
-                                    {records.data.map((translation) => (
-                                        <Row key={translation.id} hoverable>
-                                            <Cell>{translation.id}</Cell>
-                                            <Cell>{translation.group}</Cell>
-                                            <Cell>{translation.key}</Cell>
-                                            <Cell>{translation.value}</Cell>
-                                            <Cell>
-                                                {translation.updated_at}
-                                            </Cell>
-                                            <Cell>
-                                                <Link
-                                                    href={edit.url([
-                                                        translation.group,
-                                                        translation.key,
-                                                    ])}
-                                                    className="text-brand-500 hover:underline"
-                                                >
-                                                    Edit
-                                                </Link>
-                                            </Cell>
-                                        </Row>
-                                    ))}
-                                </Body>
-                            </Table>
-                        </div>
+                        <TableRoot>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>ID</TableHead>
+                                    <TableHead>Group</TableHead>
+                                    <TableHead>Key</TableHead>
+                                    <TableHead>Value</TableHead>
+                                    <TableHead>Updated</TableHead>
+                                    <TableHead>Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {records.data.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={6}>
+                                            No translations found.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                                {records.data.map((translation) => (
+                                    <TableRow
+                                        key={translation.id}
+                                        className="hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                                    >
+                                        <TableCell>{translation.id}</TableCell>
+                                        <TableCell>
+                                            {translation.group}
+                                        </TableCell>
+                                        <TableCell>{translation.key}</TableCell>
+                                        <TableCell>
+                                            {translation.value}
+                                        </TableCell>
+                                        <TableCell>
+                                            {translation.updated_at}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Link
+                                                href={edit.url([
+                                                    translation.group,
+                                                    translation.key,
+                                                ])}
+                                                className="text-primary-500 hover:underline"
+                                            >
+                                                Edit
+                                            </Link>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </TableRoot>
 
                         {records.last_page > 1 && (
                             <div className="mt-6 flex justify-center">
@@ -224,7 +264,7 @@ export default function Index({
                                 />
                             </div>
                         )}
-                    </CardBody>
+                    </CardContent>
                 </Card>
             </div>
         </>

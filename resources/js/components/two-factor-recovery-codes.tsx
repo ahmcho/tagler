@@ -1,13 +1,18 @@
-import {
-    Alert,
-    Button,
-    Card,
-    CardBody,
-    CardHeader,
-} from '@ahmcho/tailadmin-react';
 import { Form } from '@inertiajs/react';
 import { Eye, EyeOff, LockKeyhole, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import {
+    Alert,
+    AlertContent,
+    AlertIndicator,
+    AlertTitle,
+} from '@/components/tailgrids/core/alert';
+import { Button } from '@/components/tailgrids/core/button';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+} from '@/components/tailgrids/core/card';
 import { regenerateRecoveryCodes } from '@/routes/two-factor';
 
 type Props = {
@@ -41,10 +46,7 @@ export default function TwoFactorRecoveryCodes({
     const RecoveryCodeIcon = codesAreVisible ? EyeOff : Eye;
 
     return (
-        <Card
-            padding="none"
-            className="border border-gray-200 shadow-none dark:border-gray-800"
-        >
+        <Card className="border border-gray-200 shadow-none dark:border-gray-800">
             <CardHeader>
                 <div>
                     <h3 className="flex items-center gap-2 text-base font-semibold text-gray-800 dark:text-white/90">
@@ -57,16 +59,14 @@ export default function TwoFactorRecoveryCodes({
                     </p>
                 </div>
             </CardHeader>
-            <CardBody className="space-y-4">
+            <CardContent className="space-y-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <Button
-                        onClick={toggleCodesVisibility}
+                        onPress={toggleCodesVisibility}
                         aria-expanded={codesAreVisible}
                         aria-controls="recovery-codes-section"
-                        startIcon={
-                            <RecoveryCodeIcon size={16} aria-hidden="true" />
-                        }
                     >
+                        <RecoveryCodeIcon size={16} aria-hidden="true" />
                         {codesAreVisible ? 'Hide' : 'View'} recovery codes
                     </Button>
 
@@ -78,12 +78,12 @@ export default function TwoFactorRecoveryCodes({
                         >
                             {({ processing }) => (
                                 <Button
-                                    variant="secondary"
                                     type="submit"
+                                    appearance="outline"
                                     disabled={processing}
-                                    isLoading={processing}
-                                    startIcon={<RefreshCw size={16} />}
+                                    pending={processing}
                                 >
+                                    <RefreshCw size={16} />
                                     Regenerate codes
                                 </Button>
                             )}
@@ -94,7 +94,12 @@ export default function TwoFactorRecoveryCodes({
                 {codesAreVisible && (
                     <div id="recovery-codes-section" className="space-y-3">
                         {errors.map((error) => (
-                            <Alert key={error} variant="error" title={error} />
+                            <Alert key={error} status="error">
+                                <AlertIndicator />
+                                <AlertContent>
+                                    <AlertTitle>{error}</AlertTitle>
+                                </AlertContent>
+                            </Alert>
                         ))}
 
                         {!errors.length && (
@@ -134,7 +139,7 @@ export default function TwoFactorRecoveryCodes({
                         )}
                     </div>
                 )}
-            </CardBody>
+            </CardContent>
         </Card>
     );
 }
