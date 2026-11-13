@@ -1,14 +1,14 @@
-import {
-    Button,
-    Card,
-    CardBody,
-    CardHeader,
-    PasswordInput,
-} from '@ahmcho/tailadmin-react';
 import { Form, Head } from '@inertiajs/react';
 import { ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import SecurityController from '@/actions/App/Modules/Auth/Controllers/SecurityController';
+import { PasswordField } from '@/components/password-field';
+import { Button } from '@/components/tailgrids/core/button';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+} from '@/components/tailgrids/core/card';
 import TwoFactorRecoveryCodes from '@/components/two-factor-recovery-codes';
 import TwoFactorSetupModal from '@/components/two-factor-setup-modal';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
@@ -82,7 +82,7 @@ export default function Security({
                         title="Update password"
                         description="Ensure your account is using a long, random password to stay secure"
                     />
-                    <CardBody>
+                    <CardContent>
                         <Form
                             {...SecurityController.update.form()}
                             options={{
@@ -107,25 +107,25 @@ export default function Security({
                         >
                             {({ errors, processing }) => (
                                 <>
-                                    <PasswordInput
+                                    <PasswordField
                                         name="current_password"
-                                        ref={currentPasswordInput}
+                                        inputRef={currentPasswordInput}
                                         label="Current password"
                                         autoComplete="current-password"
                                         placeholder="Current password"
                                         error={errors.current_password}
                                     />
 
-                                    <PasswordInput
+                                    <PasswordField
                                         name="password"
-                                        ref={passwordInput}
+                                        inputRef={passwordInput}
                                         label="New password"
                                         autoComplete="new-password"
                                         placeholder="New password"
                                         error={errors.password}
                                     />
 
-                                    <PasswordInput
+                                    <PasswordField
                                         name="password_confirmation"
                                         label="Confirm password"
                                         autoComplete="new-password"
@@ -137,7 +137,7 @@ export default function Security({
                                         <Button
                                             type="submit"
                                             disabled={processing}
-                                            isLoading={processing}
+                                            pending={processing}
                                             data-test="update-password-button"
                                         >
                                             Save password
@@ -146,7 +146,7 @@ export default function Security({
                                 </>
                             )}
                         </Form>
-                    </CardBody>
+                    </CardContent>
                 </Card>
 
                 {canManageTwoFactor && (
@@ -155,7 +155,7 @@ export default function Security({
                             title="Two-factor authentication"
                             description="Manage your two-factor authentication settings"
                         />
-                        <CardBody className="space-y-6">
+                        <CardContent className="space-y-6">
                             {twoFactorEnabled ? (
                                 <>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -196,13 +196,11 @@ export default function Security({
                                     <div>
                                         {hasSetupData ? (
                                             <Button
-                                                startIcon={
-                                                    <ShieldCheck size={18} />
-                                                }
-                                                onClick={() =>
+                                                onPress={() =>
                                                     setShowSetupModal(true)
                                                 }
                                             >
+                                                <ShieldCheck size={18} />
                                                 Continue setup
                                             </Button>
                                         ) : (
@@ -216,7 +214,7 @@ export default function Security({
                                                     <Button
                                                         type="submit"
                                                         disabled={processing}
-                                                        isLoading={processing}
+                                                        pending={processing}
                                                     >
                                                         Enable 2FA
                                                     </Button>
@@ -238,7 +236,7 @@ export default function Security({
                                 fetchSetupData={fetchSetupData}
                                 errors={errors}
                             />
-                        </CardBody>
+                        </CardContent>
                     </Card>
                 )}
             </div>

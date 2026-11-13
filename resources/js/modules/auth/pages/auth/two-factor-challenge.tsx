@@ -1,6 +1,9 @@
-import { Button, Input } from '@ahmcho/tailadmin-react';
 import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { Button } from '@/components/tailgrids/core/button';
+import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import { Input } from '@/components/tailgrids/core/input';
+import { TextField } from '@/components/tailgrids/core/text-field';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
 import { store } from '@/routes/two-factor/login';
 
@@ -47,33 +50,44 @@ export default function TwoFactorChallenge() {
                 {({ errors, processing, clearErrors }) => (
                     <>
                         {showRecoveryInput ? (
-                            <Input
+                            <TextField
                                 name="recovery_code"
-                                type="text"
-                                placeholder="Enter recovery code"
                                 autoFocus
                                 required
-                                error={errors.recovery_code}
-                            />
+                                invalid={Boolean(errors.recovery_code)}
+                                className="flex w-full flex-col gap-1.5"
+                            >
+                                <FieldLabel>Recovery code</FieldLabel>
+                                <Input
+                                    placeholder="Enter recovery code"
+                                    className="w-full"
+                                />
+                                <FieldError>{errors.recovery_code}</FieldError>
+                            </TextField>
                         ) : (
-                            <Input
+                            <TextField
                                 name="code"
-                                type="text"
-                                inputMode="numeric"
                                 autoComplete="one-time-code"
-                                maxLength={OTP_MAX_LENGTH}
-                                placeholder="000000"
-                                className="text-center text-lg tracking-[0.5em]"
-                                disabled={processing}
                                 autoFocus
-                                error={errors.code}
-                            />
+                                disabled={processing}
+                                invalid={Boolean(errors.code)}
+                                className="flex w-full flex-col gap-1.5"
+                            >
+                                <FieldLabel>Authentication code</FieldLabel>
+                                <Input
+                                    inputMode="numeric"
+                                    maxLength={OTP_MAX_LENGTH}
+                                    placeholder="000000"
+                                    className="w-full text-center text-lg tracking-[0.5em]"
+                                />
+                                <FieldError>{errors.code}</FieldError>
+                            </TextField>
                         )}
 
                         <Button
                             type="submit"
-                            fullWidth
-                            isLoading={processing}
+                            className="w-full"
+                            pending={processing}
                             disabled={processing}
                         >
                             Continue
@@ -83,7 +97,7 @@ export default function TwoFactorChallenge() {
                             or you can{' '}
                             <button
                                 type="button"
-                                className="font-medium text-brand-500 hover:text-brand-600"
+                                className="font-medium text-primary-500 hover:text-primary-600"
                                 onClick={() => {
                                     setShowRecoveryInput(!showRecoveryInput);
                                     clearErrors();

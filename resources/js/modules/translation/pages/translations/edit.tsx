@@ -1,12 +1,14 @@
-import {
-    Button,
-    Card,
-    CardBody,
-    CardHeader,
-    Input,
-} from '@ahmcho/tailadmin-react';
 import { Head, router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import { Button } from '@/components/tailgrids/core/button';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+} from '@/components/tailgrids/core/card';
+import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import { Input } from '@/components/tailgrids/core/input';
+import { TextField } from '@/components/tailgrids/core/text-field';
 import { index, update } from '@/routes/translations';
 
 type Locale = {
@@ -62,48 +64,51 @@ export default function Edit({
                         </div>
                     </CardHeader>
 
-                    <CardBody>
+                    <CardContent>
                         <form onSubmit={submit} className="space-y-4">
                             {locales.map((locale) => (
-                                <Input
+                                <TextField
                                     key={locale.code}
-                                    label={locale.name}
                                     value={
                                         form.data.translations[locale.code] ??
                                         ''
                                     }
-                                    error={
+                                    onChange={(value) =>
+                                        setValue(locale.code, value)
+                                    }
+                                    invalid={Boolean(
                                         form.errors[
                                             `translations.${locale.code}`
-                                        ]
-                                    }
-                                    onChange={(event) =>
-                                        setValue(
-                                            locale.code,
-                                            event.target.value,
-                                        )
-                                    }
-                                />
+                                        ],
+                                    )}
+                                    className="flex w-full flex-col gap-1.5"
+                                >
+                                    <FieldLabel>{locale.name}</FieldLabel>
+                                    <Input className="w-full" />
+                                    <FieldError>
+                                        {
+                                            form.errors[
+                                                `translations.${locale.code}`
+                                            ]
+                                        }
+                                    </FieldError>
+                                </TextField>
                             ))}
 
                             <div className="flex justify-end gap-2 pt-2">
                                 <Button
                                     type="button"
-                                    variant="outline"
-                                    onClick={() => router.visit(index.url())}
+                                    appearance="outline"
+                                    onPress={() => router.visit(index.url())}
                                 >
                                     Back
                                 </Button>
-                                <Button
-                                    type="submit"
-                                    variant="primary"
-                                    isLoading={form.processing}
-                                >
+                                <Button type="submit" pending={form.processing}>
                                     Save
                                 </Button>
                             </div>
                         </form>
-                    </CardBody>
+                    </CardContent>
                 </Card>
             </div>
         </>

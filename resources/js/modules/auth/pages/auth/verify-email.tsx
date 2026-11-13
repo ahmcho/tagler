@@ -1,5 +1,11 @@
-import { Alert, Button } from '@ahmcho/tailadmin-react';
 import { Form, Head, Link } from '@inertiajs/react';
+import {
+    Alert,
+    AlertContent,
+    AlertIndicator,
+    AlertTitle,
+} from '@/components/tailgrids/core/alert';
+import { Button } from '@/components/tailgrids/core/button';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 
@@ -9,11 +15,15 @@ export default function VerifyEmail({ status }: { status?: string }) {
             <Head title="Email verification" />
 
             {status === 'verification-link-sent' && (
-                <Alert
-                    variant="success"
-                    title="A new verification link has been sent to the email address you provided during registration."
-                    className="mb-5"
-                />
+                <Alert status="success" className="mb-5">
+                    <AlertIndicator />
+                    <AlertContent>
+                        <AlertTitle>
+                            A new verification link has been sent to the email
+                            address you provided during registration.
+                        </AlertTitle>
+                    </AlertContent>
+                </Alert>
             )}
 
             <Form {...send.form()} className="space-y-6 text-center">
@@ -21,9 +31,9 @@ export default function VerifyEmail({ status }: { status?: string }) {
                     <>
                         <Button
                             type="submit"
-                            fullWidth
-                            variant="secondary"
-                            isLoading={processing}
+                            className="w-full"
+                            appearance="outline"
+                            pending={processing}
                             disabled={processing}
                         >
                             Resend verification email
@@ -31,7 +41,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
 
                         <Link
                             href={logout()}
-                            className="mx-auto block text-sm font-medium text-brand-500 hover:text-brand-600"
+                            className="mx-auto block text-sm font-medium text-primary-500 hover:text-primary-600"
                         >
                             Log out
                         </Link>

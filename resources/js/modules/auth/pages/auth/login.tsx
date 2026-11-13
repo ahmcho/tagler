@@ -1,11 +1,16 @@
+import { Form, Head, Link } from '@inertiajs/react';
+import { PasswordField } from '@/components/password-field';
 import {
     Alert,
-    Button,
-    Checkbox,
-    Input,
-    PasswordInput,
-} from '@ahmcho/tailadmin-react';
-import { Form, Head, Link } from '@inertiajs/react';
+    AlertContent,
+    AlertIndicator,
+    AlertTitle,
+} from '@/components/tailgrids/core/alert';
+import { Button } from '@/components/tailgrids/core/button';
+import { Checkbox } from '@/components/tailgrids/core/checkbox';
+import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import { Input } from '@/components/tailgrids/core/input';
+import { TextField } from '@/components/tailgrids/core/text-field';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -20,7 +25,12 @@ export default function Login({ status, canResetPassword }: Props) {
             <Head title="Log in" />
 
             {status && (
-                <Alert variant="success" title={status} className="mb-5" />
+                <Alert status="success" className="mb-5">
+                    <AlertIndicator />
+                    <AlertContent>
+                        <AlertTitle>{status}</AlertTitle>
+                    </AlertContent>
+                </Alert>
             )}
 
             <Form
@@ -30,19 +40,25 @@ export default function Login({ status, canResetPassword }: Props) {
             >
                 {({ processing, errors }) => (
                     <>
-                        <Input
+                        <TextField
                             name="email"
                             type="email"
-                            label="Email address"
-                            required
-                            autoFocus
-                            tabIndex={1}
                             autoComplete="email"
-                            placeholder="email@example.com"
-                            error={errors.email}
-                        />
+                            autoFocus
+                            required
+                            invalid={Boolean(errors.email)}
+                            className="flex w-full flex-col gap-1.5"
+                        >
+                            <FieldLabel>Email address</FieldLabel>
+                            <Input
+                                placeholder="email@example.com"
+                                tabIndex={1}
+                                className="w-full"
+                            />
+                            <FieldError>{errors.email}</FieldError>
+                        </TextField>
 
-                        <PasswordInput
+                        <PasswordField
                             name="password"
                             label="Password"
                             required
@@ -53,16 +69,15 @@ export default function Login({ status, canResetPassword }: Props) {
                         />
 
                         <div className="flex items-center justify-between">
-                            <Checkbox
-                                name="remember"
-                                label="Remember me"
-                                tabIndex={3}
-                            />
+                            <label className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-400">
+                                <Checkbox name="remember" tabIndex={3} />
+                                Remember me
+                            </label>
                             {canResetPassword && (
                                 <Link
                                     href={request()}
                                     tabIndex={4}
-                                    className="text-sm font-medium text-brand-500 hover:text-brand-600"
+                                    className="text-sm font-medium text-primary-500 hover:text-primary-600"
                                 >
                                     Forgot password?
                                 </Link>
@@ -71,15 +86,13 @@ export default function Login({ status, canResetPassword }: Props) {
 
                         <Button
                             type="submit"
-                            fullWidth
-                            tabIndex={5}
+                            className="w-full"
                             disabled={processing}
-                            isLoading={processing}
+                            pending={processing}
                             data-test="login-button"
                         >
                             Log in
                         </Button>
-
                     </>
                 )}
             </Form>

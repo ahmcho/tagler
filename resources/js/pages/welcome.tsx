@@ -1,6 +1,7 @@
-import { Button, Card } from '@ahmcho/tailadmin-react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { BrandMark } from '@/components/brand-mark';
+import { Button } from '@/components/tailgrids/core/button';
+import { Card } from '@/components/tailgrids/core/card';
 import { dashboard, login } from '@/routes';
 
 export default function Welcome() {
@@ -15,9 +16,9 @@ export default function Welcome() {
                         <BrandMark name={name} />
                     </div>
 
-                    <Card padding="lg" className="space-y-6 text-center">
+                    <Card className="space-y-6 p-8 text-center">
                         <div className="space-y-2">
-                            <h1 className="text-title-sm font-semibold text-gray-800 dark:text-white/90">
+                            <h1 className="text-3xl font-semibold text-gray-800 dark:text-white/90">
                                 Welcome
                             </h1>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -27,20 +28,18 @@ export default function Welcome() {
 
                         {auth.user ? (
                             <Button
-                                fullWidth
-                                onClick={() => router.visit(dashboard().url)}
+                                className="w-full"
+                                onPress={() => router.visit(dashboard().url)}
                             >
                                 Go to dashboard
                             </Button>
                         ) : (
-                            <div className="flex flex-col gap-3">
-                                <Button
-                                    fullWidth
-                                    onClick={() => router.visit(login().url)}
-                                >
-                                    Log in
-                                </Button>                                
-                            </div>
+                            <Button
+                                className="w-full"
+                                onPress={() => router.visit(login().url)}
+                            >
+                                Log in
+                            </Button>
                         )}
                     </Card>
                 </div>
