@@ -106,6 +106,17 @@ test('the index lists tables and filters by an exact table match', function () {
         );
 });
 
+test('the filters prop is a JSON object even when no filter is applied', function () {
+    $manager = translationManager();
+
+    $response = $this->actingAs($manager)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('translations.index'))
+        ->assertOk();
+
+    expect($response->viewData('page')['props']['filters'])->toBeInstanceOf(stdClass::class);
+});
+
 test('the index sorts by a sortable column and echoes the sort in filters', function () {
     $manager = translationManager();
 

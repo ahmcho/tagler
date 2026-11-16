@@ -86,6 +86,7 @@ export default function Index({
     status,
 }: Props) {
     const [group, setGroup] = useState(filters.group ?? '');
+    const [table, setTable] = useState(filters.table ?? '');
     const [key, setKey] = useState(filters.key ?? '');
     const [isLoading, setIsLoading] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<DataTableRowId>>(
@@ -115,17 +116,17 @@ export default function Index({
         visit({
             group: group || undefined,
             key: key || undefined,
-            table: filters.table,
+            table: table || undefined,
             sort: filters.sort,
             direction: filters.direction,
         });
     };
 
-    const resetGroupFilter = () => {
+    const resetFilters = () => {
         setGroup('');
+        setTable('');
         visit({
             key: key || undefined,
-            table: filters.table,
             sort: filters.sort,
             direction: filters.direction,
         });
@@ -197,48 +198,10 @@ export default function Index({
                 )}
 
                 <Card>
-                    <CardContent>
-                        <div className="mb-4 flex flex-wrap gap-2">
-                            <Button
-                                size="sm"
-                                appearance={filters.table ? 'outline' : 'fill'}
-                                onPress={() =>
-                                    visit({
-                                        group: filters.group,
-                                        key: filters.key,
-                                        sort: filters.sort,
-                                        direction: filters.direction,
-                                    })
-                                }
-                            >
-                                All tables
-                            </Button>
-                            {tables.map((table) => (
-                                <Button
-                                    key={table}
-                                    size="sm"
-                                    appearance={
-                                        filters.table === table
-                                            ? 'fill'
-                                            : 'outline'
-                                    }
-                                    onPress={() =>
-                                        visit({
-                                            table,
-                                            sort: filters.sort,
-                                            direction: filters.direction,
-                                        })
-                                    }
-                                >
-                                    {table}
-                                </Button>
-                            ))}
-                        </div>
-
+                    <CardContent className="py-5">
                         <DataTable
                             caption="Translations"
-                            title="Translations"
-                            subtitle={`Edit stored translations for each supported locale. Showing ${records.total} entries.`}
+                            subtitle={`Showing ${records.total} entries`}
                             search={{
                                 value: key,
                                 onChange: setKey,
@@ -249,18 +212,29 @@ export default function Index({
                             filter={{
                                 title: 'Filter translations',
                                 description:
-                                    'Show only translations from one group.',
-                                activeCount: filters.group ? 1 : 0,
+                                    'Show only translations from one table or group.',
+                                activeCount:
+                                    (filters.table ? 1 : 0) +
+                                    (filters.group ? 1 : 0),
                                 onApply: submitFilters,
-                                onReset: resetGroupFilter,
+                                onReset: resetFilters,
                                 children: (
-                                    <SelectField
-                                        label="Group"
-                                        value={group}
-                                        onChange={setGroup}
-                                        options={groups}
-                                        allOptionLabel="All groups"
-                                    />
+                                    <div className="space-y-4">
+                                        <SelectField
+                                            label="Table"
+                                            value={table}
+                                            onChange={setTable}
+                                            options={tables}
+                                            allOptionLabel="All tables"
+                                        />
+                                        <SelectField
+                                            label="Group"
+                                            value={group}
+                                            onChange={setGroup}
+                                            options={groups}
+                                            allOptionLabel="All groups"
+                                        />
+                                    </div>
                                 ),
                             }}
                             bulkActions={bulkActions}

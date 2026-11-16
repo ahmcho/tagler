@@ -466,12 +466,13 @@ export function DataTable<Row>({
                                 )}
 
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger
+                                    <Button
                                         aria-label="Batch actions"
-                                        className="inline-flex size-10 items-center justify-center rounded-lg border border-base-300 bg-background-100 text-text-100 transition hover:bg-background-soft-100 focus-visible:ring-2 focus-visible:ring-primary-300"
+                                        appearance="outline"
+                                        iconOnly
                                     >
                                         <MoreVertical className="size-5" />
-                                    </DropdownMenuTrigger>
+                                    </Button>
 
                                     <DropdownMenuContent
                                         placement="bottom end"

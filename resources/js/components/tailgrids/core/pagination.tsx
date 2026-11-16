@@ -2,6 +2,8 @@
 
 import { ArrowLeft, ArrowRight } from '@tailgrids/icons';
 import { cva } from 'class-variance-authority';
+import type { FormEvent } from 'react';
+import { useId, useState } from 'react';
 import { cn } from '@/utils/cn';
 import { Button } from './button';
 
@@ -40,7 +42,63 @@ type PropsType = {
     sideLayout?: 'full' | 'label' | 'icon';
 };
 
-const MAX_PAGES_SHOWN = 6;
+const PAGE_RANGE_SIZE = 10;
+const WINDOW_RADIUS = 2;
+const EDGE_PAGE_COUNT = 2;
+
+type PaginationItem = number | 'ellipsis';
+
+function getPageRange(start: number, end: number): number[] {
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+}
+
+/**
+ * Builds the visible page list. Gaps of one or more pages become an ellipsis.
+ */
+export function getPaginationItems(
+    currentPage: number,
+    totalPages: number,
+): PaginationItem[] {
+    if (totalPages <= PAGE_RANGE_SIZE) {
+        return getPageRange(1, totalPages);
+    }
+
+    const lastRangeStart = totalPages - PAGE_RANGE_SIZE + 1;
+    const lastEdgeStart = totalPages - EDGE_PAGE_COUNT + 1;
+    const edgePages = getPageRange(1, EDGE_PAGE_COUNT);
+
+    let pages: number[];
+
+    if (currentPage <= PAGE_RANGE_SIZE) {
+        pages = [
+            ...getPageRange(1, PAGE_RANGE_SIZE),
+            ...getPageRange(lastEdgeStart, totalPages),
+        ];
+    } else if (currentPage >= lastRangeStart) {
+        pages = [...edgePages, ...getPageRange(lastRangeStart, totalPages)];
+    } else {
+        pages = [
+            ...edgePages,
+            ...getPageRange(
+                currentPage - WINDOW_RADIUS,
+                currentPage + WINDOW_RADIUS,
+            ),
+            ...getPageRange(lastEdgeStart, totalPages),
+        ];
+    }
+
+    const uniquePages = [...new Set(pages)].sort((a, b) => a - b);
+
+    return uniquePages.reduce<PaginationItem[]>((items, page, index) => {
+        if (index > 0 && page - uniquePages[index - 1] > 1) {
+            items.push('ellipsis');
+        }
+
+        items.push(page);
+
+        return items;
+    }, []);
+}
 
 export function Pagination({
     currentPage,
@@ -89,72 +147,39 @@ export function Pagination({
                     Page {currentPage} of {totalPages}
                 </li>
 
-                {Array.from({ length: totalPages }, (_, index) => {
-                    const isActive = currentPage === index + 1;
+                {getPaginationItems(currentPage, totalPages).map(
+                    (item, index) =>
+                        item === 'ellipsis' ? (
+                            <li
+                                key={`ellipsis-${index}`}
+                                className="max-sm:hidden"
+                            >
+                                <PaginationEllipsis
+                                    paginationVariant={variant}
+                                />
+                            </li>
+                        ) : (
+                            <li key={item} className="max-sm:hidden">
+                                <PaginationButton
+                                    page={item}
+                                    isActive={currentPage === item}
+                                    onPageChange={onPageChange}
+                                    paginationVariant={variant}
+                                />
+                            </li>
+                        ),
+                )}
 
-                    if (totalPages > MAX_PAGES_SHOWN) {
-                        if (currentPage > 3) {
-                            if (index + 1 < currentPage) {
-                                return null;
-                            }
-
-                            if (index + 1 === currentPage + 3) {
-                                return (
-                                    <li key={index} className="max-sm:hidden">
-                                        <PaginationEllipsis
-                                            paginationVariant={variant}
-                                        />
-                                    </li>
-                                );
-                            }
-
-                            if (
-                                index + 1 < currentPage + 3 ||
-                                index + 1 > totalPages - 2
-                            ) {
-                                return (
-                                    <li key={index} className="max-sm:hidden">
-                                        <PaginationButton
-                                            page={index + 1}
-                                            isActive={isActive}
-                                            onPageChange={onPageChange}
-                                            paginationVariant={variant}
-                                        />
-                                    </li>
-                                );
-                            }
-                        }
-
-                        if (index === 3) {
-                            return (
-                                <li key={index} className="max-sm:hidden">
-                                    <PaginationEllipsis
-                                        paginationVariant={variant}
-                                    />
-                                </li>
-                            );
-                        }
-
-                        /**
-                         * This logic ensures pagination buttons from 1-3 and the last 3 pages are visible
-                         * and the rest in the middle are hidden and replaced with and ellipsis.
-                         */
-                        if (index > 2 && index < totalPages - 3) {
-                            return null;
-                        }
-                    }
-
-                    return (
-                        <li key={index} className="max-sm:hidden">
-                            <PaginationButton
-                                page={index + 1}
-                                isActive={isActive}
-                                onPageChange={onPageChange}
-                                paginationVariant={variant}
-                            />
-                        </li>
-                    );
-                })}
+                {totalPages > PAGE_RANGE_SIZE && (
+                    <li className="mx-2 max-sm:hidden">
+                        <GoToPage
+                            key={currentPage}
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={onPageChange}
+                        />
+                    </li>
+                )}
 
                 <li className="ml-auto">
                     <Button
@@ -185,6 +210,56 @@ export function Pagination({
                 </li>
             </ul>
         </nav>
+    );
+}
+
+function GoToPage({
+    currentPage,
+    totalPages,
+    onPageChange,
+}: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange?: (page: number) => void;
+}) {
+    const [draftPage, setDraftPage] = useState('');
+    const inputId = useId();
+
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const requestedPage = Number(draftPage);
+        const isValidPage =
+            Number.isInteger(requestedPage) &&
+            requestedPage >= 1 &&
+            requestedPage <= totalPages &&
+            requestedPage !== currentPage;
+
+        if (isValidPage) {
+            onPageChange?.(requestedPage);
+        }
+
+        setDraftPage('');
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <label htmlFor={inputId} className="whitespace-nowrap">
+                Go to page
+            </label>
+            <input
+                id={inputId}
+                type="number"
+                min={1}
+                max={totalPages}
+                value={draftPage}
+                onChange={(event) => setDraftPage(event.target.value)}
+                className="h-10 w-20 rounded-lg border border-button-outline-border bg-button-outline-background px-2 text-center text-text-100 outline-none focus:ring-3 focus:ring-button-outline-focus-ring"
+            />
+            <Button type="submit" size="sm" appearance="outline">
+                Go
+            </Button>
+        </form>
     );
 }
 
