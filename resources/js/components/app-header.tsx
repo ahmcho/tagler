@@ -1,12 +1,19 @@
 import { router, usePage } from '@inertiajs/react';
-import { LogOut, Moon, PanelLeft, Settings, Sun } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/tailgrids/core/avatar';
+import {
+    ChevronDown,
+    LogOut,
+    Moon,
+    PanelLeft,
+    Settings,
+    Sun,
+} from 'lucide-react';
 import { Button } from '@/components/tailgrids/core/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuHeader,
     DropdownMenuItem,
+    DropdownMenuSection,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/tailgrids/core/dropdown';
@@ -45,47 +52,47 @@ export function AppHeader() {
                 <DropdownMenu>
                     <DropdownMenuTrigger
                         aria-label="Account menu"
-                        className="flex items-center gap-3"
+                        className="group flex items-center gap-2 rounded-full border border-base-200 bg-background-50 px-4 py-2 text-sm font-medium text-title-50 shadow-sm transition-all hover:bg-background-soft-50 focus-visible:bg-background-soft-50"
                     >
-                        <Avatar size="md">
-                            <AvatarFallback className="bg-primary-500 text-white">
-                                {getInitials(auth.user.name)}
-                            </AvatarFallback>
-                        </Avatar>
-                        <span className="hidden text-sm font-medium text-text-50 xl:block">
-                            {auth.user.name}
-                        </span>
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-tr from-white-100 to-button-primary-background text-[10px] text-white-100">
+                            {getInitials(auth.user.name)}
+                        </div>
+                        {auth.user.name}
+                        <ChevronDown className="size-4 text-text-200 transition-transform group-data-[state=open]:rotate-180" />
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent
                         placement="bottom end"
-                        className="w-60"
+                        className="min-h-30 min-w-56 p-1.5"
                     >
-                        <DropdownMenuHeader className="px-3 py-2">
-                            <p className="text-sm font-medium text-title-50">
-                                {auth.user.name}
-                            </p>
-                            <p className="text-xs text-text-100">
-                                {auth.user.email}
-                            </p>
-                        </DropdownMenuHeader>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            id="settings"
-                            textValue="Settings"
-                            onAction={() => router.visit(edit().url)}
-                        >
-                            <Settings size={20} />
-                            Settings
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
+                        <DropdownMenuSection>
+                            <DropdownMenuHeader>
+                                <p className="text-sm font-medium text-title-50">
+                                    {auth.user.name}
+                                </p>
+                                <p className="text-xs text-text-100">
+                                    {auth.user.email}
+                                </p>
+                            </DropdownMenuHeader>
+                            <DropdownMenuItem
+                                id="settings"
+                                textValue="Settings"
+                                className="cursor-pointer gap-2.5 py-2"
+                                onAction={() => router.visit(edit().url)}
+                            >
+                                <Settings className="size-5" />
+                                <span>Settings</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuSection>
+                        <DropdownMenuSeparator className="-mx-1.5 my-1" />
                         <DropdownMenuItem
                             id="logout"
                             textValue="Log out"
+                            className="cursor-pointer gap-2.5 py-2 text-error-500 focus:bg-alert-danger-background focus:text-alert-danger-title"
                             onAction={() => router.post(logout().url)}
                         >
-                            <LogOut size={20} />
-                            Log out
+                            <LogOut className="size-5" />
+                            <span>Log out</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
