@@ -139,6 +139,7 @@ return [
         'value' => 'Value',
         'id' => 'No',
         'unknown_lang_code' => 'Unknown language code.',
+        'reset_result' => 'Reset :reset translation(s) to file defaults. Skipped :skipped with no file value.',
     ],
 
     'permissions' => [

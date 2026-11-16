@@ -23,6 +23,14 @@ interface TranslationRepositoryContract extends EloquentRepositoryContract
     public function findDistinctTables(string $lang): array;
 
     /**
+     * Rows with the given ids, any locale.
+     *
+     * @param  array<int, int>  $ids
+     * @return Collection<int, Translation>
+     */
+    public function findByIds(array $ids): Collection;
+
+    /**
      * The key's prefix, when it names an actual database table.
      */
     public function findTableFor(string $group, string $key): ?string;

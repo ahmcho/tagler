@@ -1,17 +1,30 @@
+import { Filter, Search1 } from '@tailgrids/icons';
 import {
     ChevronDown,
     ChevronUp,
     ChevronsUpDown,
     MoreHorizontal,
+    MoreVertical,
 } from 'lucide-react';
-import type { ChangeEvent, ReactNode } from 'react';
+import type { ChangeEvent, FormEvent, ReactNode } from 'react';
+import { useState } from 'react';
+import { Button } from '@/components/tailgrids/core/button';
 import { Checkbox } from '@/components/tailgrids/core/checkbox';
+import {
+    Dialog,
+    DialogBody,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/tailgrids/core/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/tailgrids/core/dropdown';
+import { Input } from '@/components/tailgrids/core/input';
 import { Pagination } from '@/components/tailgrids/core/pagination';
 import {
     TableBody,
@@ -21,6 +34,7 @@ import {
     TableRoot,
     TableRow,
 } from '@/components/tailgrids/core/table';
+import { TextField } from '@/components/tailgrids/core/text-field';
 import { cn } from '@/utils/cn';
 
 export type DataTableRowId = string | number;
@@ -65,11 +79,37 @@ export type DataTableRowAction = {
     tone?: 'default' | 'danger';
 };
 
+export type DataTableBulkAction = Omit<DataTableRowAction, 'onAction'> & {
+    onAction: (selectedIds: ReadonlySet<DataTableRowId>) => void;
+};
+
+export type DataTableSearch = {
+    value: string;
+    onChange: (value: string) => void;
+    onSubmit?: () => void;
+    placeholder?: string;
+    label?: string;
+};
+
+export type DataTableFilter = {
+    title?: string;
+    description?: string;
+    children: ReactNode;
+    onApply: () => void;
+    onReset: () => void;
+    activeCount?: number;
+};
+
 export type DataTableProps<Row> = {
     columns: DataTableColumn<Row>[];
     rows: Row[];
     getRowId: (row: Row) => DataTableRowId;
     caption?: string;
+    title?: ReactNode;
+    subtitle?: ReactNode;
+    search?: DataTableSearch;
+    filter?: DataTableFilter;
+    bulkActions?: DataTableBulkAction[];
     fullBleed?: boolean;
     className?: string;
     rowClassName?: (row: Row) => string | undefined;
@@ -85,17 +125,60 @@ export type DataTableProps<Row> = {
     pagination?: DataTablePagination;
 };
 
+type DataTableMenuItem = Pick<
+    DataTableRowAction,
+    'key' | 'label' | 'icon' | 'isDisabled' | 'tone'
+> & {
+    onAction: () => void;
+};
+
 const alignClasses = {
     left: 'text-left',
     center: 'text-center',
     right: 'text-right',
 } as const;
 
+function isPermitted(
+    item: { permission?: string },
+    can?: (permission: string) => boolean,
+): boolean {
+    return !item.permission || !can || can(item.permission);
+}
+
+function DataTableMenuItems({ items }: { items: DataTableMenuItem[] }) {
+    return (
+        <>
+            {items.map((item) => (
+                <DropdownMenuItem
+                    key={item.key}
+                    id={item.key}
+                    textValue={item.label}
+                    isDisabled={item.isDisabled}
+                    onAction={item.onAction}
+                    className={cn(
+                        'cursor-pointer gap-2.5 py-2 data-disabled:cursor-not-allowed data-disabled:opacity-50',
+                        item.tone === 'danger' &&
+                            'text-error-500 focus:bg-alert-danger-background focus:text-alert-danger-title',
+                    )}
+                >
+                    {item.icon}
+                    <span>{item.label}</span>
+                </DropdownMenuItem>
+            ))}
+        </>
+    );
+}
+
 export function DataTable<Row>({
     columns,
     rows,
     getRowId,
     caption,
+    title,
+    subtitle,
+    search,
+    filter,
+    bulkActions,
     fullBleed,
     className,
     rowClassName,
@@ -110,6 +193,8 @@ export function DataTable<Row>({
     actionsHeader,
     pagination,
 }: DataTableProps<Row>) {
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+
     const hasSelection = selection !== undefined;
     const hasActions = rowActions !== undefined;
     const columnCount =
@@ -122,6 +207,17 @@ export function DataTable<Row>({
         selection !== undefined &&
         selectableRows.length > 0 &&
         selectableRows.every((row) => selection.selectedIds.has(getRowId(row)));
+
+    const selectedCount = selection?.selectedIds.size ?? 0;
+    const visibleBulkActions = (bulkActions ?? []).filter((action) =>
+        isPermitted(action, can),
+    );
+    const hasToolbar =
+        title !== undefined ||
+        subtitle !== undefined ||
+        search !== undefined ||
+        filter !== undefined ||
+        visibleBulkActions.length > 0;
 
     const handleSelectAll = (event: ChangeEvent<HTMLInputElement>) => {
         if (!selection) {
@@ -158,6 +254,11 @@ export function DataTable<Row>({
         }
 
         selection.onChange(nextSelectedIds);
+    };
+
+    const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        search?.onSubmit?.();
     };
 
     const getNextSort = (
@@ -221,8 +322,8 @@ export function DataTable<Row>({
     };
 
     const renderRowActions = (row: Row, rowId: DataTableRowId) => {
-        const actions = (rowActions?.(row) ?? []).filter(
-            (action) => !action.permission || !can || can(action.permission),
+        const actions = (rowActions?.(row) ?? []).filter((action) =>
+            isPermitted(action, can),
         );
 
         if (actions.length === 0) {
@@ -242,23 +343,7 @@ export function DataTable<Row>({
                     placement="bottom end"
                     className="min-w-40 p-1.5"
                 >
-                    {actions.map((action) => (
-                        <DropdownMenuItem
-                            key={action.key}
-                            id={action.key}
-                            textValue={action.label}
-                            isDisabled={action.isDisabled}
-                            onAction={action.onAction}
-                            className={cn(
-                                'cursor-pointer gap-2.5 py-2',
-                                action.tone === 'danger' &&
-                                    'text-error-500 focus:bg-alert-danger-background focus:text-alert-danger-title',
-                            )}
-                        >
-                            {action.icon}
-                            <span>{action.label}</span>
-                        </DropdownMenuItem>
-                    ))}
+                    <DataTableMenuItems items={actions} />
                 </DropdownMenuContent>
             </DropdownMenu>
         );
@@ -266,6 +351,154 @@ export function DataTable<Row>({
 
     return (
         <div className={cn('space-y-6', className)}>
+            {hasToolbar && (
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    {(title !== undefined || subtitle !== undefined) && (
+                        <div>
+                            {title !== undefined && (
+                                <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                                    {title}
+                                </h2>
+                            )}
+                            {subtitle !== undefined && (
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {subtitle}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+                        {search && (
+                            <form
+                                role="search"
+                                onSubmit={handleSearchSubmit}
+                                className="relative w-full sm:w-72"
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-text-100 [&>svg]:size-5"
+                                >
+                                    <Search1 />
+                                </span>
+                                <TextField
+                                    aria-label={search.label ?? 'Search'}
+                                    value={search.value}
+                                    onChange={search.onChange}
+                                    className="w-full"
+                                >
+                                    <Input
+                                        type="search"
+                                        placeholder={search.placeholder}
+                                        className="w-full pl-10"
+                                    />
+                                </TextField>
+                            </form>
+                        )}
+
+                        {filter && (
+                            <>
+                                <Button
+                                    appearance="outline"
+                                    onPress={() => setIsFilterOpen(true)}
+                                >
+                                    <span
+                                        aria-hidden="true"
+                                        className="flex items-center [&>svg]:size-4"
+                                    >
+                                        <Filter />
+                                    </span>
+                                    Filter
+                                    {(filter.activeCount ?? 0) > 0 && (
+                                        <span className="rounded-full bg-primary-500 px-1.5 text-xs leading-5 font-medium text-white">
+                                            {filter.activeCount}
+                                        </span>
+                                    )}
+                                </Button>
+
+                                <Dialog
+                                    isOpen={isFilterOpen}
+                                    onOpenChange={setIsFilterOpen}
+                                    isDismissable
+                                >
+                                    <DialogHeader>
+                                        <DialogTitle>
+                                            {filter.title ?? 'Filter'}
+                                        </DialogTitle>
+                                        {filter.description && (
+                                            <DialogDescription>
+                                                {filter.description}
+                                            </DialogDescription>
+                                        )}
+                                    </DialogHeader>
+
+                                    <DialogBody>{filter.children}</DialogBody>
+
+                                    <DialogFooter>
+                                        <Button
+                                            appearance="outline"
+                                            onPress={() => {
+                                                filter.onReset();
+                                                setIsFilterOpen(false);
+                                            }}
+                                        >
+                                            Reset
+                                        </Button>
+                                        <Button
+                                            onPress={() => {
+                                                filter.onApply();
+                                                setIsFilterOpen(false);
+                                            }}
+                                        >
+                                            Apply
+                                        </Button>
+                                    </DialogFooter>
+                                </Dialog>
+                            </>
+                        )}
+
+                        {selection && visibleBulkActions.length > 0 && (
+                            <>
+                                {selectedCount > 0 && (
+                                    <span className="text-sm text-text-100">
+                                        {selectedCount} selected
+                                    </span>
+                                )}
+
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger
+                                        aria-label="Batch actions"
+                                        className="inline-flex size-10 items-center justify-center rounded-lg border border-base-300 bg-background-100 text-text-100 transition hover:bg-background-soft-100 focus-visible:ring-2 focus-visible:ring-primary-300"
+                                    >
+                                        <MoreVertical className="size-5" />
+                                    </DropdownMenuTrigger>
+
+                                    <DropdownMenuContent
+                                        placement="bottom end"
+                                        className="min-w-48 p-1.5"
+                                    >
+                                        <DataTableMenuItems
+                                            items={visibleBulkActions.map(
+                                                (action) => ({
+                                                    ...action,
+                                                    isDisabled:
+                                                        action.isDisabled ||
+                                                        selectedCount === 0,
+                                                    onAction: () =>
+                                                        action.onAction(
+                                                            selection.selectedIds,
+                                                        ),
+                                                }),
+                                            )}
+                                        />
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <TableRoot aria-label={caption} fullBleed={fullBleed}>
                 <TableHeader>
                     <TableRow className="bg-background-soft-50 [&>th]:text-text-50">

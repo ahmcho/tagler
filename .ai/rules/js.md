@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'resources/js/**'
+    - 'resources/js/**'
 ---
 
 # Frontend
@@ -8,7 +8,8 @@ paths:
 ## Use the TailGrids components
 
 The UI comes from TailGrids (https://tailgrids.com). Its source is copied into `resources/js/components/tailgrids/core/`. It is not an npm component package. Import components from `@/components/tailgrids/core/...` and use them directly. Do not add wrappers that copy an older API. Do not edit those copies unless the user asks. Local changes to the copies, all documented here:
-- `dialog.tsx`: the modal is wrapped in `ModalOverlay` to draw the dimmed backdrop.
+
+- `dialog.tsx`: the modal is wrapped in `ModalOverlay` to draw the dimmed backdrop. The layout follows the TailGrids success confirmation modal: 400px card, centered header, optional `DialogIcon` badge (`tone` `success` or `danger`), and footer buttons that share the width.
 - `button.tsx`: the defaults are `variant="primary"`, `appearance="fill"`, `size="md"`.
 - `input.tsx`: `ref` is added to the props type.
 - `sidebar.tsx`: `useIsMobile` uses `useSyncExternalStore`.
@@ -17,6 +18,8 @@ The UI comes from TailGrids (https://tailgrids.com). Its source is copied into `
 TailGrids uses react-aria. Check the source before you use a prop. For example, `Button` takes `onPress`, not `onClick`, and `isDisabled` is `disabled`. `TextField` passes its value to `onChange` as a string. Use `NativeSelect` for native selects. `PasswordField` in `components/password-field.tsx` is a local composition of TailGrids pieces, because TailGrids has no password input.
 
 `SelectField` in `components/select-field.tsx` is the default for a single select with a list of string options. Pass `label`, `value`, `onChange`, `options` and optionally `allOptionLabel`, where `''` means "all". Use the TailGrids `Select` parts from `core/select.tsx` directly only when you need sections, custom items or multiple selection.
+
+`DataTable` (`components/data-table.tsx`) has optional toolbar props: `title`, `subtitle`, `search` (controlled, submits on Enter), `filter` (a Filter button that opens a `Dialog` with the children as the body), and `bulkActions` (a vertical 3-dot menu for the checked rows; needs `selection`). Row actions keep the horizontal 3-dot menu. Use `downloadCsv` from `utils/download-csv.ts` for CSV exports.
 
 ## Forms
 

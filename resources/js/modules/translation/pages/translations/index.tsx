@@ -1,8 +1,12 @@
 import { Head, router } from '@inertiajs/react';
-import { Pencil } from 'lucide-react';
-import type { FormEvent } from 'react';
+import { Download, Pencil, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
-import type { DataTableColumn, DataTableSort } from '@/components/data-table';
+import type {
+    DataTableBulkAction,
+    DataTableColumn,
+    DataTableRowId,
+    DataTableSort,
+} from '@/components/data-table';
 import { DataTable } from '@/components/data-table';
 import { SelectField } from '@/components/select-field';
 import {
@@ -12,16 +16,18 @@ import {
     AlertTitle,
 } from '@/components/tailgrids/core/alert';
 import { Button } from '@/components/tailgrids/core/button';
+import { Card, CardContent } from '@/components/tailgrids/core/card';
 import {
-    Card,
-    CardContent,
-    CardHeader,
-} from '@/components/tailgrids/core/card';
-import { FieldLabel } from '@/components/tailgrids/core/field';
-import { Input } from '@/components/tailgrids/core/input';
-import { TextField } from '@/components/tailgrids/core/text-field';
+    Dialog,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogIcon,
+    DialogTitle,
+} from '@/components/tailgrids/core/dialog';
 import { useCan } from '@/hooks/use-can';
-import { edit, index } from '@/routes/translations';
+import { edit, index, reset } from '@/routes/translations';
+import { downloadCsv } from '@/utils/download-csv';
 
 type TranslationRecord = {
     id: number;
@@ -62,6 +68,16 @@ const columns: DataTableColumn<TranslationRecord>[] = [
     { key: 'updated_at', header: 'Updated', sortable: true },
 ];
 
+const exportColumns: (keyof TranslationRecord & string)[] = [
+    'id',
+    'lang',
+    'group',
+    'table',
+    'key',
+    'value',
+    'updated_at',
+];
+
 export default function Index({
     records,
     groups,
@@ -72,6 +88,12 @@ export default function Index({
     const [group, setGroup] = useState(filters.group ?? '');
     const [key, setKey] = useState(filters.key ?? '');
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<DataTableRowId>>(
+        new Set(),
+    );
+    const [pendingResetIds, setPendingResetIds] = useState<
+        DataTableRowId[] | null
+    >(null);
     const can = useCan();
 
     const currentSort: DataTableSort | null = filters.sort
@@ -85,11 +107,11 @@ export default function Index({
             only: ['records', 'filters', 'status'],
             onStart: () => setIsLoading(true),
             onFinish: () => setIsLoading(false),
+            onSuccess: () => setSelectedIds(new Set()),
         });
     };
 
-    const submitFilters = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const submitFilters = () => {
         visit({
             group: group || undefined,
             key: key || undefined,
@@ -99,10 +121,14 @@ export default function Index({
         });
     };
 
-    const clearFilters = () => {
+    const resetGroupFilter = () => {
         setGroup('');
-        setKey('');
-        visit({});
+        visit({
+            key: key || undefined,
+            table: filters.table,
+            sort: filters.sort,
+            direction: filters.direction,
+        });
     };
 
     const changeSort = (sort: DataTableSort | null) => {
@@ -112,6 +138,49 @@ export default function Index({
             direction: sort?.direction,
         });
     };
+
+    const exportSelected = (selectedRowIds: ReadonlySet<DataTableRowId>) => {
+        downloadCsv(
+            'translations.csv',
+            records.data.filter((row) => selectedRowIds.has(row.id)),
+            exportColumns,
+        );
+    };
+
+    const confirmReset = () => {
+        if (pendingResetIds === null) {
+            return;
+        }
+
+        router.post(
+            reset.url(),
+            { ids: pendingResetIds },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSelectedIds(new Set());
+                    setPendingResetIds(null);
+                },
+            },
+        );
+    };
+
+    const bulkActions: DataTableBulkAction[] = [
+        {
+            key: 'export',
+            label: 'Export selected as CSV',
+            icon: <Download className="size-4" />,
+            onAction: exportSelected,
+        },
+        {
+            key: 'reset',
+            label: 'Reset to file default',
+            icon: <RotateCcw className="size-4" />,
+            permission: 'translations.update',
+            onAction: (selectedRowIds) =>
+                setPendingResetIds([...selectedRowIds]),
+        },
+    ];
 
     return (
         <>
@@ -128,18 +197,6 @@ export default function Index({
                 )}
 
                 <Card>
-                    <CardHeader>
-                        <div>
-                            <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                                Translations
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Edit stored translations for each supported
-                                locale. Showing {records.total} entries.
-                            </p>
-                        </div>
-                    </CardHeader>
-
                     <CardContent>
                         <div className="mb-4 flex flex-wrap gap-2">
                             <Button
@@ -178,44 +235,39 @@ export default function Index({
                             ))}
                         </div>
 
-                        <form
-                            onSubmit={submitFilters}
-                            className="mb-6 grid gap-4 md:grid-cols-[1fr_2fr_auto]"
-                        >
-                            <SelectField
-                                label="Group"
-                                value={group}
-                                onChange={setGroup}
-                                options={groups}
-                                allOptionLabel="All groups"
-                            />
-
-                            <TextField
-                                value={key}
-                                onChange={setKey}
-                                className="flex w-full flex-col gap-1.5"
-                            >
-                                <FieldLabel>Key</FieldLabel>
-                                <Input
-                                    placeholder="e.g. common.save"
-                                    className="w-full"
-                                />
-                            </TextField>
-
-                            <div className="flex items-end gap-2">
-                                <Button type="submit">Search</Button>
-                                <Button
-                                    type="button"
-                                    appearance="outline"
-                                    onPress={clearFilters}
-                                >
-                                    Clear
-                                </Button>
-                            </div>
-                        </form>
-
                         <DataTable
                             caption="Translations"
+                            title="Translations"
+                            subtitle={`Edit stored translations for each supported locale. Showing ${records.total} entries.`}
+                            search={{
+                                value: key,
+                                onChange: setKey,
+                                onSubmit: submitFilters,
+                                placeholder: 'Search by key, e.g. common.save',
+                                label: 'Search by key',
+                            }}
+                            filter={{
+                                title: 'Filter translations',
+                                description:
+                                    'Show only translations from one group.',
+                                activeCount: filters.group ? 1 : 0,
+                                onApply: submitFilters,
+                                onReset: resetGroupFilter,
+                                children: (
+                                    <SelectField
+                                        label="Group"
+                                        value={group}
+                                        onChange={setGroup}
+                                        options={groups}
+                                        allOptionLabel="All groups"
+                                    />
+                                ),
+                            }}
+                            bulkActions={bulkActions}
+                            selection={{
+                                selectedIds,
+                                onChange: setSelectedIds,
+                            }}
                             columns={columns}
                             rows={records.data}
                             getRowId={(translation) => translation.id}
@@ -249,6 +301,38 @@ export default function Index({
                         />
                     </CardContent>
                 </Card>
+
+                <Dialog
+                    isOpen={pendingResetIds !== null}
+                    isDismissable
+                    onOpenChange={(isOpen) => {
+                        if (!isOpen) {
+                            setPendingResetIds(null);
+                        }
+                    }}
+                >
+                    <DialogHeader>
+                        <DialogIcon tone="danger">
+                            <RotateCcw />
+                        </DialogIcon>
+                        <DialogTitle>Reset to file defaults</DialogTitle>
+                        <DialogDescription>
+                            {`Reset ${pendingResetIds?.length ?? 0} selected translation(s) to their file defaults? This overwrites the current values in all locales.`}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                        <Button
+                            appearance="outline"
+                            onPress={() => setPendingResetIds(null)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button variant="danger" onPress={confirmReset}>
+                            Reset
+                        </Button>
+                    </DialogFooter>
+                </Dialog>
             </div>
         </>
     );
