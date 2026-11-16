@@ -305,6 +305,8 @@ return [
             'status_required' => 'Пожалуйста, выберите статус',
             'password_min' => 'Пароль должен содержать минимум 8 символов',
             'password_confirmation_match' => 'Пароль и повтор пароля должны совпадать',
+            'last_admin_role_required' => 'Хотя бы один пользователь должен сохранить роль Admin.',
+            'last_admin_delete' => 'Последний аккаунт Admin нельзя удалить.',
         ],
         'model_name' => 'Пользователь',
         'admin_can_not_be_deleted' => 'Этот администратор не может быть удалён',

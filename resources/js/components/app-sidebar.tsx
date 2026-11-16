@@ -1,5 +1,12 @@
 import { router, usePage } from '@inertiajs/react';
-import { Languages, LayoutGrid } from 'lucide-react';
+import {
+    History,
+    KeyRound,
+    Languages,
+    LayoutGrid,
+    ShieldCheck,
+    Users,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import {
     Sidebar,
@@ -11,15 +18,21 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/tailgrids/core/sidebar';
+import { useAbility } from '@/hooks/use-ability';
 import type { BrandImages } from '@/lib/brand';
 import { dashboard } from '@/routes';
+import { index as activityLogsIndex } from '@/routes/activity-logs';
+import { index as permissionsIndex } from '@/routes/permissions';
+import { index as rolesIndex } from '@/routes/roles';
 import { index as translationsIndex } from '@/routes/translations';
+import { index as usersIndex } from '@/routes/users';
 
 type NavigationItem = {
     label: string;
     href: string;
     icon: ReactNode;
     end?: boolean;
+    ability?: string;
 };
 
 const navigationItems: NavigationItem[] = [
@@ -30,14 +43,43 @@ const navigationItems: NavigationItem[] = [
         end: true,
     },
     {
+        label: 'Users',
+        href: usersIndex.url(),
+        icon: <Users />,
+        ability: 'users.index',
+    },
+    {
+        label: 'Roles',
+        href: rolesIndex.url(),
+        icon: <ShieldCheck />,
+        ability: 'roles.index',
+    },
+    {
+        label: 'Permissions',
+        href: permissionsIndex.url(),
+        icon: <KeyRound />,
+        ability: 'permissions.index',
+    },
+    {
+        label: 'Activity log',
+        href: activityLogsIndex.url(),
+        icon: <History />,
+        ability: 'activity-logs.index',
+    },
+    {
         label: 'Translations',
         href: translationsIndex.url(),
         icon: <Languages />,
+        ability: 'translations.index',
     },
 ];
 
 export function AppSidebar({ brand }: { brand: BrandImages }) {
     const pathname = usePage().url.split('?')[0];
+    const ability = useAbility();
+    const visibleItems = navigationItems.filter(
+        (item) => item.ability === undefined || ability(item.ability),
+    );
 
     return (
         <Sidebar>
@@ -54,7 +96,7 @@ export function AppSidebar({ brand }: { brand: BrandImages }) {
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {navigationItems.map((item) => {
+                            {visibleItems.map((item) => {
                                 const isActive = item.end
                                     ? pathname === item.href
                                     : pathname.startsWith(item.href);

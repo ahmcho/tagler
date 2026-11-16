@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Auth\Requests\ProfileDeleteRequest;
 use App\Modules\Auth\Requests\ProfileUpdateRequest;
+use App\Modules\Auth\Support\LastAdminGuard;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,9 +47,13 @@ class ProfileController extends Controller
     /**
      * Delete the user's profile.
      */
-    public function destroy(ProfileDeleteRequest $request): RedirectResponse
+    public function destroy(ProfileDeleteRequest $request, LastAdminGuard $lastAdminGuard): RedirectResponse
     {
         $user = $request->user();
+
+        if ($lastAdminGuard->isLastAdmin($user)) {
+            return to_route('profile.edit')->withErrors(['password' => __('translations.users.validation.last_admin_delete')]);
+        }
 
         Auth::logout();
 

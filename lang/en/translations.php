@@ -305,6 +305,8 @@ return [
             'status_required' => 'Please select a status',
             'password_min' => 'Password must be at least 8 characters',
             'password_confirmation_match' => 'Password and Confirm password must match',
+            'last_admin_role_required' => 'At least one user must keep the Admin role.',
+            'last_admin_delete' => 'The last Admin account cannot be deleted.',
         ],
         'model_name' => 'User',
         'admin_can_not_be_deleted' => 'This admin user can not be deleted',
