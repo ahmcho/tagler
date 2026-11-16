@@ -1,4 +1,5 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { Pencil } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import type { DataTableColumn, DataTableSort } from '@/components/data-table';
@@ -22,6 +23,7 @@ import {
     NativeSelectOption,
 } from '@/components/tailgrids/core/native-select';
 import { TextField } from '@/components/tailgrids/core/text-field';
+import { useCan } from '@/hooks/use-can';
 import { edit, index } from '@/routes/translations';
 
 type TranslationRecord = {
@@ -73,6 +75,7 @@ export default function Index({
     const [group, setGroup] = useState(filters.group ?? '');
     const [key, setKey] = useState(filters.key ?? '');
     const [isLoading, setIsLoading] = useState(false);
+    const can = useCan();
 
     const currentSort: DataTableSort | null = filters.sort
         ? { key: filters.sort, direction: filters.direction ?? 'asc' }
@@ -241,17 +244,22 @@ export default function Index({
                             sort={currentSort}
                             onSortChange={changeSort}
                             actionsHeader="Actions"
-                            rowActions={(translation) => (
-                                <Link
-                                    href={edit.url([
-                                        translation.group,
-                                        translation.key,
-                                    ])}
-                                    className="text-primary-500 hover:underline"
-                                >
-                                    Edit
-                                </Link>
-                            )}
+                            can={can}
+                            rowActions={(translation) => [
+                                {
+                                    key: 'edit',
+                                    label: 'Edit',
+                                    icon: <Pencil className="size-4" />,
+                                    permission: 'translations.update',
+                                    onAction: () =>
+                                        router.visit(
+                                            edit.url([
+                                                translation.group,
+                                                translation.key,
+                                            ]),
+                                        ),
+                                },
+                            ]}
                             pagination={{
                                 currentPage: records.current_page,
                                 lastPage: records.last_page,
