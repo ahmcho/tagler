@@ -7,7 +7,7 @@ Before planning or editing, find every row whose globs match the file's path and
 | **/*.php | .ai/rules/php.md |
 | app/** | .ai/rules/app.md |
 | app/Modules/** | .ai/rules/modules.md |
-| app/Modules/Auth/**, app/Models/User.php, config/permission.php, database/seeders/** | .ai/rules/auth.md |
+| app/Modules/Auth/**, app/Models/User.php, config/permission.php, config/activitylog.php, config/database.php, database/seeders/** | .ai/rules/auth.md |
 | app/Modules/*/Models/**, app/Models/** | .ai/rules/models.md |
 | app/Modules/*/Database/Migrations/**, database/migrations/** | .ai/rules/migrations.md |
 | app/Modules/Translation/**, lang/** | .ai/rules/translations.md |

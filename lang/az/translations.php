@@ -239,6 +239,8 @@ return [
             'status_required' => 'Lütfən status seçin',
             'password_min' => 'Şifrə minimum 8 simvol olmalıdır',
             'password_confirmation_match' => 'Şifrə və Təkrar şifrə eyni olmalıdır',
+            'last_admin_role_required' => 'Ən azı bir istifadəçi Admin rolunu saxlamalıdır.',
+            'last_admin_delete' => 'Son Admin hesabı silinə bilməz.',
         ],
         'model_name' => 'İstifadəçi',
         'admin_can_not_be_deleted' => 'Bu admin istifadəçi silinə bilməz',

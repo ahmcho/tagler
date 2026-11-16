@@ -3,6 +3,8 @@
 namespace App\Modules\Translation\Providers;
 
 use App\Models\User;
+use App\Modules\Auth\Support\AbilityRegistry;
+use App\Modules\Auth\Support\PermissionRegistry;
 use App\Modules\Translation\Console\Commands\SyncFileTranslationsToDatabase;
 use App\Modules\Translation\Models\Translation;
 use App\Modules\Translation\Observers\TranslationObserver;
@@ -50,6 +52,29 @@ class TranslationServiceProvider extends ModuleServiceProvider
         $this->commands([SyncFileTranslationsToDatabase::class]);
 
         $this->definePermissionGates();
+        $this->registerPermissions();
+        $this->registerAbilities();
+    }
+
+    /**
+     * The permissions this module declares. The Auth seeder creates them.
+     */
+    private function registerPermissions(): void
+    {
+        app(PermissionRegistry::class)->register([
+            ['name' => 'translations.index', 'description' => 'View the translation list'],
+            ['name' => 'translations.update', 'description' => 'Edit translations'],
+        ]);
+    }
+
+    /**
+     * Class-level abilities for the Inertia `can` prop.
+     */
+    private function registerAbilities(): void
+    {
+        app(AbilityRegistry::class)->register([
+            'translations.index' => 'translations.index',
+        ]);
     }
 
     /**

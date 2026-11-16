@@ -99,6 +99,19 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'dsn' => sprintf(
+                'mongodb://%s:%s@%s:%s/?authSource=%s',
+                rawurlencode((string) env('MONGODB_USERNAME', '')),
+                rawurlencode((string) env('MONGODB_PASSWORD', '')),
+                env('MONGODB_HOST', '127.0.0.1'),
+                env('MONGODB_PORT', '27017'),
+                env('MONGODB_AUTH_DATABASE', 'admin'),
+            ),
+            'database' => env('MONGODB_DATABASE', 'tagler_cms'),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),

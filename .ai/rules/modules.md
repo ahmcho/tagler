@@ -17,7 +17,7 @@ app/Modules/{Module}/
   routes/settings.php      module routes
 ```
 
-Create only the folders the module uses. Do not add new folders directly under `app/` or `database/` without approval.
+Create only the folders the module uses. Do not add new folders directly under `app/` or `database/` without approval. The Auth module also uses `Policies/`, `Support/` and `Requests/` for its authorization and access screens.
 
 ## Module migrations
 
@@ -69,4 +69,4 @@ A module's models live in `app/Modules/{Module}/Models`. Do not put them in `app
 
 ## Authorization
 
-Roles and permissions belong to the Auth module (see `.ai/rules/auth.md`). Each module defines its own permission gates in its provider, for example `translations.index` in `TranslationServiceProvider`. Controllers call `Gate::authorize('<permission>')`.
+Roles and permissions belong to the Auth module (see `.ai/rules/auth.md`). Each module declares its permissions in its provider's `boot()` through `PermissionRegistry`, and its class-level abilities through `AbilityRegistry`. A module with model access registers its policies with `Gate::policy()`. The Translation module keeps its `Gate::define` gates.
