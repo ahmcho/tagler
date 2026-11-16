@@ -14,6 +14,7 @@ The UI comes from TailGrids (https://tailgrids.com). Its source is copied into `
 - `input.tsx`: `ref` is added to the props type.
 - `sidebar.tsx`: `useIsMobile` uses `useSyncExternalStore`.
 - `tooltip.tsx`: the `react-hooks/refs` lint rule is disabled for the file.
+- `pagination.tsx`: the page list follows a fixed pattern. Up to 10 pages show all. From page 1 to 10 the list is pages 1–10 and the last 2. In the middle it is 1, 2, a window of 5 around the current page, and the last 2. In the last 10 pages it is 1, 2 and the last 10. Gaps show an ellipsis. Logic is in `getPaginationItems`. When there are more than 10 pages, a "Go to page" number input with a Go button sits in the bar. Out-of-range input is ignored.
 
 TailGrids uses react-aria. Check the source before you use a prop. For example, `Button` takes `onPress`, not `onClick`, and `isDisabled` is `disabled`. `TextField` passes its value to `onChange` as a string. Use `NativeSelect` for native selects. `PasswordField` in `components/password-field.tsx` is a local composition of TailGrids pieces, because TailGrids has no password input.
 

@@ -37,7 +37,7 @@ class TranslationController extends Controller
             ],
             'groups' => array_map(fn (TranslationGroupEnum $group) => $group->value, TranslationGroupEnum::cases()),
             'tables' => fn () => $this->service->getDistinctTables(lang: app()->getLocale()),
-            'filters' => $request->filters(),
+            'filters' => (object) $request->filters(),
             'status' => session('status'),
         ]);
     }

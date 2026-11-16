@@ -20,7 +20,7 @@ export default function AppLayout({
             <div className="flex min-w-0 flex-1 flex-col">
                 <AppHeader />
 
-                <main className="flex-1 overflow-y-auto">
+                <main className="relative flex-1 overflow-y-auto">
                     <div className="mx-auto max-w-screen-2xl p-4 md:p-6">
                         {breadcrumbs.length > 0 && (
                             <nav aria-label="Breadcrumb" className="mb-6">
