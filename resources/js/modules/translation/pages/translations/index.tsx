@@ -4,6 +4,7 @@ import type { FormEvent } from 'react';
 import { useState } from 'react';
 import type { DataTableColumn, DataTableSort } from '@/components/data-table';
 import { DataTable } from '@/components/data-table';
+import { SelectField } from '@/components/select-field';
 import {
     Alert,
     AlertContent,
@@ -18,10 +19,6 @@ import {
 } from '@/components/tailgrids/core/card';
 import { FieldLabel } from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
-import {
-    NativeSelect,
-    NativeSelectOption,
-} from '@/components/tailgrids/core/native-select';
 import { TextField } from '@/components/tailgrids/core/text-field';
 import { useCan } from '@/hooks/use-can';
 import { edit, index } from '@/routes/translations';
@@ -185,30 +182,13 @@ export default function Index({
                             onSubmit={submitFilters}
                             className="mb-6 grid gap-4 md:grid-cols-[1fr_2fr_auto]"
                         >
-                            <div className="flex w-full flex-col gap-1.5">
-                                <FieldLabel htmlFor="translation-group">
-                                    Group
-                                </FieldLabel>
-                                <NativeSelect
-                                    id="translation-group"
-                                    value={group}
-                                    onChange={(event) =>
-                                        setGroup(event.target.value)
-                                    }
-                                >
-                                    <NativeSelectOption value="">
-                                        All groups
-                                    </NativeSelectOption>
-                                    {groups.map((item) => (
-                                        <NativeSelectOption
-                                            key={item}
-                                            value={item}
-                                        >
-                                            {item}
-                                        </NativeSelectOption>
-                                    ))}
-                                </NativeSelect>
-                            </div>
+                            <SelectField
+                                label="Group"
+                                value={group}
+                                onChange={setGroup}
+                                options={groups}
+                                allOptionLabel="All groups"
+                            />
 
                             <TextField
                                 value={key}
