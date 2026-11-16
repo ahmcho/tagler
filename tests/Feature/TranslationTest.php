@@ -105,6 +105,42 @@ test('the index lists tables and filters by an exact table match', function () {
         );
 });
 
+test('the index sorts by a sortable column and echoes the sort in filters', function () {
+    $manager = translationManager();
+
+    Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'a.first', 'value' => 'First']);
+    Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'b.second', 'value' => 'Second']);
+
+    $this->actingAs($manager)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('translations.index', ['sort' => 'key', 'direction' => 'desc']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.sort', 'key')
+            ->where('filters.direction', 'desc')
+            ->where('records.data.0.key', 'b.second')
+            ->where('records.data.1.key', 'a.first'),
+        );
+});
+
+test('a partial reload of the index returns only the records and filters', function () {
+    $manager = translationManager();
+
+    Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'a.first', 'value' => 'First']);
+
+    $this->actingAs($manager)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('translations.index', ['sort' => 'key', 'direction' => 'asc']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->reloadOnly(['records', 'filters', 'status'], fn (Assert $reload) => $reload
+                ->has('records.data', 1)
+                ->missing('groups')
+                ->missing('tables'),
+            ),
+        );
+});
+
 test('a manager can open the edit form for a key', function () {
     $manager = translationManager();
 

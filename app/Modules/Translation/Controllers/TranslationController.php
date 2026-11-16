@@ -35,7 +35,7 @@ class TranslationController extends Controller
                 'total' => $paginator->total(),
             ],
             'groups' => array_map(fn (TranslationGroupEnum $group) => $group->value, TranslationGroupEnum::cases()),
-            'tables' => $this->service->getDistinctTables(lang: app()->getLocale()),
+            'tables' => fn () => $this->service->getDistinctTables(lang: app()->getLocale()),
             'filters' => $request->filters(),
             'status' => session('status'),
         ]);

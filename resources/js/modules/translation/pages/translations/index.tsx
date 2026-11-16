@@ -1,6 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
+import type { DataTableColumn, DataTableSort } from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
 import {
     Alert,
     AlertContent,
@@ -19,15 +21,6 @@ import {
     NativeSelect,
     NativeSelectOption,
 } from '@/components/tailgrids/core/native-select';
-import { Pagination } from '@/components/tailgrids/core/pagination';
-import {
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRoot,
-    TableRow,
-} from '@/components/tailgrids/core/table';
 import { TextField } from '@/components/tailgrids/core/text-field';
 import { edit, index } from '@/routes/translations';
 
@@ -45,6 +38,8 @@ type Filters = {
     group?: string;
     key?: string;
     table?: string;
+    sort?: string;
+    direction?: 'asc' | 'desc';
 };
 
 type Props = {
@@ -60,6 +55,14 @@ type Props = {
     status?: string | null;
 };
 
+const columns: DataTableColumn<TranslationRecord>[] = [
+    { key: 'id', header: 'ID', sortable: true },
+    { key: 'group', header: 'Group', sortable: true },
+    { key: 'key', header: 'Key', sortable: true },
+    { key: 'value', header: 'Value' },
+    { key: 'updated_at', header: 'Updated', sortable: true },
+];
+
 export default function Index({
     records,
     groups,
@@ -69,11 +72,19 @@ export default function Index({
 }: Props) {
     const [group, setGroup] = useState(filters.group ?? '');
     const [key, setKey] = useState(filters.key ?? '');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const currentSort: DataTableSort | null = filters.sort
+        ? { key: filters.sort, direction: filters.direction ?? 'asc' }
+        : null;
 
     const visit = (query: Record<string, string | number | undefined>) => {
         router.get(index.url(), query, {
             preserveState: true,
             preserveScroll: true,
+            only: ['records', 'filters', 'status'],
+            onStart: () => setIsLoading(true),
+            onFinish: () => setIsLoading(false),
         });
     };
 
@@ -83,6 +94,8 @@ export default function Index({
             group: group || undefined,
             key: key || undefined,
             table: filters.table,
+            sort: filters.sort,
+            direction: filters.direction,
         });
     };
 
@@ -90,6 +103,14 @@ export default function Index({
         setGroup('');
         setKey('');
         visit({});
+    };
+
+    const changeSort = (sort: DataTableSort | null) => {
+        visit({
+            ...filters,
+            sort: sort?.key,
+            direction: sort?.direction,
+        });
     };
 
     return (
@@ -128,6 +149,8 @@ export default function Index({
                                     visit({
                                         group: filters.group,
                                         key: filters.key,
+                                        sort: filters.sort,
+                                        direction: filters.direction,
                                     })
                                 }
                             >
@@ -142,7 +165,13 @@ export default function Index({
                                             ? 'fill'
                                             : 'outline'
                                     }
-                                    onPress={() => visit({ table })}
+                                    onPress={() =>
+                                        visit({
+                                            table,
+                                            sort: filters.sort,
+                                            direction: filters.direction,
+                                        })
+                                    }
                                 >
                                     {table}
                                 </Button>
@@ -202,68 +231,34 @@ export default function Index({
                             </div>
                         </form>
 
-                        <TableRoot>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>ID</TableHead>
-                                    <TableHead>Group</TableHead>
-                                    <TableHead>Key</TableHead>
-                                    <TableHead>Value</TableHead>
-                                    <TableHead>Updated</TableHead>
-                                    <TableHead>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {records.data.length === 0 && (
-                                    <TableRow>
-                                        <TableCell colSpan={6}>
-                                            No translations found.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                                {records.data.map((translation) => (
-                                    <TableRow
-                                        key={translation.id}
-                                        className="hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                                    >
-                                        <TableCell>{translation.id}</TableCell>
-                                        <TableCell>
-                                            {translation.group}
-                                        </TableCell>
-                                        <TableCell>{translation.key}</TableCell>
-                                        <TableCell>
-                                            {translation.value}
-                                        </TableCell>
-                                        <TableCell>
-                                            {translation.updated_at}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Link
-                                                href={edit.url([
-                                                    translation.group,
-                                                    translation.key,
-                                                ])}
-                                                className="text-primary-500 hover:underline"
-                                            >
-                                                Edit
-                                            </Link>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </TableRoot>
-
-                        {records.last_page > 1 && (
-                            <div className="mt-6 flex justify-center">
-                                <Pagination
-                                    currentPage={records.current_page}
-                                    totalPages={records.last_page}
-                                    onPageChange={(page) =>
-                                        visit({ ...filters, page })
-                                    }
-                                />
-                            </div>
-                        )}
+                        <DataTable
+                            caption="Translations"
+                            columns={columns}
+                            rows={records.data}
+                            getRowId={(translation) => translation.id}
+                            emptyState="No translations found."
+                            isLoading={isLoading}
+                            sort={currentSort}
+                            onSortChange={changeSort}
+                            actionsHeader="Actions"
+                            rowActions={(translation) => (
+                                <Link
+                                    href={edit.url([
+                                        translation.group,
+                                        translation.key,
+                                    ])}
+                                    className="text-primary-500 hover:underline"
+                                >
+                                    Edit
+                                </Link>
+                            )}
+                            pagination={{
+                                currentPage: records.current_page,
+                                lastPage: records.last_page,
+                                onPageChange: (page) =>
+                                    visit({ ...filters, page }),
+                            }}
+                        />
                     </CardContent>
                 </Card>
             </div>
