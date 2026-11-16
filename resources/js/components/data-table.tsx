@@ -1,6 +1,17 @@
-import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
+import {
+    ChevronDown,
+    ChevronUp,
+    ChevronsUpDown,
+    MoreHorizontal,
+} from 'lucide-react';
 import type { ChangeEvent, ReactNode } from 'react';
 import { Checkbox } from '@/components/tailgrids/core/checkbox';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/tailgrids/core/dropdown';
 import { Pagination } from '@/components/tailgrids/core/pagination';
 import {
     TableBody,
@@ -44,6 +55,16 @@ export type DataTablePagination = {
     variant?: 'default' | 'compact';
 };
 
+export type DataTableRowAction = {
+    key: string;
+    label: string;
+    icon?: ReactNode;
+    permission?: string;
+    onAction: () => void;
+    isDisabled?: boolean;
+    tone?: 'default' | 'danger';
+};
+
 export type DataTableProps<Row> = {
     columns: DataTableColumn<Row>[];
     rows: Row[];
@@ -58,7 +79,8 @@ export type DataTableProps<Row> = {
     sort?: DataTableSort | null;
     onSortChange?: (sort: DataTableSort | null) => void;
     selection?: DataTableSelection<Row>;
-    rowActions?: (row: Row) => ReactNode;
+    rowActions?: (row: Row) => DataTableRowAction[];
+    can?: (permission: string) => boolean;
     actionsHeader?: ReactNode;
     pagination?: DataTablePagination;
 };
@@ -84,6 +106,7 @@ export function DataTable<Row>({
     onSortChange,
     selection,
     rowActions,
+    can,
     actionsHeader,
     pagination,
 }: DataTableProps<Row>) {
@@ -195,6 +218,50 @@ export function DataTable<Row>({
         const accessor = column.accessor ?? (column.key as keyof Row);
 
         return row[accessor] as ReactNode;
+    };
+
+    const renderRowActions = (row: Row, rowId: DataTableRowId) => {
+        const actions = (rowActions?.(row) ?? []).filter(
+            (action) => !action.permission || !can || can(action.permission),
+        );
+
+        if (actions.length === 0) {
+            return null;
+        }
+
+        return (
+            <DropdownMenu>
+                <DropdownMenuTrigger
+                    aria-label={`Actions for row ${String(rowId)}`}
+                    className="inline-flex size-8 items-center justify-center rounded-lg text-text-100 transition hover:bg-background-soft-100 focus-visible:ring-2 focus-visible:ring-primary-300"
+                >
+                    <MoreHorizontal className="size-5" />
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent
+                    placement="bottom end"
+                    className="min-w-40 p-1.5"
+                >
+                    {actions.map((action) => (
+                        <DropdownMenuItem
+                            key={action.key}
+                            id={action.key}
+                            textValue={action.label}
+                            isDisabled={action.isDisabled}
+                            onAction={action.onAction}
+                            className={cn(
+                                'cursor-pointer gap-2.5 py-2',
+                                action.tone === 'danger' &&
+                                    'text-error-500 focus:bg-alert-danger-background focus:text-alert-danger-title',
+                            )}
+                        >
+                            {action.icon}
+                            <span>{action.label}</span>
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        );
     };
 
     return (
@@ -336,7 +403,7 @@ export function DataTable<Row>({
 
                                 {rowActions && (
                                     <TableCell className="text-right">
-                                        {rowActions(row)}
+                                        {renderRowActions(row, rowId)}
                                     </TableCell>
                                 )}
                             </TableRow>

@@ -40,6 +40,7 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
+                'permissions' => $request->user()?->getAllPermissions()->pluck('name')->sort()->values()->all() ?? [],
             ],
         ];
     }
