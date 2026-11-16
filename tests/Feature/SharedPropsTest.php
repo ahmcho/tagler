@@ -7,13 +7,13 @@ use Inertia\Testing\AssertableInertia;
 test('the application name is shared with every page', function () {
     config(['app.name' => 'Tagler CMS']);
 
-    $this->get(route('home'))->assertInertia(fn (AssertableInertia $page) => $page
+    $this->get(route('login'))->assertInertia(fn (AssertableInertia $page) => $page
         ->where('name', 'Tagler CMS')
         ->missing('sidebarOpen'));
 });
 
 test('a guest has no permissions shared with the page', function () {
-    $this->get(route('home'))->assertInertia(fn (AssertableInertia $page) => $page
+    $this->get(route('login'))->assertInertia(fn (AssertableInertia $page) => $page
         ->where('auth.permissions', []));
 });
 
