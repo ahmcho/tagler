@@ -22,4 +22,13 @@ interface TranslationServiceContract extends BaseCrudServiceContract
      * @return array<int, string>
      */
     public function getDistinctTables(string $lang): array;
+
+    /**
+     * Resets every locale of each selected group + key to its lang-file value.
+     * Pairs with no file value in any locale are skipped.
+     *
+     * @param  array<int, int>  $ids
+     * @return array{reset: int, skipped: int}
+     */
+    public function resetToFileDefaults(array $ids): array;
 }

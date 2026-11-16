@@ -4,6 +4,7 @@ namespace App\Modules\Translation\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Translation\Enums\TranslationGroupEnum;
+use App\Modules\Translation\Requests\ResetTranslationsRequest;
 use App\Modules\Translation\Requests\TranslationRequest;
 use App\Modules\Translation\Resources\TranslationResource;
 use App\Modules\Translation\Services\Contracts\TranslationServiceContract;
@@ -62,5 +63,14 @@ class TranslationController extends Controller
         $this->service->saveTranslationsForKey(group: $group, key: $key, valuesByLocale: $payload['translations']);
 
         return Redirect::route('translations.index')->with('status', __('translations.common.operation_success'));
+    }
+
+    public function reset(ResetTranslationsRequest $request): RedirectResponse
+    {
+        Gate::authorize('translations.update');
+
+        $counts = $this->service->resetToFileDefaults(ids: $request->validated('ids'));
+
+        return Redirect::back()->with('status', __('translations.translation.reset_result', $counts));
     }
 }

@@ -205,6 +205,7 @@ return [
         'value' => 'Dəyər',
         'id' => '№',
         'unknown_lang_code' => 'Naməlum dil kodu.',
+        'reset_result' => ':reset tərcümə fayl standartlarına qaytarıldı. Fayl dəyəri olmadığı üçün :skipped ötürüldü.',
     ],
 
     'permissions' => [

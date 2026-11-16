@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Modules\Auth\Database\Seeders\RolesAndPermissionsSeeder;
 use App\Modules\Translation\Models\Translation;
+use Illuminate\Support\Arr;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -267,3 +268,67 @@ test('placeholder replacement works with database translations', function () {
 test('a missing key returns the key itself', function () {
     expect(__('nonexistent.key'))->toBe('nonexistent.key');
 });
+
+test('a user with only view permission is forbidden from resetting translations', function () {
+    (new RolesAndPermissionsSeeder)->run();
+
+    $user = User::factory()->create();
+    $user->givePermissionTo('translations.index');
+
+    $row = Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'common.save', 'value' => 'Changed']);
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->post(route('translations.reset'), ['ids' => [$row->id]])
+        ->assertForbidden();
+
+    expect($row->fresh()->value)->toBe('Changed');
+});
+
+test('a manager resets a checked key to its file value in every locale', function () {
+    $manager = translationManager();
+
+    $rows = collect(['en', 'az', 'ru'])->map(fn (string $locale) => Translation::create([
+        'lang' => $locale,
+        'group' => 'translations',
+        'key' => 'common.save',
+        'value' => 'Changed',
+    ]));
+
+    $this->actingAs($manager)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->post(route('translations.reset'), ['ids' => [$rows->first()->id]])
+        ->assertRedirect()
+        ->assertSessionHas('status', __('translations.translation.reset_result', ['reset' => 1, 'skipped' => 0]));
+
+    foreach (['en', 'az', 'ru'] as $locale) {
+        expect(Translation::where('group', 'translations')->where('key', 'common.save')->where('lang', $locale)->value('value'))
+            ->toBe(Arr::get(include lang_path("{$locale}/translations.php"), 'common.save'));
+    }
+});
+
+test('a key with no file value is skipped and keeps its database value', function () {
+    $manager = translationManager();
+
+    $row = Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'database.only', 'value' => 'Only in database']);
+
+    $this->actingAs($manager)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->post(route('translations.reset'), ['ids' => [$row->id]])
+        ->assertSessionHas('status', __('translations.translation.reset_result', ['reset' => 0, 'skipped' => 1]));
+
+    expect($row->fresh()->value)->toBe('Only in database');
+});
+
+test('reset rejects an empty, unknown or oversized selection', function (array $ids, string $errorKey) {
+    $manager = translationManager();
+
+    $this->actingAs($manager)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->post(route('translations.reset'), ['ids' => $ids])
+        ->assertSessionHasErrors($errorKey);
+})->with([
+    'empty selection' => [[], 'ids'],
+    'unknown id' => [[999999], 'ids.0'],
+    'more than 200 ids' => [range(1, 201), 'ids'],
+]);

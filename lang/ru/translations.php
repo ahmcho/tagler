@@ -205,6 +205,7 @@ return [
         'value' => 'Значение',
         'id' => '№',
         'unknown_lang_code' => 'Неизвестный код языка.',
+        'reset_result' => 'Сброшено к значениям из файлов: :reset. Пропущено без значения в файле: :skipped.',
     ],
 
     'permissions' => [

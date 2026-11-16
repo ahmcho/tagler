@@ -28,6 +28,13 @@ class TranslationRepository extends EloquentRepository implements TranslationRep
             ->get();
     }
 
+    public function findByIds(array $ids): Collection
+    {
+        return $this->model->newQuery()
+            ->whereIn('id', $ids)
+            ->get();
+    }
+
     public function findDistinctTables(string $lang): array
     {
         return $this->model->newQuery()
