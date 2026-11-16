@@ -16,6 +16,8 @@ The UI comes from TailGrids (https://tailgrids.com). Its source is copied into `
 
 TailGrids uses react-aria. Check the source before you use a prop. For example, `Button` takes `onPress`, not `onClick`, and `isDisabled` is `disabled`. `TextField` passes its value to `onChange` as a string. Use `NativeSelect` for native selects. `PasswordField` in `components/password-field.tsx` is a local composition of TailGrids pieces, because TailGrids has no password input.
 
+`SelectField` in `components/select-field.tsx` is the default for a single select with a list of string options. Pass `label`, `value`, `onChange`, `options` and optionally `allOptionLabel`, where `''` means "all". Use the TailGrids `Select` parts from `core/select.tsx` directly only when you need sections, custom items or multiple selection.
+
 ## Forms
 
 Use Inertia's `useForm` (or `<Form>`), as `resources/js/modules/auth/pages/settings/security.tsx` does. Do not add zod or react-hook-form. Keep server validation keys aligned with the form state. For example, nested `translations.{code}` errors match `form.data.translations`.
