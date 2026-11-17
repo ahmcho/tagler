@@ -101,7 +101,12 @@ class RoleController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('roles/create');
+        $model = new Role;
+        $model->setRelation('permissions', collect());
+
+        return Inertia::render('roles/create', [
+            'model' => RoleResource::make($model)->resolve(),
+        ]);
     }
 
     public function store(RoleRequest $request): RedirectResponse
@@ -121,7 +126,7 @@ class RoleController extends Controller
     public function edit(Role $role): Response
     {
         return Inertia::render('roles/edit', [
-            'role' => RoleResource::make($role->load('permissions'))->resolve(),
+            'model' => RoleResource::make($role->load('permissions'))->resolve(),
         ]);
     }
 

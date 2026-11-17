@@ -40,6 +40,7 @@ export function TextField({
     required,
     disabled,
     readOnly,
+    validationBehavior = 'aria',
     ...props
 }: TextFieldProps) {
     return (
@@ -49,6 +50,7 @@ export function TextField({
             isRequired={required}
             isDisabled={disabled}
             isReadOnly={readOnly}
+            validationBehavior={validationBehavior}
             {...props}
         />
     );

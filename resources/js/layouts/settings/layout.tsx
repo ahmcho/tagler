@@ -1,28 +1,43 @@
-import { Link, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import { Palette, ShieldCheck, UserRound } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
-import { Card } from '@/components/tailgrids/core/card';
+import {
+    TabContent,
+    TabList,
+    TabRoot,
+    TabTrigger,
+} from '@/components/tailgrids/core/tabs';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 
 const settingsNavigationItems = [
     {
+        value: 'profile',
         title: 'Profile',
         href: edit().url,
+        icon: UserRound,
     },
     {
+        value: 'security',
         title: 'Security',
         href: editSecurity().url,
+        icon: ShieldCheck,
     },
     {
+        value: 'appearance',
         title: 'Appearance',
         href: editAppearance().url,
+        icon: Palette,
     },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { url } = usePage();
     const currentPath = url.split('?')[0];
+    const activeItem =
+        settingsNavigationItems.find((item) => item.href === currentPath) ??
+        settingsNavigationItems[0];
 
     return (
         <div className="space-y-6">
@@ -35,31 +50,29 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 </p>
             </div>
 
-            <div className="flex flex-col gap-6 lg:flex-row">
-                <Card className="h-fit lg:w-56">
-                    <nav aria-label="Settings" className="flex flex-col gap-1">
-                        {settingsNavigationItems.map((item) => {
-                            const isActive = currentPath === item.href;
+            <TabRoot
+                key={activeItem.href}
+                direction="horizontal"
+                defaultValue={activeItem.value}
+                className="gap-10 border-0 p-0"
+            >
+                <TabList>
+                    {settingsNavigationItems.map((item) => (
+                        <TabTrigger
+                            key={item.value}
+                            value={item.value}
+                            icon={<item.icon />}
+                            onClick={() => router.visit(item.href)}
+                        >
+                            {item.title}
+                        </TabTrigger>
+                    ))}
+                </TabList>
 
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={`rounded-lg px-3 py-2 text-sm font-medium ${
-                                        isActive
-                                            ? 'bg-primary-50 text-primary-500 dark:bg-primary-500/[0.12] dark:text-primary-400'
-                                            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5'
-                                    }`}
-                                >
-                                    {item.title}
-                                </Link>
-                            );
-                        })}
-                    </nav>
-                </Card>
-
-                <div className="min-w-0 flex-1 md:max-w-2xl">{children}</div>
-            </div>
+                <TabContent value={activeItem.value} className="min-w-0 flex-1">
+                    {children}
+                </TabContent>
+            </TabRoot>
         </div>
     );
 }

@@ -217,6 +217,8 @@ test('the role form pages do not receive the full permission list', function () 
         ->get(route('roles.create'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('roles/create')
+            ->where('model.id', null)
+            ->has('model.permissions', 0)
             ->missing('permissions'));
 
     $this->actingAs($this->admin)
@@ -224,8 +226,9 @@ test('the role form pages do not receive the full permission list', function () 
         ->get(route('roles.edit', $role))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('roles/edit')
-            ->missing('permissions')
-            ->has('role.permissions'));
+            ->where('model.id', $role->id)
+            ->has('model.permissions')
+            ->missing('permissions'));
 });
 
 test('a user who can create roles can search permissions without permissions.index', function () {

@@ -14,6 +14,7 @@ The UI comes from TailGrids (https://tailgrids.com). Its source is copied into `
 - `input.tsx`: `ref` is added to the props type.
 - `sidebar.tsx`: `useIsMobile` uses `useSyncExternalStore`.
 - `tooltip.tsx`: the `react-hooks/refs` lint rule is disabled for the file.
+- `text-field.tsx`: `validationBehavior` defaults to `'aria'`. React Aria's default is `'native'`, which sets a custom validity message from the `invalid` prop. The browser then blocks submit, and the server error is never cleared. With `'aria'`, server errors show on the field without blocking the next submit. Server validation is the only validation, so `required` does not block submit either.
 - `pagination.tsx`: the page list follows a fixed pattern. Up to 10 pages show all. From page 1 to 10 the list is pages 1–10 and the last 2. In the middle it is 1, 2, a window of 5 around the current page, and the last 2. In the last 10 pages it is 1, 2 and the last 10. Gaps show an ellipsis. Logic is in `getPaginationItems`. When there are more than 10 pages, a "Go to page" number input with a Go button sits in the bar. Out-of-range input is ignored. Below `xl` the page list and "Go to page" wrap onto a second row under Previous and Next. From `xl` they sit between the arrows. The optional `summary` prop renders a centered line above the bar, for example "Showing 1627 entries". `DataTable` passes it through `pagination.summary` and shows the bar when there is more than one page or a summary.
 
 TailGrids uses react-aria. Check the source before you use a prop. For example, `Button` takes `onPress`, not `onClick`, and `isDisabled` is `disabled`. `TextField` passes its value to `onChange` as a string. Use `NativeSelect` for native selects. `PasswordField` in `components/password-field.tsx` is a local composition of TailGrids pieces, because TailGrids has no password input.
@@ -32,11 +33,18 @@ TailGrids uses react-aria. Check the source before you use a prop. For example, 
 
 Filters are declared as fields: `select`, `text`, or `searchable` (async, with a `loadOptions` from `useSearch`). Row and bulk actions take `onAction(target, { onSuccess })`. Set `confirm` to show the shared confirm dialog. The dialog closes only when `onSuccess` runs, so a failed request keeps it open. Selection is on only when `bulkActions` is set.
 
-Form and show pages will go in the same folder later.
+Create and edit pages use the shared form in `components/resource/`:
+
+- `ResourceForm` (`resource-form.tsx`) is the one form. It renders the card, the fields and the Back and submit buttons. The model id decides the mode: `!model.id` means create (POST to `storeUrl`), an id means update (PUT to `updateUrl`). The title, the submit label and any field that differs between the two come from that check. Use the render function `({ isCreating }) => …` for those fields. Do not pass an `isEdit` prop.
+- `ResourceCreateContent` and `ResourceEditContent` wrap `ResourceForm` in `ResourcePage`. Use the one that matches the route. Both take the same props.
+- Pages pass the model from the controller as the `model` prop. Create sends an empty model (`new Model` with an empty relation, serialized through its Resource). Edit sends the route-bound model. Use `storeUrl` on create pages and `updateUrl` on edit pages. Pass `null` for the other.
+- Fields live in the page's feature folder (for example `modules/auth/components/role-form.tsx`). They render fields only. They do not render the `<form>` or the buttons.
+
+Show pages will go in the same folder later.
 
 ## Forms
 
-Use Inertia's `useForm` (or `<Form>`), as `resources/js/modules/auth/pages/settings/security.tsx` does. Do not add zod or react-hook-form. Keep server validation keys aligned with the form state. For example, nested `translations.{code}` errors match `form.data.translations`.
+Use Inertia's `useForm` (or `<Form>`), as `resources/js/modules/auth/pages/settings/security.tsx` does. Every `<form>` and `<Form>` gets `noValidate`. The browser then shows no default bubbles, and the server's validation errors appear in the theme through `FieldError`. Do not add zod or react-hook-form. Keep server validation keys aligned with the form state. For example, nested `translations.{code}` errors match `form.data.translations`.
 
 ## Do not add dependencies without approval
 

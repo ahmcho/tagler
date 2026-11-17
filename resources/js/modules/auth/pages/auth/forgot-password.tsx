@@ -26,7 +26,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 </Alert>
             )}
 
-            <Form {...email.form()} className="space-y-5">
+            <Form noValidate {...email.form()} className="space-y-5">
                 {({ processing, errors }) => (
                     <>
                         <TextField

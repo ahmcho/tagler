@@ -133,6 +133,15 @@
     /* ======== Card Color =========*/
     --color-card-background-50: #ffffff;
 
+    /* ======== Tab Color =========*/
+    --color-tab-active-background: #ffffff;
+    --color-tab-secondary-active-background: #eff3ff;
+
+    /* ======== Badge Color =========*/
+    --color-badge-primary-background: #eff3ff;
+    --color-badge-primary-text: #3758f9;
+    --color-badge-primary-icon-color: #3758f9;
+
     /* ======== Alert Success Color =========*/
     --color-alert-success-background: #f0fdf4;
     --color-alert-success-icon-background: #16a34a;
@@ -290,6 +299,11 @@
     --color-button-ghost-hover-text: #d1d5db;
     --color-button-ghost-hover-background: #111827;
     --color-card-background-50: #030712;
+    --color-tab-active-background: #1f2937;
+    --color-tab-secondary-active-background: #3758f91f;
+    --color-badge-primary-background: #3758f81f;
+    --color-badge-primary-text: #91aeff;
+    --color-badge-primary-icon-color: #91aeff;
     --color-alert-success-background: #22c55e0d;
     --color-alert-success-icon-background: #16a34a;
     --color-alert-success-border: #14532d;

@@ -1,9 +1,12 @@
 import type { InertiaFormProps } from '@inertiajs/react';
-import type { ChangeEvent, FormEvent } from 'react';
+import type { ChangeEvent } from 'react';
 import { PasswordField } from '@/components/password-field';
-import { Button } from '@/components/tailgrids/core/button';
 import { Checkbox } from '@/components/tailgrids/core/checkbox';
-import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import {
+    FieldError,
+    FieldLabel,
+    FieldLegend,
+} from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
 import { TextField } from '@/components/tailgrids/core/text-field';
 
@@ -23,20 +26,12 @@ export type UserFormData = {
 type Props = {
     form: InertiaFormProps<UserFormData>;
     roles: RoleOption[];
-    isEdit: boolean;
-    submitLabel: string;
-    onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-    onCancel: () => void;
+    /** Derived from the model id by `ResourceForm`, never passed by a page. */
+    isCreating: boolean;
 };
 
-export function UserForm({
-    form,
-    roles,
-    isEdit,
-    submitLabel,
-    onSubmit,
-    onCancel,
-}: Props) {
+/** User fields only. The shared `ResourceForm` provides the form and buttons. */
+export function UserFields({ form, roles, isCreating }: Props) {
     const toggleRole = (roleId: number, checked: boolean) => {
         const selected = checked
             ? [...form.data.roles, roleId]
@@ -46,7 +41,7 @@ export function UserForm({
     };
 
     return (
-        <form onSubmit={onSubmit} className="space-y-6">
+        <>
             <TextField
                 value={form.data.name}
                 onChange={(value) => form.setData('name', value)}
@@ -71,7 +66,9 @@ export function UserForm({
 
             <PasswordField
                 label={
-                    isEdit ? 'New password (leave empty to keep)' : 'Password'
+                    isCreating
+                        ? 'Password'
+                        : 'New password (leave empty to keep)'
                 }
                 value={form.data.password}
                 onChange={(value) => form.setData('password', value)}
@@ -89,16 +86,14 @@ export function UserForm({
                 autoComplete="new-password"
             />
 
-            <fieldset className="space-y-3">
-                <legend className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Roles
-                </legend>
+            <fieldset className="flex flex-col gap-3">
+                <FieldLegend variant="label">Roles</FieldLegend>
 
                 <div className="grid gap-3 md:grid-cols-2">
                     {roles.map((role) => (
                         <label
                             key={role.id}
-                            className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 dark:border-gray-800"
+                            className="flex items-center gap-3 rounded-lg border border-base-200 p-3"
                         >
                             <Checkbox
                                 aria-label={role.name}
@@ -107,7 +102,7 @@ export function UserForm({
                                     event: ChangeEvent<HTMLInputElement>,
                                 ) => toggleRole(role.id, event.target.checked)}
                             />
-                            <span className="text-sm text-gray-800 dark:text-white/90">
+                            <span className="text-sm text-title-50">
                                 {role.name}
                             </span>
                         </label>
@@ -115,18 +110,11 @@ export function UserForm({
                 </div>
 
                 {form.errors.roles && (
-                    <p className="text-sm text-red-600">{form.errors.roles}</p>
+                    <p className="text-sm text-input-error">
+                        {form.errors.roles}
+                    </p>
                 )}
             </fieldset>
-
-            <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" appearance="outline" onPress={onCancel}>
-                    Back
-                </Button>
-                <Button type="submit" pending={form.processing}>
-                    {submitLabel}
-                </Button>
-            </div>
-        </form>
+        </>
     );
 }

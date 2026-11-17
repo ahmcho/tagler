@@ -4,7 +4,9 @@ import { Button } from '@/components/tailgrids/core/button';
 import {
     Card,
     CardContent,
+    CardDescription,
     CardHeader,
+    CardTitle,
 } from '@/components/tailgrids/core/card';
 import { useAppearance } from '@/hooks/use-appearance';
 import type { Appearance } from '@/hooks/use-appearance';
@@ -29,16 +31,12 @@ export default function Appearance() {
 
             <Card>
                 <CardHeader>
-                    <div>
-                        <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                            Appearance settings
-                        </h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Update your account&apos;s appearance settings
-                        </p>
-                    </div>
+                    <CardTitle>Appearance settings</CardTitle>
+                    <CardDescription>
+                        Update your account&apos;s appearance settings
+                    </CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-wrap gap-3">
+                <CardContent className="flex flex-wrap gap-3 pb-5">
                     {appearanceOptions.map(({ value, label, icon: Icon }) => (
                         <Button
                             key={value}
