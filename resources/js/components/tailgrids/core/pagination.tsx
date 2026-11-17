@@ -2,17 +2,17 @@
 
 import { ArrowLeft, ArrowRight } from '@tailgrids/icons';
 import { cva } from 'class-variance-authority';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import { useId, useState } from 'react';
 import { cn } from '@/utils/cn';
 import { Button } from './button';
 
 const wrapperStyles = cva(
-    'mx-auto flex w-full items-center justify-center max-sm:gap-5',
+    'mx-auto flex w-full flex-wrap items-center justify-between max-sm:gap-5',
     {
         variants: {
             variant: {
-                default: 'gap-0.5',
+                default: 'gap-3',
                 compact:
                     'max-w-fit sm:divide-x sm:divide-button-outline-border',
             },
@@ -40,6 +40,7 @@ type PropsType = {
     onPageChange?: (page: number) => void;
     variant?: 'default' | 'compact';
     sideLayout?: 'full' | 'label' | 'icon';
+    summary?: ReactNode;
 };
 
 const PAGE_RANGE_SIZE = 10;
@@ -106,6 +107,7 @@ export function Pagination({
     onPageChange,
     variant = 'default',
     sideLayout = 'full',
+    summary,
 }: PropsType) {
     return (
         <nav
@@ -113,8 +115,13 @@ export function Pagination({
             aria-label="Pagination"
             className="w-full text-sm font-medium text-text-50"
         >
+            {summary && (
+                <p className="mb-3 text-center font-normal text-gray-500 dark:text-gray-400">
+                    {summary}
+                </p>
+            )}
             <ul className={wrapperStyles({ variant })}>
-                <li className="mr-auto">
+                <li className="order-1">
                     <Button
                         appearance="outline"
                         size="sm"
@@ -143,45 +150,47 @@ export function Pagination({
                 </li>
 
                 {/* Only for mobile view */}
-                <li className="sm:hidden">
+                <li className="order-2 sm:hidden">
                     Page {currentPage} of {totalPages}
                 </li>
 
-                {getPaginationItems(currentPage, totalPages).map(
-                    (item, index) =>
-                        item === 'ellipsis' ? (
-                            <li
-                                key={`ellipsis-${index}`}
-                                className="max-sm:hidden"
-                            >
-                                <PaginationEllipsis
-                                    paginationVariant={variant}
-                                />
-                            </li>
-                        ) : (
-                            <li key={item} className="max-sm:hidden">
-                                <PaginationButton
-                                    page={item}
-                                    isActive={currentPage === item}
+                {/* Own row below sm; inline between the arrows from xl */}
+                <li className="order-4 w-full max-sm:hidden xl:order-2 xl:w-auto xl:flex-1">
+                    <ul className="flex flex-wrap items-center justify-center gap-0.5">
+                        {getPaginationItems(currentPage, totalPages).map(
+                            (item, index) =>
+                                item === 'ellipsis' ? (
+                                    <li key={`ellipsis-${index}`}>
+                                        <PaginationEllipsis
+                                            paginationVariant={variant}
+                                        />
+                                    </li>
+                                ) : (
+                                    <li key={item}>
+                                        <PaginationButton
+                                            page={item}
+                                            isActive={currentPage === item}
+                                            onPageChange={onPageChange}
+                                            paginationVariant={variant}
+                                        />
+                                    </li>
+                                ),
+                        )}
+
+                        {totalPages > PAGE_RANGE_SIZE && (
+                            <li className="ml-2">
+                                <GoToPage
+                                    key={currentPage}
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
                                     onPageChange={onPageChange}
-                                    paginationVariant={variant}
                                 />
                             </li>
-                        ),
-                )}
+                        )}
+                    </ul>
+                </li>
 
-                {totalPages > PAGE_RANGE_SIZE && (
-                    <li className="mx-2 max-sm:hidden">
-                        <GoToPage
-                            key={currentPage}
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={onPageChange}
-                        />
-                    </li>
-                )}
-
-                <li className="ml-auto">
+                <li className="order-3">
                     <Button
                         size="sm"
                         appearance="outline"
