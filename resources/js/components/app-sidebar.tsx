@@ -13,10 +13,14 @@ import {
     SidebarContent,
     SidebarGroup,
     SidebarGroupContent,
+    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
 } from '@/components/tailgrids/core/sidebar';
 import { useAbility } from '@/hooks/use-ability';
 import type { BrandImages } from '@/lib/brand';
@@ -35,89 +39,170 @@ type NavigationItem = {
     ability?: string;
 };
 
-const navigationItems: NavigationItem[] = [
+type NavigationGroup = {
+    label: string;
+    items: NavigationItem[];
+};
+
+const ungroupedItems: NavigationItem[] = [
     {
         label: 'Dashboard',
         href: dashboard().url,
         icon: <LayoutGrid />,
         end: true,
     },
+];
+
+const navigationGroups: NavigationGroup[] = [
     {
-        label: 'Users',
-        href: usersIndex.url(),
-        icon: <Users />,
-        ability: 'users.index',
+        label: 'RBAC',
+        items: [
+            {
+                label: 'Roles',
+                href: rolesIndex.url(),
+                icon: <ShieldCheck />,
+                ability: 'roles.index',
+            },
+            {
+                label: 'Permissions',
+                href: permissionsIndex.url(),
+                icon: <KeyRound />,
+                ability: 'permissions.index',
+            },
+        ],
     },
     {
-        label: 'Roles',
-        href: rolesIndex.url(),
-        icon: <ShieldCheck />,
-        ability: 'roles.index',
+        label: 'System',
+        items: [
+            {
+                label: 'Users',
+                href: usersIndex.url(),
+                icon: <Users />,
+                ability: 'users.index',
+            },
+            {
+                label: 'Activity log',
+                href: activityLogsIndex.url(),
+                icon: <History />,
+                ability: 'activity-logs.index',
+            },
+        ],
     },
     {
-        label: 'Permissions',
-        href: permissionsIndex.url(),
-        icon: <KeyRound />,
-        ability: 'permissions.index',
-    },
-    {
-        label: 'Activity log',
-        href: activityLogsIndex.url(),
-        icon: <History />,
-        ability: 'activity-logs.index',
-    },
-    {
-        label: 'Translations',
-        href: translationsIndex.url(),
-        icon: <Languages />,
-        ability: 'translations.index',
+        label: 'Settings',
+        items: [
+            {
+                label: 'Translations',
+                href: translationsIndex.url(),
+                icon: <Languages />,
+                ability: 'translations.index',
+            },
+        ],
     },
 ];
+
+const activeItemClassName =
+    'data-[active=true]:bg-primary-500 data-[active=true]:text-white data-[active=true]:hover:bg-primary-500 data-[active=true]:hover:text-white';
+
+const activeSubItemClassName = `${activeItemClassName} data-[active=true]:[&>svg]:text-white`;
 
 export function AppSidebar({ brand }: { brand: BrandImages }) {
     const pathname = usePage().url.split('?')[0];
     const ability = useAbility();
-    const visibleItems = navigationItems.filter(
-        (item) => item.ability === undefined || ability(item.ability),
-    );
+
+    const isAllowed = (item: NavigationItem): boolean =>
+        item.ability === undefined || ability(item.ability);
+
+    const isActive = (item: NavigationItem): boolean =>
+        item.end ? pathname === item.href : pathname.startsWith(item.href);
+
+    const visibleUngroupedItems = ungroupedItems.filter(isAllowed);
+    const visibleGroups = navigationGroups
+        .map((group) => ({
+            ...group,
+            items: group.items.filter(isAllowed),
+        }))
+        .filter((group) => group.items.length > 0);
 
     return (
-        <Sidebar>
-            <SidebarHeader className="px-4 py-5">
-                <img className="h-8 dark:hidden" src={brand.logo} alt="Logo" />
+        <Sidebar collapsible="icon">
+            <SidebarHeader className="px-4 py-5 group-data-[collapsible=icon]:px-2">
+                <div className="group-data-[collapsible=icon]:hidden">
+                    <img
+                        className="h-8 dark:hidden"
+                        src={brand.logo}
+                        alt="Logo"
+                    />
+                    <img
+                        className="hidden h-8 dark:block"
+                        src={brand.logoDark}
+                        alt="Logo"
+                    />
+                </div>
                 <img
-                    className="hidden h-8 dark:block"
-                    src={brand.logoDark}
+                    className="hidden size-8 group-data-[collapsible=icon]:block"
+                    src={brand.icon}
                     alt="Logo"
                 />
             </SidebarHeader>
 
-            <SidebarContent className="px-3">
-                <SidebarGroup>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {visibleItems.map((item) => {
-                                const isActive = item.end
-                                    ? pathname === item.href
-                                    : pathname.startsWith(item.href);
-
-                                return (
+            <SidebarContent className="px-3 group-data-[collapsible=icon]:px-2">
+                {visibleUngroupedItems.length > 0 && (
+                    <SidebarGroup>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                {visibleUngroupedItems.map((item) => (
                                     <SidebarMenuItem key={item.href}>
                                         <SidebarMenuButton
-                                            isActive={isActive}
+                                            isActive={isActive(item)}
+                                            aria-label={item.label}
+                                            tooltip={item.label}
+                                            className={activeItemClassName}
                                             onPress={() =>
                                                 router.visit(item.href)
                                             }
                                         >
                                             {item.icon}
-                                            <span>{item.label}</span>
+                                            <span className="group-data-[collapsible=icon]:hidden">
+                                                {item.label}
+                                            </span>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
-                                );
-                            })}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
+                                ))}
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                )}
+
+                {visibleGroups.map((group) => (
+                    <SidebarGroup key={group.label}>
+                        <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenuSub className="group-data-[collapsible=icon]:ml-0 group-data-[collapsible=icon]:block group-data-[collapsible=icon]:border-l-0 group-data-[collapsible=icon]:px-0">
+                                {group.items.map((item) => (
+                                    <SidebarMenuSubItem key={item.href}>
+                                        <SidebarMenuSubButton
+                                            href={item.href}
+                                            isActive={isActive(item)}
+                                            aria-label={item.label}
+                                            title={item.label}
+                                            className={`group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 ${activeSubItemClassName}`}
+                                            onClick={(event) => {
+                                                event.preventDefault();
+                                                router.visit(item.href);
+                                            }}
+                                        >
+                                            {item.icon}
+                                            <span className="group-data-[collapsible=icon]:hidden">
+                                                {item.label}
+                                            </span>
+                                        </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                ))}
+                            </SidebarMenuSub>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                ))}
             </SidebarContent>
         </Sidebar>
     );
