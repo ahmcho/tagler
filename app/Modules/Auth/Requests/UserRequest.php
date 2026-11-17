@@ -65,7 +65,7 @@ class UserRequest extends AppFormRequest
         $validator->after(function (Validator $validator): void {
             /** @var User $user */
             $user = $this->route('user');
-            $adminRoleId = Role::query()->where('name', Role::ADMIN)->where('guard_name', 'web')->value('id');
+            $adminRoleId = Role::query()->where('name', config('modules.auth.admin_role_name'))->where('guard_name', 'web')->value('id');
 
             if ($adminRoleId === null) {
                 return;

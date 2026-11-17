@@ -48,8 +48,7 @@ export default function Index({ permissions, filters }: Props) {
     return (
         <ResourcePage title="Permissions">
             <ResourceIndexContent<PermissionRecord>
-                caption="Permissions"
-                subtitle="Modules define permissions; they are read-only here."
+                caption="Permissions"                
                 indexUrl={index.url()}
                 dataKey="permissions"
                 query={filters}

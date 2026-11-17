@@ -5,18 +5,11 @@ import {
     CardContent,
     CardHeader,
 } from '@/components/tailgrids/core/card';
-import type {
-    PermissionOption,
-    RoleFormData,
-} from '@/modules/auth/components/role-form';
+import type { RoleFormData } from '@/modules/auth/components/role-form';
 import { RoleForm } from '@/modules/auth/components/role-form';
 import { create, index, store } from '@/routes/roles';
 
-type Props = {
-    permissions: PermissionOption[];
-};
-
-export default function Create({ permissions }: Props) {
+export default function Create() {
     const form = useForm<RoleFormData>({ name: '', permissions: [] });
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -38,7 +31,7 @@ export default function Create({ permissions }: Props) {
                 <CardContent>
                     <RoleForm
                         form={form}
-                        permissions={permissions}
+                        initialPermissions={[]}
                         submitLabel="Create"
                         onSubmit={submit}
                         onCancel={() => router.visit(index.url())}

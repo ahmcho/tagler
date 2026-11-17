@@ -57,4 +57,12 @@ class UserFactory extends Factory
             'two_factor_confirmed_at' => now(),
         ]);
     }
+
+    /**
+     * Assigns the given role to the user after it is created.
+     */
+    public function role(string $role): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole($role));
+    }
 }

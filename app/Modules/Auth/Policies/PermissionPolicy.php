@@ -3,7 +3,6 @@
 namespace App\Modules\Auth\Policies;
 
 use App\Models\User;
-use App\Modules\Auth\Concerns\HasPermissionCheck;
 use App\Modules\Auth\Concerns\HasTranslatedDenialResponse;
 use App\Modules\Auth\Models\Permission;
 use Illuminate\Auth\Access\Response;
@@ -13,15 +12,15 @@ use Illuminate\Auth\Access\Response;
  */
 class PermissionPolicy
 {
-    use HasPermissionCheck, HasTranslatedDenialResponse;
+    use HasTranslatedDenialResponse;
 
     public function viewAny(User $user): Response
     {
-        return $this->check(allowed: $this->holdsPermission($user, 'permissions.index'));
+        return $this->check(allowed: $user->can('permissions.index'));
     }
 
     public function view(User $user, Permission $permission): Response
     {
-        return $this->check(allowed: $this->holdsPermission($user, 'permissions.show'));
+        return $this->check(allowed: $user->can('permissions.show'));
     }
 }

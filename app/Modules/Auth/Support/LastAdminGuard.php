@@ -16,7 +16,7 @@ class LastAdminGuard
 
     public function isLastAdmin(User $user): bool
     {
-        return $user->hasRole(Role::ADMIN)
-            && $this->repository->countWithRole(Role::ADMIN) <= 1;
+        return $user->hasRole(config('modules.auth.admin_role_name'))
+            && $this->repository->countWithRole(config('modules.auth.admin_role_name')) <= 1;
     }
 }

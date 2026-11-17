@@ -66,6 +66,8 @@ class AuthServiceProvider extends ModuleServiceProvider
     {
         parent::register();
 
+        $this->mergeConfigFrom(__DIR__.'/../config/auth.php', 'modules.auth');
+
         $this->app->singleton(PermissionRegistry::class);
         $this->app->singleton(AbilityRegistry::class);
     }

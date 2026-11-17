@@ -3,28 +3,35 @@
 namespace App\Modules\Auth\Policies;
 
 use App\Models\User;
-use App\Modules\Auth\Concerns\HasPermissionCheck;
 use App\Modules\Auth\Concerns\HasTranslatedDenialResponse;
 use App\Modules\Auth\Models\Role;
 use Illuminate\Auth\Access\Response;
 
 class RolePolicy
 {
-    use HasPermissionCheck, HasTranslatedDenialResponse;
+    use HasTranslatedDenialResponse;
 
     public function viewAny(User $user): Response
     {
-        return $this->check(allowed: $this->holdsPermission($user, 'roles.index'));
+        return $this->check(allowed: $user->can('roles.index'));
     }
 
     public function view(User $user, Role $role): Response
     {
-        return $this->check(allowed: $this->holdsPermission($user, 'roles.show'));
+        return $this->check(allowed: $user->can('roles.show'));
     }
 
     public function create(User $user): Response
     {
-        return $this->check(allowed: $this->holdsPermission($user, 'roles.store'));
+        return $this->check(allowed: $user->can('roles.store'));
+    }
+
+    /**
+     * The permission picker on the role form: users who can list or create roles.
+     */
+    public function searchPermissions(User $user): Response
+    {
+        return $this->check(allowed: $user->can('roles.index') || $user->can('roles.store'));
     }
 
     /**
@@ -32,11 +39,11 @@ class RolePolicy
      */
     public function update(User $user, Role $role): Response
     {
-        if ($role->name === Role::ADMIN) {
+        if ($role->name === config('modules.auth.admin_role_name')) {
             return $this->check(allowed: false);
         }
 
-        return $this->check(allowed: $this->holdsPermission($user, 'roles.update'));
+        return $this->check(allowed: $user->can('roles.update'));
     }
 
     /**
@@ -44,16 +51,16 @@ class RolePolicy
      */
     public function delete(User $user, Role $role): Response
     {
-        if ($role->name === Role::ADMIN) {
+        if ($role->name === config('modules.auth.admin_role_name')) {
             return $this->check(allowed: false);
         }
 
-        return $this->check(allowed: $this->holdsPermission($user, 'roles.destroy'));
+        return $this->check(allowed: $user->can('roles.destroy'));
     }
 
     public function logs(User $user, Role $role): Response
     {
-        return $this->check(allowed: $this->holdsPermission($user, 'activity-logs.index'));
+        return $this->check(allowed: $user->can('activity-logs.index'));
     }
 
     public function restore(User $user, Role $role): Response

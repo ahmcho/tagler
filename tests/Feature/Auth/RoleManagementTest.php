@@ -208,3 +208,43 @@ test('the role list can be filtered to roles that hold a permission', function (
             ->where('roles.data.0.name', 'Admin')
             ->where('selectedPermission.name', 'translations.update'));
 });
+
+test('the role form pages do not receive the full permission list', function () {
+    $role = Role::findByName('User', 'web');
+
+    $this->actingAs($this->admin)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('roles.create'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('roles/create')
+            ->missing('permissions'));
+
+    $this->actingAs($this->admin)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('roles.edit', $role))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('roles/edit')
+            ->missing('permissions')
+            ->has('role.permissions'));
+});
+
+test('a user who can create roles can search permissions without permissions.index', function () {
+    $user = User::factory()->create();
+    $user->givePermissionTo('roles.store');
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->getJson(route('roles.permissions-search', ['q' => 'translations']))
+        ->assertOk()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonFragment(['name' => 'translations.update']);
+});
+
+test('a user who cannot manage roles cannot search permissions', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->getJson(route('roles.permissions-search', ['q' => 'translations']))
+        ->assertForbidden();
+});
