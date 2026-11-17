@@ -1,31 +1,8 @@
-import { Head, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { Download, Pencil, RotateCcw } from 'lucide-react';
-import { useState } from 'react';
-import type {
-    DataTableBulkAction,
-    DataTableColumn,
-    DataTableRowId,
-    DataTableSort,
-} from '@/components/data-table';
-import { DataTable } from '@/components/data-table';
-import { SelectField } from '@/components/select-field';
-import {
-    Alert,
-    AlertContent,
-    AlertIndicator,
-    AlertTitle,
-} from '@/components/tailgrids/core/alert';
-import { Button } from '@/components/tailgrids/core/button';
-import { Card, CardContent } from '@/components/tailgrids/core/card';
-import {
-    Dialog,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogIcon,
-    DialogTitle,
-} from '@/components/tailgrids/core/dialog';
-import { useCan } from '@/hooks/use-can';
+import type { DataTableColumn, DataTableRowId } from '@/components/data-table';
+import { ResourceIndexContent } from '@/components/resource/resource-index-content';
+import { ResourcePage } from '@/components/resource/resource-page';
 import { edit, index, reset } from '@/routes/translations';
 import { downloadCsv } from '@/utils/download-csv';
 
@@ -85,230 +62,98 @@ export default function Index({
     filters,
     status,
 }: Props) {
-    const [group, setGroup] = useState(filters.group ?? '');
-    const [table, setTable] = useState(filters.table ?? '');
-    const [key, setKey] = useState(filters.key ?? '');
-    const [isLoading, setIsLoading] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<Set<DataTableRowId>>(
-        new Set(),
-    );
-    const [pendingResetIds, setPendingResetIds] = useState<
-        DataTableRowId[] | null
-    >(null);
-    const can = useCan();
-
-    const currentSort: DataTableSort | null = filters.sort
-        ? { key: filters.sort, direction: filters.direction ?? 'asc' }
-        : null;
-
-    const visit = (query: Record<string, string | number | undefined>) => {
-        router.get(index.url(), query, {
-            preserveState: true,
-            preserveScroll: true,
-            only: ['records', 'filters', 'status'],
-            onStart: () => setIsLoading(true),
-            onFinish: () => setIsLoading(false),
-            onSuccess: () => setSelectedIds(new Set()),
-        });
-    };
-
-    const submitFilters = () => {
-        visit({
-            group: group || undefined,
-            key: key || undefined,
-            table: table || undefined,
-            sort: filters.sort,
-            direction: filters.direction,
-        });
-    };
-
-    const resetFilters = () => {
-        setGroup('');
-        setTable('');
-        visit({
-            key: key || undefined,
-            sort: filters.sort,
-            direction: filters.direction,
-        });
-    };
-
-    const changeSort = (sort: DataTableSort | null) => {
-        visit({
-            ...filters,
-            sort: sort?.key,
-            direction: sort?.direction,
-        });
-    };
-
-    const exportSelected = (selectedRowIds: ReadonlySet<DataTableRowId>) => {
+    const exportSelected = (selectedRowIds: DataTableRowId[]) => {
         downloadCsv(
             'translations.csv',
-            records.data.filter((row) => selectedRowIds.has(row.id)),
+            records.data.filter((row) => selectedRowIds.includes(row.id)),
             exportColumns,
         );
     };
 
-    const confirmReset = () => {
-        if (pendingResetIds === null) {
-            return;
-        }
-
-        router.post(
-            reset.url(),
-            { ids: pendingResetIds },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    setSelectedIds(new Set());
-                    setPendingResetIds(null);
-                },
-            },
-        );
-    };
-
-    const bulkActions: DataTableBulkAction[] = [
-        {
-            key: 'export',
-            label: 'Export selected as CSV',
-            icon: <Download className="size-4" />,
-            onAction: exportSelected,
-        },
-        {
-            key: 'reset',
-            label: 'Reset to file default',
-            icon: <RotateCcw className="size-4" />,
-            permission: 'translations.update',
-            onAction: (selectedRowIds) =>
-                setPendingResetIds([...selectedRowIds]),
-        },
-    ];
-
     return (
-        <>
-            <Head title="Translations" />
-
-            <div className="space-y-6">
-                {status && (
-                    <Alert status="success">
-                        <AlertIndicator />
-                        <AlertContent>
-                            <AlertTitle>{status}</AlertTitle>
-                        </AlertContent>
-                    </Alert>
-                )}
-
-                <Card>
-                    <CardContent className="py-5">
-                        <DataTable
-                            caption="Translations"
-                            search={{
-                                value: key,
-                                onChange: setKey,
-                                onSubmit: submitFilters,
-                                placeholder: 'Search by key, e.g. common.save',
-                                label: 'Search by key',
-                            }}
-                            filter={{
-                                title: 'Filter translations',
-                                description:
-                                    'Show only translations from one table or group.',
-                                activeCount:
-                                    (filters.table ? 1 : 0) +
-                                    (filters.group ? 1 : 0),
-                                onApply: submitFilters,
-                                onReset: resetFilters,
-                                children: (
-                                    <div className="space-y-4">
-                                        <SelectField
-                                            label="Table"
-                                            value={table}
-                                            onChange={setTable}
-                                            options={tables}
-                                            allOptionLabel="All tables"
-                                        />
-                                        <SelectField
-                                            label="Group"
-                                            value={group}
-                                            onChange={setGroup}
-                                            options={groups}
-                                            allOptionLabel="All groups"
-                                        />
-                                    </div>
-                                ),
-                            }}
-                            bulkActions={bulkActions}
-                            selection={{
-                                selectedIds,
-                                onChange: setSelectedIds,
-                            }}
-                            columns={columns}
-                            rows={records.data}
-                            getRowId={(translation) => translation.id}
-                            emptyState="No translations found."
-                            isLoading={isLoading}
-                            sort={currentSort}
-                            onSortChange={changeSort}
-                            actionsHeader="Actions"
-                            can={can}
-                            rowActions={(translation) => [
-                                {
-                                    key: 'edit',
-                                    label: 'Edit',
-                                    icon: <Pencil className="size-4" />,
-                                    permission: 'translations.update',
-                                    onAction: () =>
-                                        router.visit(
-                                            edit.url([
-                                                translation.group,
-                                                translation.key,
-                                            ]),
-                                        ),
-                                },
-                            ]}
-                            pagination={{
-                                currentPage: records.current_page,
-                                lastPage: records.last_page,
-                                onPageChange: (page) =>
-                                    visit({ ...filters, page }),
-                                summary: `Showing ${records.total} entries`,
-                            }}
-                        />
-                    </CardContent>
-                </Card>
-
-                <Dialog
-                    isOpen={pendingResetIds !== null}
-                    isDismissable
-                    onOpenChange={(isOpen) => {
-                        if (!isOpen) {
-                            setPendingResetIds(null);
-                        }
-                    }}
-                >
-                    <DialogHeader>
-                        <DialogIcon tone="danger">
-                            <RotateCcw />
-                        </DialogIcon>
-                        <DialogTitle>Reset to file defaults</DialogTitle>
-                        <DialogDescription>
-                            {`Reset ${pendingResetIds?.length ?? 0} selected translation(s) to their file defaults? This overwrites the current values in all locales.`}
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <DialogFooter>
-                        <Button
-                            appearance="outline"
-                            onPress={() => setPendingResetIds(null)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button variant="danger" onPress={confirmReset}>
-                            Reset
-                        </Button>
-                    </DialogFooter>
-                </Dialog>
-            </div>
-        </>
+        <ResourcePage title="Translations" status={status}>
+            <ResourceIndexContent<TranslationRecord>
+                caption="Translations"
+                indexUrl={index.url()}
+                dataKey="records"
+                query={filters}
+                pagination={{
+                    currentPage: records.current_page,
+                    lastPage: records.last_page,
+                    total: records.total,
+                }}
+                rows={records.data}
+                columns={columns}
+                getRowId={(translation) => translation.id}
+                emptyState="No translations found."
+                search={{
+                    name: 'key',
+                    label: 'Search by key',
+                    placeholder: 'Search by key, e.g. common.save',
+                }}
+                filters={{
+                    title: 'Filter translations',
+                    description:
+                        'Show only translations from one table or group.',
+                    fields: [
+                        {
+                            type: 'select',
+                            name: 'table',
+                            label: 'Table',
+                            options: tables,
+                            allLabel: 'All tables',
+                        },
+                        {
+                            type: 'select',
+                            name: 'group',
+                            label: 'Group',
+                            options: groups,
+                            allLabel: 'All groups',
+                        },
+                    ],
+                }}
+                rowActions={(translation) => [
+                    {
+                        key: 'edit',
+                        label: 'Edit',
+                        icon: <Pencil className="size-4" />,
+                        permission: 'translations.update',
+                        onAction: () =>
+                            router.visit(
+                                edit.url([translation.group, translation.key]),
+                            ),
+                    },
+                ]}
+                bulkActions={[
+                    {
+                        key: 'export',
+                        label: 'Export selected as CSV',
+                        icon: <Download className="size-4" />,
+                        onAction: exportSelected,
+                    },
+                    {
+                        key: 'reset',
+                        label: 'Reset to file default',
+                        icon: <RotateCcw className="size-4" />,
+                        permission: 'translations.update',
+                        confirm: {
+                            title: 'Reset to file defaults',
+                            description: (ids) =>
+                                `Reset ${ids.length} selected translation(s) to their file defaults? This overwrites the current values in all locales.`,
+                            confirmLabel: 'Reset',
+                            icon: <RotateCcw />,
+                            tone: 'danger',
+                        },
+                        onAction: (ids, { onSuccess }) =>
+                            router.post(
+                                reset.url(),
+                                { ids },
+                                { preserveScroll: true, onSuccess },
+                            ),
+                    },
+                ]}
+            />
+        </ResourcePage>
     );
 }
 
