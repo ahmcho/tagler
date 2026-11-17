@@ -20,7 +20,7 @@ TailGrids uses react-aria. Check the source before you use a prop. For example, 
 
 `SelectField` in `components/select-field.tsx` is the default for a single select with a list of string options. Pass `label`, `value`, `onChange`, `options` and optionally `allOptionLabel`, where `''` means "all". Use the TailGrids `Select` parts from `core/select.tsx` directly only when you need sections, custom items or multiple selection.
 
-`DataTable` (`components/data-table.tsx`) has optional toolbar props: `title`, `subtitle`, `search` (controlled, submits on Enter), `filter` (a Filter button that opens a `Dialog` with the children as the body), and `bulkActions` (a vertical 3-dot menu for the checked rows; needs `selection`). Row actions keep the horizontal 3-dot menu. Use `downloadCsv` from `utils/download-csv.ts` for CSV exports.
+`DataTable` (`components/data-table.tsx`) has optional toolbar props: `title` and `subtitle` (each a string or any React node; the toolbar wraps them on narrow screens), `search` (controlled, submits on Enter; full width with the buttons on the row below until `lg`), `filter` (a Filter button that opens a `Dialog` with the children as the body), and `bulkActions` (a vertical 3-dot menu for the checked rows; needs `selection`). Row actions keep the horizontal 3-dot menu. Use `downloadCsv` from `utils/download-csv.ts` for CSV exports.
 
 ## Forms
 

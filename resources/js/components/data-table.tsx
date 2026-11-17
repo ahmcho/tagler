@@ -355,26 +355,26 @@ export function DataTable<Row>({
             {hasToolbar && (
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     {(title !== undefined || subtitle !== undefined) && (
-                        <div>
+                        <div className="min-w-0 break-words">
                             {title !== undefined && (
                                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
                                     {title}
                                 </h2>
                             )}
                             {subtitle !== undefined && (
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {subtitle}
-                                </p>
+                                </div>
                             )}
                         </div>
                     )}
 
-                    <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+                    <div className="flex flex-wrap items-center justify-end gap-2 lg:ml-auto">
                         {search && (
                             <form
                                 role="search"
                                 onSubmit={handleSearchSubmit}
-                                className="relative w-full sm:w-72"
+                                className="relative w-full lg:w-72"
                             >
                                 <span
                                     aria-hidden="true"
