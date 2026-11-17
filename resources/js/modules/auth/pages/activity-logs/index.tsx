@@ -1,12 +1,6 @@
-import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
-import type { DataTableColumn, DataTableSort } from '@/components/data-table';
-import { DataTable } from '@/components/data-table';
-import { SelectField } from '@/components/select-field';
-import { Card, CardContent } from '@/components/tailgrids/core/card';
-import { FieldLabel } from '@/components/tailgrids/core/field';
-import { Input } from '@/components/tailgrids/core/input';
-import { TextField } from '@/components/tailgrids/core/text-field';
+import type { DataTableColumn } from '@/components/data-table';
+import { ResourceIndexContent } from '@/components/resource/resource-index-content';
+import { ResourcePage } from '@/components/resource/resource-page';
 import { index } from '@/routes/activity-logs';
 
 type ActivityLogRecord = {
@@ -87,112 +81,50 @@ const columns: DataTableColumn<ActivityLogRecord>[] = [
 ];
 
 export default function Index({ records, filters }: Props) {
-    const [event, setEvent] = useState(filters.event ?? '');
-    const [subjectType, setSubjectType] = useState(filters.subject_type ?? '');
-    const [subjectId, setSubjectId] = useState(
-        filters.subject_id !== undefined ? String(filters.subject_id) : '',
-    );
-
-    const currentSort: DataTableSort | null = filters.sort
-        ? { key: filters.sort, direction: filters.direction ?? 'desc' }
-        : null;
-
-    const visit = (query: Record<string, string | number | undefined>) => {
-        router.get(index.url(), query, {
-            preserveState: true,
-            preserveScroll: true,
-            only: ['records', 'filters'],
-        });
-    };
-
-    const submitFilters = () => {
-        visit({
-            event: event || undefined,
-            subject_type: subjectType || undefined,
-            subject_id: subjectId || undefined,
-            sort: filters.sort,
-            direction: filters.direction,
-        });
-    };
-
-    const resetFilters = () => {
-        setEvent('');
-        setSubjectType('');
-        setSubjectId('');
-        visit({ sort: filters.sort, direction: filters.direction });
-    };
-
     return (
-        <>
-            <Head title="Activity log" />
-
-            <Card>
-                <CardContent className="py-5">
-                    <DataTable
-                        caption="Activity log"
-                        subtitle={`Showing ${records.total} entries`}
-                        filter={{
-                            title: 'Filter activity',
-                            description:
-                                'Show only entries for one event or one model.',
-                            activeCount:
-                                (filters.event ? 1 : 0) +
-                                (filters.subject_type ? 1 : 0) +
-                                (filters.subject_id !== undefined ? 1 : 0),
-                            onApply: submitFilters,
-                            onReset: resetFilters,
-                            children: (
-                                <div className="space-y-4">
-                                    <SelectField
-                                        label="Event"
-                                        value={event}
-                                        onChange={setEvent}
-                                        options={EVENTS}
-                                        allOptionLabel="All events"
-                                    />
-                                    <TextField
-                                        value={subjectType}
-                                        onChange={setSubjectType}
-                                        className="flex w-full flex-col gap-1.5"
-                                    >
-                                        <FieldLabel>Model class</FieldLabel>
-                                        <Input className="w-full" />
-                                    </TextField>
-                                    <TextField
-                                        value={subjectId}
-                                        onChange={setSubjectId}
-                                        className="flex w-full flex-col gap-1.5"
-                                    >
-                                        <FieldLabel>Model ID</FieldLabel>
-                                        <Input
-                                            inputMode="numeric"
-                                            className="w-full"
-                                        />
-                                    </TextField>
-                                </div>
-                            ),
-                        }}
-                        columns={columns}
-                        rows={records.data}
-                        getRowId={(log) => log.id}
-                        emptyState="No activity found."
-                        sort={currentSort}
-                        onSortChange={(sort: DataTableSort | null) =>
-                            visit({
-                                ...filters,
-                                sort: sort?.key,
-                                direction: sort?.direction,
-                            })
-                        }
-                        pagination={{
-                            currentPage: records.current_page,
-                            lastPage: records.last_page,
-                            onPageChange: (page) => visit({ ...filters, page }),
-                        }}
-                    />
-                </CardContent>
-            </Card>
-        </>
+        <ResourcePage title="Activity log">
+            <ResourceIndexContent<ActivityLogRecord>
+                caption="Activity log"
+                indexUrl={index.url()}
+                dataKey="records"
+                query={filters}
+                defaultSortDirection="desc"
+                pagination={{
+                    currentPage: records.current_page,
+                    lastPage: records.last_page,
+                    total: records.total,
+                }}
+                rows={records.data}
+                columns={columns}
+                getRowId={(log) => log.id}
+                emptyState="No activity found."
+                filters={{
+                    title: 'Filter activity',
+                    description:
+                        'Show only entries for one event or one model.',
+                    fields: [
+                        {
+                            type: 'select',
+                            name: 'event',
+                            label: 'Event',
+                            options: EVENTS,
+                            allLabel: 'All events',
+                        },
+                        {
+                            type: 'text',
+                            name: 'subject_type',
+                            label: 'Model class',
+                        },
+                        {
+                            type: 'text',
+                            name: 'subject_id',
+                            label: 'Model ID',
+                            inputMode: 'numeric',
+                        },
+                    ],
+                }}
+            />
+        </ResourcePage>
     );
 }
 

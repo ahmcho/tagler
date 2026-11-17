@@ -22,6 +22,18 @@ TailGrids uses react-aria. Check the source before you use a prop. For example, 
 
 `DataTable` (`components/data-table.tsx`) has optional toolbar props: `title` and `subtitle` (each a string or any React node; the toolbar wraps them on narrow screens), `search` (controlled, submits on Enter; full width with the buttons on the row below until `lg`), `filter` (a Filter button that opens a `Dialog` with the children as the body), and `bulkActions` (a vertical 3-dot menu for the checked rows; needs `selection`). Row actions keep the horizontal 3-dot menu. Use `downloadCsv` from `utils/download-csv.ts` for CSV exports.
 
+## Resource pages
+
+`components/resource/` holds the shared parts of the resource pages. List pages use three parts:
+
+- `ResourcePage` is the shell. It sets the `Head` title, the status alert and the action bar (pass `actions`, for example "New role", or `false` to hide it). Breadcrumbs stay on the page as `Page.layout`.
+- `ResourceIndexContent` is the list. Pass `rows`, `columns`, `getRowId`, `query` (the server `filters` prop), `pagination`, and optionally `search`, `filters`, `rowActions` and `bulkActions`. It uses `DataTable` and shows the row count in the pagination bar.
+- `useResourceIndex` (in `use-resource-index.ts`) holds the Inertia requests: sort, page, apply, reset and selection. Reloads use `only: [dataKey, 'filters', 'status']`.
+
+Filters are declared as fields: `select`, `text`, or `searchable` (async, with a `loadOptions` from `useSearch`). Row and bulk actions take `onAction(target, { onSuccess })`. Set `confirm` to show the shared confirm dialog. The dialog closes only when `onSuccess` runs, so a failed request keeps it open. Selection is on only when `bulkActions` is set.
+
+Form and show pages will go in the same folder later.
+
 ## Forms
 
 Use Inertia's `useForm` (or `<Form>`), as `resources/js/modules/auth/pages/settings/security.tsx` does. Do not add zod or react-hook-form. Keep server validation keys aligned with the form state. For example, nested `translations.{code}` errors match `form.data.translations`.
