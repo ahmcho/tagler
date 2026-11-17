@@ -201,7 +201,6 @@ export default function Index({
                     <CardContent className="py-5">
                         <DataTable
                             caption="Translations"
-                            subtitle={`Showing ${records.total} entries`}
                             search={{
                                 value: key,
                                 onChange: setKey,
@@ -271,6 +270,7 @@ export default function Index({
                                 lastPage: records.last_page,
                                 onPageChange: (page) =>
                                     visit({ ...filters, page }),
+                                summary: `Showing ${records.total} entries`,
                             }}
                         />
                     </CardContent>

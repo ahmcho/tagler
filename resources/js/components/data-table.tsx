@@ -67,6 +67,7 @@ export type DataTablePagination = {
     lastPage: number;
     onPageChange: (page: number) => void;
     variant?: 'default' | 'compact';
+    summary?: ReactNode;
 };
 
 export type DataTableRowAction = {
@@ -646,13 +647,14 @@ export function DataTable<Row>({
                 </TableBody>
             </TableRoot>
 
-            {pagination && pagination.lastPage > 1 && (
+            {pagination && (pagination.lastPage > 1 || pagination.summary) && (
                 <div className="flex justify-center">
                     <Pagination
                         currentPage={pagination.currentPage}
                         totalPages={pagination.lastPage}
                         onPageChange={pagination.onPageChange}
                         variant={pagination.variant}
+                        summary={pagination.summary}
                     />
                 </div>
             )}
