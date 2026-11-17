@@ -1,66 +1,48 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from '@/components/tailgrids/core/card';
+import { useForm } from '@inertiajs/react';
+import { ResourceEditContent } from '@/components/resource/resource-edit-content';
 import type {
     RoleOption,
     UserFormData,
 } from '@/modules/auth/components/user-form';
-import { UserForm } from '@/modules/auth/components/user-form';
+import { UserFields } from '@/modules/auth/components/user-form';
 import { index, update } from '@/routes/users';
 
 type Props = {
-    user: {
+    model: {
         id: number;
         name: string;
         email: string;
-        roles: { id: number; name: string }[];
+        roles: RoleOption[];
     };
     roles: RoleOption[];
 };
 
-export default function Edit({ user, roles }: Props) {
+export default function Edit({ model, roles }: Props) {
     const form = useForm<UserFormData>({
-        name: user.name,
-        email: user.email,
+        name: model.name,
+        email: model.email,
         password: '',
         password_confirmation: '',
-        roles: user.roles.map((role) => role.id),
+        roles: model.roles.map((role) => role.id),
     });
 
-    const submit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        form.put(update.url(user.id), {
-            onFinish: () => form.reset('password', 'password_confirmation'),
-        });
-    };
-
     return (
-        <>
-            <Head title={`Edit user ${user.name}`} />
-
-            <Card>
-                <CardHeader>
-                    <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        Edit user
-                    </h2>
-                </CardHeader>
-
-                <CardContent>
-                    <UserForm
-                        form={form}
-                        roles={roles}
-                        isEdit
-                        submitLabel="Save"
-                        onSubmit={submit}
-                        onCancel={() => router.visit(index.url())}
-                    />
-                </CardContent>
-            </Card>
-        </>
+        <ResourceEditContent
+            pageTitle={`Edit user ${model.name}`}
+            model={model}
+            form={form}
+            storeUrl={null}
+            updateUrl={update.url(model.id)}
+            resourceName="user"
+            backHref={index.url()}
+            submitOptions={{
+                onFinish: () => form.reset('password', 'password_confirmation'),
+            }}
+        >
+            {({ isCreating }) => (
+                <UserFields form={form} roles={roles} isCreating={isCreating} />
+            )}
+        </ResourceEditContent>
     );
 }
 

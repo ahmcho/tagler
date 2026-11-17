@@ -118,6 +118,7 @@ function TwoFactorVerificationStep({
 
     return (
         <Form
+            noValidate
             {...confirm.form()}
             onSuccess={() => onClose()}
             resetOnError

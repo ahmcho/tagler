@@ -1,44 +1,38 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from '@/components/tailgrids/core/card';
-import type { RoleFormData } from '@/modules/auth/components/role-form';
-import { RoleForm } from '@/modules/auth/components/role-form';
+import { useForm } from '@inertiajs/react';
+import { ResourceCreateContent } from '@/components/resource/resource-create-content';
+import type {
+    RoleFormData,
+    SelectedPermission,
+} from '@/modules/auth/components/role-form';
+import { RoleFields } from '@/modules/auth/components/role-form';
 import { create, index, store } from '@/routes/roles';
 
-export default function Create() {
-    const form = useForm<RoleFormData>({ name: '', permissions: [] });
-
-    const submit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        form.post(store.url());
+type Props = {
+    model: {
+        id: null;
+        name: string | null;
+        permissions: SelectedPermission[];
     };
+};
+
+export default function Create({ model }: Props) {
+    const form = useForm<RoleFormData>({
+        name: model.name ?? '',
+        permissions: model.permissions.map((permission) => permission.id),
+    });
 
     return (
-        <>
-            <Head title="New role" />
-
-            <Card>
-                <CardHeader>
-                    <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        New role
-                    </h2>
-                </CardHeader>
-
-                <CardContent>
-                    <RoleForm
-                        form={form}
-                        initialPermissions={[]}
-                        submitLabel="Create"
-                        onSubmit={submit}
-                        onCancel={() => router.visit(index.url())}
-                    />
-                </CardContent>
-            </Card>
-        </>
+        <ResourceCreateContent
+            pageTitle="New role"
+            model={model}
+            form={form}
+            storeUrl={store.url()}
+            updateUrl={null}
+            resourceName="role"
+            backHref={index.url()}
+        >
+            <RoleFields form={form} initialPermissions={model.permissions} />
+        </ResourceCreateContent>
     );
 }
 

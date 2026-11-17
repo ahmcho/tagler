@@ -5,9 +5,17 @@ import { Button } from '@/components/tailgrids/core/button';
 import {
     Card,
     CardContent,
+    CardDescription,
+    CardFooter,
     CardHeader,
+    CardTitle,
 } from '@/components/tailgrids/core/card';
-import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import {
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
 import { TextField } from '@/components/tailgrids/core/text-field';
 import { edit } from '@/routes/profile';
@@ -21,6 +29,8 @@ export default function Profile({
     status?: string;
 }) {
     const { auth } = usePage().props;
+    const isEmailUnverified =
+        mustVerifyEmail && auth.user.email_verified_at === null;
 
     return (
         <>
@@ -29,63 +39,53 @@ export default function Profile({
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <div>
-                            <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                                Profile information
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Update your name and email address
-                            </p>
-                        </div>
+                        <CardTitle>Profile information</CardTitle>
+                        <CardDescription>
+                            Update your name and email address
+                        </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <Form
-                            {...ProfileController.update.form()}
-                            options={{
-                                preserveScroll: true,
-                            }}
-                            className="space-y-5"
-                        >
-                            {({ processing, errors }) => (
-                                <>
-                                    <TextField
-                                        name="name"
-                                        defaultValue={auth.user.name}
-                                        required
-                                        autoComplete="name"
-                                        invalid={Boolean(errors.name)}
-                                        className="flex w-full flex-col gap-1.5"
-                                    >
-                                        <FieldLabel>Name</FieldLabel>
-                                        <Input
-                                            placeholder="Full name"
-                                            className="w-full"
-                                        />
-                                        <FieldError>{errors.name}</FieldError>
-                                    </TextField>
 
-                                    <TextField
-                                        name="email"
-                                        type="email"
-                                        defaultValue={auth.user.email}
-                                        required
-                                        autoComplete="username"
-                                        invalid={Boolean(errors.email)}
-                                        className="flex w-full flex-col gap-1.5"
-                                    >
-                                        <FieldLabel>Email address</FieldLabel>
-                                        <Input
-                                            placeholder="Email address"
-                                            className="w-full"
-                                        />
-                                        <FieldError>{errors.email}</FieldError>
-                                    </TextField>
+                    <Form
+                        noValidate
+                        {...ProfileController.update.form()}
+                        options={{
+                            preserveScroll: true,
+                        }}
+                    >
+                        {({ processing, errors }) => (
+                            <>
+                                <CardContent>
+                                    <FieldGroup>
+                                        <TextField
+                                            name="name"
+                                            defaultValue={auth.user.name}
+                                            required
+                                            autoComplete="name"
+                                            invalid={Boolean(errors.name)}
+                                            className="flex w-full flex-col gap-1.5"
+                                        >
+                                            <FieldLabel>Name</FieldLabel>
+                                            <Input className="w-full" />
+                                            <FieldError>
+                                                {errors.name}
+                                            </FieldError>
+                                        </TextField>
 
-                                    {mustVerifyEmail &&
-                                        auth.user.email_verified_at ===
-                                            null && (
-                                            <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
-                                                <p>
+                                        <TextField
+                                            name="email"
+                                            type="email"
+                                            defaultValue={auth.user.email}
+                                            required
+                                            autoComplete="username"
+                                            invalid={Boolean(errors.email)}
+                                            className="flex w-full flex-col gap-1.5"
+                                        >
+                                            <FieldLabel>
+                                                Email address
+                                            </FieldLabel>
+                                            <Input className="w-full" />
+                                            {isEmailUnverified && (
+                                                <FieldDescription>
                                                     Your email address is
                                                     unverified.{' '}
                                                     <Link
@@ -93,36 +93,39 @@ export default function Profile({
                                                         as="button"
                                                         className="font-medium text-primary-500 hover:text-primary-600"
                                                     >
-                                                        Click here to resend the
-                                                        verification email.
+                                                        Resend the verification
+                                                        email.
                                                     </Link>
-                                                </p>
+                                                </FieldDescription>
+                                            )}
+                                            <FieldError>
+                                                {errors.email}
+                                            </FieldError>
+                                        </TextField>
 
-                                                {status ===
-                                                    'verification-link-sent' && (
-                                                    <p className="text-success-600 font-medium dark:text-success-500">
-                                                        A new verification link
-                                                        has been sent to your
-                                                        email address.
-                                                    </p>
-                                                )}
-                                            </div>
+                                        {status ===
+                                            'verification-link-sent' && (
+                                            <p className="text-success-600 text-sm font-medium dark:text-success-500">
+                                                A new verification link has been
+                                                sent to your email address.
+                                            </p>
                                         )}
+                                    </FieldGroup>
+                                </CardContent>
 
-                                    <div>
-                                        <Button
-                                            type="submit"
-                                            disabled={processing}
-                                            pending={processing}
-                                            data-test="update-profile-button"
-                                        >
-                                            Save
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                        </Form>
-                    </CardContent>
+                                <CardFooter className="flex justify-end pt-6">
+                                    <Button
+                                        type="submit"
+                                        disabled={processing}
+                                        pending={processing}
+                                        data-test="update-profile-button"
+                                    >
+                                        Save
+                                    </Button>
+                                </CardFooter>
+                            </>
+                        )}
+                    </Form>
                 </Card>
 
                 <DeleteUser />

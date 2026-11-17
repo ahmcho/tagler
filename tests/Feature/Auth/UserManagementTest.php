@@ -185,3 +185,26 @@ test('the user list can be filtered to users that hold a role', function () {
             ->where('users.data.0.name', 'Role Member')
             ->where('selectedRole.name', 'User'));
 });
+
+test('the user create page receives an empty model and the edit page receives the bound user', function () {
+    $user = User::factory()->create();
+    $user->assignRole('User');
+
+    $this->actingAs($this->admin)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('users.create'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/create')
+            ->where('model.id', null)
+            ->has('model.roles', 0)
+            ->has('roles'));
+
+    $this->actingAs($this->admin)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('users.edit', $user))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/edit')
+            ->where('model.id', $user->id)
+            ->where('model.roles.0.name', 'User')
+            ->has('roles'));
+});

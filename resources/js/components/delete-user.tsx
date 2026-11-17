@@ -13,7 +13,10 @@ import { Button } from '@/components/tailgrids/core/button';
 import {
     Card,
     CardContent,
+    CardDescription,
+    CardFooter,
     CardHeader,
+    CardTitle,
 } from '@/components/tailgrids/core/card';
 import {
     Dialog,
@@ -31,16 +34,12 @@ export default function DeleteUser() {
     return (
         <Card>
             <CardHeader>
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        Delete account
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Delete your account and all of its resources
-                    </p>
-                </div>
+                <CardTitle>Delete account</CardTitle>
+                <CardDescription>
+                    Delete your account and all of its resources
+                </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
                 <Alert status="error">
                     <AlertIndicator />
                     <AlertContent>
@@ -50,75 +49,76 @@ export default function DeleteUser() {
                         </AlertDescription>
                     </AlertContent>
                 </Alert>
-
-                <div>
-                    <Button
-                        variant="danger"
-                        onPress={() => setIsOpen(true)}
-                        data-test="delete-user-button"
-                    >
-                        Delete account
-                    </Button>
-                </div>
-
-                <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
-                    <DialogHeader>
-                        <DialogTitle>
-                            Are you sure you want to delete your account?
-                        </DialogTitle>
-                        <DialogDescription>
-                            Once your account is deleted, all of its resources
-                            and data will also be permanently deleted. Please
-                            enter your password to confirm you would like to
-                            permanently delete your account.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <Form
-                        {...ProfileController.destroy.form()}
-                        options={{
-                            preserveScroll: true,
-                        }}
-                        onError={() => passwordInput.current?.focus()}
-                        onSuccess={() => setIsOpen(false)}
-                        resetOnSuccess
-                    >
-                        {({ processing, errors }) => (
-                            <>
-                                <DialogBody className="mt-4 mb-6">
-                                    <PasswordField
-                                        name="password"
-                                        label="Password"
-                                        inputRef={passwordInput}
-                                        placeholder="Password"
-                                        autoComplete="current-password"
-                                        error={errors.password}
-                                    />
-                                </DialogBody>
-
-                                <DialogFooter>
-                                    <Button
-                                        type="button"
-                                        appearance="outline"
-                                        onPress={() => setIsOpen(false)}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        type="submit"
-                                        variant="danger"
-                                        disabled={processing}
-                                        pending={processing}
-                                        data-test="confirm-delete-user-button"
-                                    >
-                                        Delete account
-                                    </Button>
-                                </DialogFooter>
-                            </>
-                        )}
-                    </Form>
-                </Dialog>
             </CardContent>
+
+            <CardFooter className="flex justify-end pt-6">
+                <Button
+                    variant="danger"
+                    onPress={() => setIsOpen(true)}
+                    data-test="delete-user-button"
+                >
+                    Delete account
+                </Button>
+            </CardFooter>
+
+            <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
+                <DialogHeader>
+                    <DialogTitle>
+                        Are you sure you want to delete your account?
+                    </DialogTitle>
+                    <DialogDescription>
+                        Once your account is deleted, all of its resources and
+                        data will also be permanently deleted. Please enter your
+                        password to confirm you would like to permanently delete
+                        your account.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <Form
+                    noValidate
+                    {...ProfileController.destroy.form()}
+                    options={{
+                        preserveScroll: true,
+                    }}
+                    onError={() => passwordInput.current?.focus()}
+                    onSuccess={() => setIsOpen(false)}
+                    resetOnSuccess
+                >
+                    {({ processing, errors }) => (
+                        <>
+                            <DialogBody className="mt-4 mb-6">
+                                <PasswordField
+                                    name="password"
+                                    label="Password"
+                                    inputRef={passwordInput}
+                                    placeholder="Password"
+                                    autoComplete="current-password"
+                                    error={errors.password}
+                                />
+                            </DialogBody>
+
+                            <DialogFooter>
+                                <Button
+                                    type="button"
+                                    appearance="outline"
+                                    onPress={() => setIsOpen(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="danger"
+                                    disabled={processing}
+                                    pending={processing}
+                                    data-test="confirm-delete-user-button"
+                                >
+                                    Delete account
+                                </Button>
+                            </DialogFooter>
+                        </>
+                    )}
+                </Form>
+            </Dialog>
         </Card>
     );
 }

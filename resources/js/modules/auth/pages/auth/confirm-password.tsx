@@ -9,6 +9,7 @@ export default function ConfirmPassword() {
             <Head title="Confirm password" />
 
             <Form
+                noValidate
                 {...store.form()}
                 resetOnSuccess={['password']}
                 className="space-y-5"

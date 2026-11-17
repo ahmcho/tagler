@@ -47,6 +47,7 @@ class TranslationController extends Controller
         Gate::authorize('translations.update');
 
         return Inertia::render('translations/edit', [
+            'model' => ['id' => $group.'.'.$key],
             'group' => $group,
             'translationKey' => $key,
             'locales' => config('app.supported_locales'),

@@ -1,11 +1,13 @@
 import type { InertiaFormProps } from '@inertiajs/react';
 import { X } from 'lucide-react';
-import type { FormEvent } from 'react';
 import { useState } from 'react';
 import type { SelectOption } from '@/components/searchable-list';
 import { SearchableList } from '@/components/searchable-list';
-import { Button } from '@/components/tailgrids/core/button';
-import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import {
+    FieldError,
+    FieldLabel,
+    FieldLegend,
+} from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
 import { TextField } from '@/components/tailgrids/core/text-field';
 import { useSearch } from '@/hooks/use-search';
@@ -24,18 +26,10 @@ export type RoleFormData = {
 type Props = {
     form: InertiaFormProps<RoleFormData>;
     initialPermissions: SelectedPermission[];
-    submitLabel: string;
-    onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-    onCancel: () => void;
 };
 
-export function RoleForm({
-    form,
-    initialPermissions,
-    submitLabel,
-    onSubmit,
-    onCancel,
-}: Props) {
+/** Role fields only. The shared `ResourceForm` provides the form and buttons. */
+export function RoleFields({ form, initialPermissions }: Props) {
     const [selectedPermissions, setSelectedPermissions] =
         useState(initialPermissions);
 
@@ -79,7 +73,7 @@ export function RoleForm({
     };
 
     return (
-        <form onSubmit={onSubmit} className="space-y-6">
+        <>
             <TextField
                 value={form.data.name}
                 onChange={(value) => form.setData('name', value)}
@@ -91,10 +85,8 @@ export function RoleForm({
                 <FieldError>{form.errors.name}</FieldError>
             </TextField>
 
-            <fieldset className="space-y-3">
-                <legend className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Permissions
-                </legend>
+            <fieldset className="flex flex-col gap-3">
+                <FieldLegend variant="label">Permissions</FieldLegend>
 
                 <SearchableList
                     inputId="role-permissions-search"
@@ -110,7 +102,7 @@ export function RoleForm({
                 />
 
                 {selectedPermissions.length === 0 ? (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-text-100">
                         No permissions selected.
                     </p>
                 ) : (
@@ -118,9 +110,9 @@ export function RoleForm({
                         {selectedPermissions.map((permission) => (
                             <li
                                 key={permission.id}
-                                className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 py-1 pr-1 pl-2.5 dark:border-gray-800 dark:bg-gray-800"
+                                className="flex items-center gap-1.5 rounded-md border border-base-200 bg-background-soft-100 py-1 pr-1 pl-2.5"
                             >
-                                <span className="font-mono text-xs text-gray-800 dark:text-white/90">
+                                <span className="font-mono text-xs text-title-50">
                                     {permission.name}
                                 </span>
                                 <button
@@ -129,7 +121,7 @@ export function RoleForm({
                                     onClick={() =>
                                         removePermission(permission.id)
                                     }
-                                    className="cursor-pointer rounded p-0.5 text-gray-500 hover:bg-gray-200 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                                    className="cursor-pointer rounded p-0.5 text-text-100 hover:bg-background-soft-300 hover:text-title-50"
                                 >
                                     <X className="size-3.5" />
                                 </button>
@@ -139,20 +131,11 @@ export function RoleForm({
                 )}
 
                 {form.errors.permissions && (
-                    <p className="text-sm text-red-600">
+                    <p className="text-sm text-input-error">
                         {form.errors.permissions}
                     </p>
                 )}
             </fieldset>
-
-            <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" appearance="outline" onPress={onCancel}>
-                    Back
-                </Button>
-                <Button type="submit" pending={form.processing}>
-                    {submitLabel}
-                </Button>
-            </div>
-        </form>
+        </>
     );
 }

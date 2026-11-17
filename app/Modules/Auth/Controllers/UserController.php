@@ -57,7 +57,11 @@ class UserController extends Controller
     {
         Gate::authorize('create', User::class);
 
+        $model = new User;
+        $model->setRelation('roles', collect());
+
         return Inertia::render('users/create', [
+            'model' => UserResource::make($model)->resolve(),
             'roles' => $this->roleOptions(),
         ]);
     }
@@ -76,7 +80,7 @@ class UserController extends Controller
         Gate::authorize('update', $user);
 
         return Inertia::render('users/edit', [
-            'user' => UserResource::make($user->load('roles'))->resolve(),
+            'model' => UserResource::make($user->load('roles'))->resolve(),
             'roles' => $this->roleOptions(),
         ]);
     }

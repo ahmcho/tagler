@@ -1,60 +1,48 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from '@/components/tailgrids/core/card';
+import { useForm } from '@inertiajs/react';
+import { ResourceCreateContent } from '@/components/resource/resource-create-content';
 import type {
     RoleOption,
     UserFormData,
 } from '@/modules/auth/components/user-form';
-import { UserForm } from '@/modules/auth/components/user-form';
+import { UserFields } from '@/modules/auth/components/user-form';
 import { create, index, store } from '@/routes/users';
 
 type Props = {
+    model: {
+        id: null;
+        name: string | null;
+        email: string | null;
+        roles: RoleOption[];
+    };
     roles: RoleOption[];
 };
 
-export default function Create({ roles }: Props) {
+export default function Create({ model, roles }: Props) {
     const form = useForm<UserFormData>({
-        name: '',
-        email: '',
+        name: model.name ?? '',
+        email: model.email ?? '',
         password: '',
         password_confirmation: '',
-        roles: [],
+        roles: model.roles.map((role) => role.id),
     });
 
-    const submit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        form.post(store.url(), {
-            onFinish: () => form.reset('password', 'password_confirmation'),
-        });
-    };
-
     return (
-        <>
-            <Head title="New user" />
-
-            <Card>
-                <CardHeader>
-                    <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        New user
-                    </h2>
-                </CardHeader>
-
-                <CardContent>
-                    <UserForm
-                        form={form}
-                        roles={roles}
-                        isEdit={false}
-                        submitLabel="Create"
-                        onSubmit={submit}
-                        onCancel={() => router.visit(index.url())}
-                    />
-                </CardContent>
-            </Card>
-        </>
+        <ResourceCreateContent
+            pageTitle="New user"
+            model={model}
+            form={form}
+            storeUrl={store.url()}
+            updateUrl={null}
+            resourceName="user"
+            backHref={index.url()}
+            submitOptions={{
+                onFinish: () => form.reset('password', 'password_confirmation'),
+            }}
+        >
+            {({ isCreating }) => (
+                <UserFields form={form} roles={roles} isCreating={isCreating} />
+            )}
+        </ResourceCreateContent>
     );
 }
 

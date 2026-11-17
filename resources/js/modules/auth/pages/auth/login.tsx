@@ -34,6 +34,7 @@ export default function Login({ status, canResetPassword }: Props) {
             )}
 
             <Form
+                noValidate
                 {...store.form()}
                 resetOnSuccess={['password']}
                 className="space-y-5"

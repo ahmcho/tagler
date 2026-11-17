@@ -7,8 +7,12 @@ import { Button } from '@/components/tailgrids/core/button';
 import {
     Card,
     CardContent,
+    CardDescription,
+    CardFooter,
     CardHeader,
+    CardTitle,
 } from '@/components/tailgrids/core/card';
+import { FieldGroup } from '@/components/tailgrids/core/field';
 import TwoFactorRecoveryCodes from '@/components/two-factor-recovery-codes';
 import TwoFactorSetupModal from '@/components/two-factor-setup-modal';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
@@ -31,12 +35,8 @@ function SectionHeader({
     return (
         <CardHeader>
             <div>
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                    {title}
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {description}
-                </p>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
             </div>
         </CardHeader>
     );
@@ -82,71 +82,73 @@ export default function Security({
                         title="Update password"
                         description="Ensure your account is using a long, random password to stay secure"
                     />
-                    <CardContent>
-                        <Form
-                            {...SecurityController.update.form()}
-                            options={{
-                                preserveScroll: true,
-                            }}
-                            resetOnError={[
-                                'password',
-                                'password_confirmation',
-                                'current_password',
-                            ]}
-                            resetOnSuccess
-                            onError={(errors) => {
-                                if (errors.password) {
-                                    passwordInput.current?.focus();
-                                }
+                    <Form
+                        noValidate
+                        {...SecurityController.update.form()}
+                        options={{
+                            preserveScroll: true,
+                        }}
+                        resetOnError={[
+                            'password',
+                            'password_confirmation',
+                            'current_password',
+                        ]}
+                        resetOnSuccess
+                        onError={(errors) => {
+                            if (errors.password) {
+                                passwordInput.current?.focus();
+                            }
 
-                                if (errors.current_password) {
-                                    currentPasswordInput.current?.focus();
-                                }
-                            }}
-                            className="space-y-5"
-                        >
-                            {({ errors, processing }) => (
-                                <>
-                                    <PasswordField
-                                        name="current_password"
-                                        inputRef={currentPasswordInput}
-                                        label="Current password"
-                                        autoComplete="current-password"
-                                        placeholder="Current password"
-                                        error={errors.current_password}
-                                    />
+                            if (errors.current_password) {
+                                currentPasswordInput.current?.focus();
+                            }
+                        }}
+                    >
+                        {({ errors, processing }) => (
+                            <>
+                                <CardContent>
+                                    <FieldGroup>
+                                        <PasswordField
+                                            name="current_password"
+                                            inputRef={currentPasswordInput}
+                                            label="Current password"
+                                            autoComplete="current-password"
+                                            placeholder="Current password"
+                                            error={errors.current_password}
+                                        />
 
-                                    <PasswordField
-                                        name="password"
-                                        inputRef={passwordInput}
-                                        label="New password"
-                                        autoComplete="new-password"
-                                        placeholder="New password"
-                                        error={errors.password}
-                                    />
+                                        <PasswordField
+                                            name="password"
+                                            inputRef={passwordInput}
+                                            label="New password"
+                                            autoComplete="new-password"
+                                            placeholder="New password"
+                                            error={errors.password}
+                                        />
 
-                                    <PasswordField
-                                        name="password_confirmation"
-                                        label="Confirm password"
-                                        autoComplete="new-password"
-                                        placeholder="Confirm password"
-                                        error={errors.password_confirmation}
-                                    />
+                                        <PasswordField
+                                            name="password_confirmation"
+                                            label="Confirm password"
+                                            autoComplete="new-password"
+                                            placeholder="Confirm password"
+                                            error={errors.password_confirmation}
+                                        />
+                                    </FieldGroup>
+                                </CardContent>
 
-                                    <div>
-                                        <Button
-                                            type="submit"
-                                            disabled={processing}
-                                            pending={processing}
-                                            data-test="update-password-button"
-                                        >
-                                            Save password
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                        </Form>
-                    </CardContent>
+                                <CardFooter className="flex justify-end pt-6">
+                                    <Button
+                                        type="submit"
+                                        disabled={processing}
+                                        pending={processing}
+                                        data-test="update-password-button"
+                                    >
+                                        Save password
+                                    </Button>
+                                </CardFooter>
+                            </>
+                        )}
+                    </Form>
                 </Card>
 
                 {canManageTwoFactor && (
@@ -155,17 +157,17 @@ export default function Security({
                             title="Two-factor authentication"
                             description="Manage your two-factor authentication settings"
                         />
-                        <CardContent className="space-y-6">
+                        <CardContent className="space-y-6 pb-5">
                             {twoFactorEnabled ? (
                                 <>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-text-100">
                                         You will be prompted for a secure,
                                         random pin during login, which you can
                                         retrieve from the TOTP-supported
                                         application on your phone.
                                     </p>
 
-                                    <Form {...disable.form()}>
+                                    <Form noValidate {...disable.form()}>
                                         {({ processing }) => (
                                             <Button
                                                 variant="danger"
@@ -185,7 +187,7 @@ export default function Security({
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-text-100">
                                         When you enable two-factor
                                         authentication, you will be prompted for
                                         a secure pin during login. This pin can
@@ -205,6 +207,7 @@ export default function Security({
                                             </Button>
                                         ) : (
                                             <Form
+                                                noValidate
                                                 {...enable.form()}
                                                 onSuccess={() =>
                                                     setShowSetupModal(true)

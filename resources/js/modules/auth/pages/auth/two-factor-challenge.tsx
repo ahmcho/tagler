@@ -42,6 +42,7 @@ export default function TwoFactorChallenge() {
             <Head title="Two-factor authentication" />
 
             <Form
+                noValidate
                 {...store.form()}
                 className="space-y-5"
                 resetOnError
