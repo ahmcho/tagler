@@ -201,7 +201,6 @@ export default function Index({
                     <CardContent className="py-5">
                         <DataTable
                             caption="Translations"
-                            subtitle="Temporary string subtitle to check the toolbar layout on small screens."
                             search={{
                                 value: key,
                                 onChange: setKey,
