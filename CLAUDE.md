@@ -212,3 +212,11 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - Each feature is a module in `app/Modules/{Module}`. Its models, migrations, routes and providers stay in the module.
 - Never run `migrate:rollback`, `migrate:fresh` or a pending `migrate` against the dev database `tagler_cms` without approval. See `.ai/rules/general.md`.
 - Never create a new git branch unless the user explicitly asks for one. Commit on the current branch.
+
+## CRUD pages (React)
+
+- Build list pages from `resources/js/components/resource/`: `ResourcePage` (shell), `ResourceIndexContent` (table with `filters`, `search`, `rowActions`, `bulkActions` and `confirm`) and `useResourceIndex`. Do not copy table, filter, dialog or `visit()` code into a page.
+- On list pages, put the New button in the `subtitle` prop, guarded by the permission: `subtitle={ability('x.store') ? <Button …/> : undefined}`.
+- Breadcrumbs stay on each page as `Page.layout`.
+- Row and bulk actions take `onAction(target, { onSuccess })`. Pass `onSuccess` to the Inertia request so the confirm dialog closes only on success.
+- Form and show pages go in the same folder when they are built. Until then, follow `.ai/rules/js.md`, section "Resource pages".
