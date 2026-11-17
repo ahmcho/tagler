@@ -1,15 +1,19 @@
 import type { InertiaFormProps } from '@inertiajs/react';
-import type { ChangeEvent, FormEvent } from 'react';
+import { X } from 'lucide-react';
+import type { FormEvent } from 'react';
+import { useState } from 'react';
+import type { SelectOption } from '@/components/searchable-list';
+import { SearchableList } from '@/components/searchable-list';
 import { Button } from '@/components/tailgrids/core/button';
-import { Checkbox } from '@/components/tailgrids/core/checkbox';
 import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
 import { TextField } from '@/components/tailgrids/core/text-field';
+import { useSearch } from '@/hooks/use-search';
+import { permissionsSearch } from '@/routes/roles';
 
-export type PermissionOption = {
+export type SelectedPermission = {
     id: number;
     name: string;
-    description: string | null;
 };
 
 export type RoleFormData = {
@@ -19,7 +23,7 @@ export type RoleFormData = {
 
 type Props = {
     form: InertiaFormProps<RoleFormData>;
-    permissions: PermissionOption[];
+    initialPermissions: SelectedPermission[];
     submitLabel: string;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     onCancel: () => void;
@@ -27,17 +31,51 @@ type Props = {
 
 export function RoleForm({
     form,
-    permissions,
+    initialPermissions,
     submitLabel,
     onSubmit,
     onCancel,
 }: Props) {
-    const togglePermission = (permissionId: number, checked: boolean) => {
-        const selected = checked
-            ? [...form.data.permissions, permissionId]
-            : form.data.permissions.filter((id) => id !== permissionId);
+    const [selectedPermissions, setSelectedPermissions] =
+        useState(initialPermissions);
 
-        form.setData('permissions', selected);
+    const { loadOptions } = useSearch<SelectedPermission>({
+        route: permissionsSearch,
+        toOption: (permission) => ({
+            value: permission.id,
+            label: permission.name,
+        }),
+    });
+
+    const updateSelectedPermissions = (next: SelectedPermission[]) => {
+        setSelectedPermissions(next);
+        form.setData(
+            'permissions',
+            next.map((permission) => permission.id),
+        );
+    };
+
+    const addPermission = (option: SelectOption | null) => {
+        if (option === null) {
+            return;
+        }
+
+        const id = Number(option.value);
+
+        if (selectedPermissions.some((permission) => permission.id === id)) {
+            return;
+        }
+
+        updateSelectedPermissions([
+            ...selectedPermissions,
+            { id, name: option.label },
+        ]);
+    };
+
+    const removePermission = (id: number) => {
+        updateSelectedPermissions(
+            selectedPermissions.filter((permission) => permission.id !== id),
+        );
     };
 
     return (
@@ -58,39 +96,47 @@ export function RoleForm({
                     Permissions
                 </legend>
 
-                <div className="grid gap-3 md:grid-cols-2">
-                    {permissions.map((permission) => (
-                        <label
-                            key={permission.id}
-                            className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 dark:border-gray-800"
-                        >
-                            <Checkbox
-                                aria-label={permission.name}
-                                checked={form.data.permissions.includes(
-                                    permission.id,
-                                )}
-                                onChange={(
-                                    event: ChangeEvent<HTMLInputElement>,
-                                ) =>
-                                    togglePermission(
-                                        permission.id,
-                                        event.target.checked,
-                                    )
-                                }
-                            />
-                            <span>
-                                <span className="block font-mono text-sm text-gray-800 dark:text-white/90">
+                <SearchableList
+                    inputId="role-permissions-search"
+                    instanceId="role-permissions-search"
+                    placeholder="Search permissions to add"
+                    loadingMessage="Loading permissions"
+                    noOptionsMessage="No permissions found"
+                    loadOptions={loadOptions}
+                    value={null}
+                    onChange={addPermission}
+                    isClearable={false}
+                    hasError={Boolean(form.errors.permissions)}
+                />
+
+                {selectedPermissions.length === 0 ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        No permissions selected.
+                    </p>
+                ) : (
+                    <ul className="flex max-h-48 flex-wrap gap-2 overflow-y-auto">
+                        {selectedPermissions.map((permission) => (
+                            <li
+                                key={permission.id}
+                                className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 py-1 pr-1 pl-2.5 dark:border-gray-800 dark:bg-gray-800"
+                            >
+                                <span className="font-mono text-xs text-gray-800 dark:text-white/90">
                                     {permission.name}
                                 </span>
-                                {permission.description && (
-                                    <span className="block text-xs text-gray-500 dark:text-gray-400">
-                                        {permission.description}
-                                    </span>
-                                )}
-                            </span>
-                        </label>
-                    ))}
-                </div>
+                                <button
+                                    type="button"
+                                    aria-label={`Remove ${permission.name}`}
+                                    onClick={() =>
+                                        removePermission(permission.id)
+                                    }
+                                    className="cursor-pointer rounded p-0.5 text-gray-500 hover:bg-gray-200 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                                >
+                                    <X className="size-3.5" />
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
 
                 {form.errors.permissions && (
                     <p className="text-sm text-red-600">

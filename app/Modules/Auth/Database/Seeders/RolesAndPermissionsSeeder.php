@@ -30,7 +30,7 @@ class RolesAndPermissionsSeeder extends Seeder
             );
         }
 
-        Role::query()->firstOrCreate(['name' => Role::ADMIN, 'guard_name' => 'web'])
+        Role::query()->firstOrCreate(['name' => config('modules.auth.admin_role_name'), 'guard_name' => 'web'])
             ->syncPermissions(array_column($permissions, 'name'));
 
         Role::query()->firstOrCreate(['name' => 'User', 'guard_name' => 'web']);
@@ -40,7 +40,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $adminEmail = env('ADMIN_EMAIL');
 
         if (is_string($adminEmail) && $adminEmail !== '') {
-            User::query()->where('email', $adminEmail)->first()?->assignRole(Role::ADMIN);
+            User::query()->where('email', $adminEmail)->first()?->assignRole(config('modules.auth.admin_role_name'));
         }
     }
 }

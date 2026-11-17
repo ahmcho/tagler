@@ -12,6 +12,7 @@ Route::middleware(['auth', 'verified', 'password.confirm'])->group(function () {
         ->parameters(['roles' => 'role']);
 
     Route::get('settings/roles-search', [RoleController::class, 'search'])->name('roles.search');
+    Route::get('settings/roles-permissions-search', [RoleController::class, 'permissionsSearch'])->name('roles.permissions-search');
 
     Route::get('settings/permissions', [PermissionController::class, 'index'])->name('permissions.index');
     Route::get('settings/permissions-search', [PermissionController::class, 'search'])->name('permissions.search');

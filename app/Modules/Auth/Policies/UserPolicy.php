@@ -3,35 +3,34 @@
 namespace App\Modules\Auth\Policies;
 
 use App\Models\User;
-use App\Modules\Auth\Concerns\HasPermissionCheck;
 use App\Modules\Auth\Concerns\HasTranslatedDenialResponse;
 use App\Modules\Auth\Support\LastAdminGuard;
 use Illuminate\Auth\Access\Response;
 
 class UserPolicy
 {
-    use HasPermissionCheck, HasTranslatedDenialResponse;
+    use HasTranslatedDenialResponse;
 
     public function __construct(private readonly LastAdminGuard $lastAdminGuard) {}
 
     public function viewAny(User $user): Response
     {
-        return $this->check(allowed: $this->holdsPermission($user, 'users.index'));
+        return $this->check(allowed: $user->can('users.index'));
     }
 
     public function view(User $user, User $model): Response
     {
-        return $this->check(allowed: $this->holdsPermission($user, 'users.show'));
+        return $this->check(allowed: $user->can('users.show'));
     }
 
     public function create(User $user): Response
     {
-        return $this->check(allowed: $this->holdsPermission($user, 'users.store'));
+        return $this->check(allowed: $user->can('users.store'));
     }
 
     public function update(User $user, User $model): Response
     {
-        return $this->check(allowed: $this->holdsPermission($user, 'users.update'));
+        return $this->check(allowed: $user->can('users.update'));
     }
 
     /**
@@ -43,7 +42,7 @@ class UserPolicy
             return $this->check(allowed: false);
         }
 
-        return $this->check(allowed: $this->holdsPermission($user, 'users.destroy'));
+        return $this->check(allowed: $user->can('users.destroy'));
     }
 
     public function restore(User $user, User $model): Response

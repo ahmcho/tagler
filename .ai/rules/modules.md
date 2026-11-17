@@ -13,6 +13,7 @@ Each feature lives in its own module under `app/Modules/{Module}`. The module ow
 app/Modules/{Module}/
   Actions/ Concerns/ Console/ Controllers/ Enums/ Models/ Observers/
   Providers/ Repositories/ Requests/ Resources/ Services/ Support/
+  config/                  module config, read with config('modules.{module}.key')
   Database/Migrations/     module migrations
   routes/settings.php      module routes
 ```
@@ -60,6 +61,14 @@ Do not put a console or channel file in `app/Modules/{Module}/routes/`. The `boo
 ## Models
 
 A module's models live in `app/Modules/{Module}/Models`. Do not put them in `app/Models`. The only exception is `App\Models\User`, which Fortify and Laravel require.
+
+## Module config
+
+A module declares its settings in `app/Modules/{Module}/config/{module}.php`. The provider merges the file in `register()` under the `modules.{module}` key, so the values read with `config('modules.{module}.key')`. Put `env()` defaults in the module file. Do not add module settings to `config/`:
+
+```php
+$this->mergeConfigFrom(__DIR__.'/../config/auth.php', 'modules.auth');
+```
 
 ## Concerns, Contracts and bindings
 

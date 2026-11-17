@@ -5,10 +5,7 @@ import {
     CardContent,
     CardHeader,
 } from '@/components/tailgrids/core/card';
-import type {
-    PermissionOption,
-    RoleFormData,
-} from '@/modules/auth/components/role-form';
+import type { RoleFormData } from '@/modules/auth/components/role-form';
 import { RoleForm } from '@/modules/auth/components/role-form';
 import { index, update } from '@/routes/roles';
 
@@ -18,10 +15,9 @@ type Props = {
         name: string;
         permissions: { id: number; name: string }[];
     };
-    permissions: PermissionOption[];
 };
 
-export default function Edit({ role, permissions }: Props) {
+export default function Edit({ role }: Props) {
     const form = useForm<RoleFormData>({
         name: role.name,
         permissions: role.permissions.map((permission) => permission.id),
@@ -46,7 +42,7 @@ export default function Edit({ role, permissions }: Props) {
                 <CardContent>
                     <RoleForm
                         form={form}
-                        permissions={permissions}
+                        initialPermissions={role.permissions}
                         submitLabel="Save"
                         onSubmit={submit}
                         onCancel={() => router.visit(index.url())}
