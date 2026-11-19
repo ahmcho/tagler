@@ -1,7 +1,6 @@
 import type { InertiaFormProps } from '@inertiajs/react';
-import type { ChangeEvent } from 'react';
+import { DualListBox } from '@/components/dual-list-box';
 import { PasswordField } from '@/components/password-field';
-import { Checkbox } from '@/components/tailgrids/core/checkbox';
 import {
     FieldError,
     FieldLabel,
@@ -32,13 +31,10 @@ type Props = {
 
 /** User fields only. The shared `ResourceForm` provides the form and buttons. */
 export function UserFields({ form, roles, isCreating }: Props) {
-    const toggleRole = (roleId: number, checked: boolean) => {
-        const selected = checked
-            ? [...form.data.roles, roleId]
-            : form.data.roles.filter((id) => id !== roleId);
-
-        form.setData('roles', selected);
-    };
+    const roleOptions = roles.map((role) => ({
+        value: role.id,
+        label: role.name,
+    }));
 
     return (
         <>
@@ -89,25 +85,18 @@ export function UserFields({ form, roles, isCreating }: Props) {
             <fieldset className="flex flex-col gap-3">
                 <FieldLegend variant="label">Roles</FieldLegend>
 
-                <div className="grid gap-3 md:grid-cols-2">
-                    {roles.map((role) => (
-                        <label
-                            key={role.id}
-                            className="flex items-center gap-3 rounded-lg border border-base-200 p-3"
-                        >
-                            <Checkbox
-                                aria-label={role.name}
-                                checked={form.data.roles.includes(role.id)}
-                                onChange={(
-                                    event: ChangeEvent<HTMLInputElement>,
-                                ) => toggleRole(role.id, event.target.checked)}
-                            />
-                            <span className="text-sm text-title-50">
-                                {role.name}
-                            </span>
-                        </label>
-                    ))}
-                </div>
+                <DualListBox
+                    id="user-roles"
+                    options={roleOptions}
+                    value={form.data.roles}
+                    onChange={(value) =>
+                        form.setData(
+                            'roles',
+                            value.map((id) => Number(id)),
+                        )
+                    }
+                    hasError={Boolean(form.errors.roles)}
+                />
 
                 {form.errors.roles && (
                     <p className="text-sm text-input-error">
