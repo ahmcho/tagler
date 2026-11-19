@@ -1,8 +1,9 @@
-import { History } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { Eye, History } from 'lucide-react';
 import type { DataTableColumn } from '@/components/data-table';
 import { ResourceIndexContent } from '@/components/resource/resource-index-content';
 import { ResourcePage } from '@/components/resource/resource-page';
-import { index } from '@/routes/activity-logs';
+import { index, show } from '@/routes/activity-logs';
 
 type ActivityLogRecord = {
     id: string;
@@ -98,6 +99,15 @@ export default function Index({ records, filters }: Props) {
                 rows={records.data}
                 columns={columns}
                 getRowId={(log) => log.id}
+                rowActions={(log) => [
+                    {
+                        key: 'view',
+                        label: 'View',
+                        icon: <Eye className="size-4" />,
+                        tone: 'primary' as const,
+                        onAction: () => router.visit(show.url(log.id)),
+                    },
+                ]}
                 emptyState="No activity found."
                 filters={{
                     title: 'Filter activity',

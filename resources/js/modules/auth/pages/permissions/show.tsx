@@ -23,7 +23,6 @@ export default function Show({ permission }: Props) {
 
             <div className="space-y-6">
                 <ResourceDetails
-                    title={permission.name}
                     items={[
                         {
                             label: 'Description',

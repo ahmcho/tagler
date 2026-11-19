@@ -1,38 +1,33 @@
-import { Head, router } from '@inertiajs/react';
-import { Pencil, Users } from 'lucide-react';
+import { Head } from '@inertiajs/react';
+import { Users } from 'lucide-react';
+import { ResourceActionButtons } from '@/components/resource/resource-action-buttons';
 import { ResourceDetails } from '@/components/resource/resource-details';
-import { Button } from '@/components/tailgrids/core/button';
-import { Card, CardContent } from '@/components/tailgrids/core/card';
-import { useAbility } from '@/hooks/use-ability';
-import { index as activityLogIndex } from '@/routes/activity-logs';
-import { edit, index, show } from '@/routes/users';
+import { userRowActions } from '@/modules/auth/components/user-row-actions';
+import type { UserRecord } from '@/modules/auth/components/user-row-actions';
+import { index, show } from '@/routes/users';
 
 type Props = {
-    user: {
-        id: number;
-        name: string;
-        email: string;
-        roles: { id: number; name: string }[];
-        created_at: string;
-        can: { update: boolean; delete: boolean };
-    };
+    user: UserRecord;
 };
 
 export default function Show({ user }: Props) {
-    const ability = useAbility();
-
     return (
         <>
             <Head title={`User ${user.name}`} />
 
             <div className="space-y-6">
                 <ResourceDetails
-                    title="User Details"
                     items={[
                         { label: 'Name', value: user.name },
                         { label: 'Email', value: user.email },
                         { label: 'Created', value: user.created_at },
                     ]}
+                    actions={
+                        <ResourceActionButtons
+                            actions={userRowActions(user)}
+                            target={user}
+                        />
+                    }
                 />
             </div>
         </>

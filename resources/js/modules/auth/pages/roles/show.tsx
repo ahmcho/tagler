@@ -1,18 +1,13 @@
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { ShieldCheck } from 'lucide-react';
+import { ResourceActionButtons } from '@/components/resource/resource-action-buttons';
 import { ResourceDetails } from '@/components/resource/resource-details';
-import { Button } from '@/components/tailgrids/core/button';
-import { index as activityLogIndex } from '@/routes/activity-logs';
+import { roleRowActions } from '@/modules/auth/components/role-row-actions';
+import type { RoleRecord } from '@/modules/auth/components/role-row-actions';
 import { index, show } from '@/routes/roles';
 
 type Props = {
-    role: {
-        id: number;
-        name: string;
-        guard_name: string;
-        permissions: { id: number; name: string }[];
-        created_at: string;
-    };
+    role: RoleRecord;
 };
 
 export default function Show({ role }: Props) {
@@ -22,7 +17,6 @@ export default function Show({ role }: Props) {
 
             <div className="space-y-6">
                 <ResourceDetails
-                    title="Role Details"
                     items={[
                         { label: 'Name', value: role.name },
                         { label: 'Guard', value: role.guard_name },
@@ -46,26 +40,13 @@ export default function Show({ role }: Props) {
                                 ),
                         },
                     ]}
+                    actions={
+                        <ResourceActionButtons
+                            actions={roleRowActions(role)}
+                            target={role}
+                        />
+                    }
                 />
-
-                <div className="flex justify-end gap-2">
-                    <Button
-                        appearance="outline"
-                        onPress={() =>
-                            router.visit(
-                                activityLogIndex.url({
-                                    query: {
-                                        subject_type:
-                                            'App\\Modules\\Auth\\Models\\Role',
-                                        subject_id: role.id,
-                                    },
-                                }),
-                            )
-                        }
-                    >
-                        View activity
-                    </Button>
-                </div>
             </div>
         </>
     );

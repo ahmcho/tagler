@@ -1,24 +1,16 @@
 import { router } from '@inertiajs/react';
-import { Eye, Pencil, Plus, Trash2, Users } from 'lucide-react';
+import { Eye, Plus, Users } from 'lucide-react';
 import type { DataTableColumn } from '@/components/data-table';
 import { ResourceIndexContent } from '@/components/resource/resource-index-content';
 import { ResourcePage } from '@/components/resource/resource-page';
-import type { ResourceActionOptions } from '@/components/resource/types';
 import type { SelectOption } from '@/components/searchable-list';
 import { Button } from '@/components/tailgrids/core/button';
 import { useAbility } from '@/hooks/use-ability';
 import { useSearch } from '@/hooks/use-search';
+import { userRowActions } from '@/modules/auth/components/user-row-actions';
+import type { UserRecord } from '@/modules/auth/components/user-row-actions';
 import { search as rolesSearch } from '@/routes/roles';
-import { create, destroy, edit, index, show } from '@/routes/users';
-
-type UserRecord = {
-    id: number;
-    name: string;
-    email: string;
-    roles: { id: number; name: string }[];
-    created_at: string;
-    can: { update: boolean; delete: boolean };
-};
+import { create, index, show } from '@/routes/users';
 
 type Props = {
     users: {
@@ -105,44 +97,7 @@ export default function Index({ users, filters, selectedRole, status }: Props) {
                         tone: 'primary' as const,
                         onAction: () => router.visit(show.url(user.id)),
                     },
-                    ...(user.can.update
-                        ? [
-                              {
-                                  key: 'edit',
-                                  label: 'Edit',
-                                  icon: <Pencil className="size-4" />,
-                                  tone: 'success' as const,
-                                  onAction: () =>
-                                      router.visit(edit.url(user.id)),
-                              },
-                          ]
-                        : []),
-                    ...(user.can.delete
-                        ? [
-                              {
-                                  key: 'delete',
-                                  label: 'Delete',
-                                  icon: <Trash2 className="size-4" />,
-                                  tone: 'danger' as const,
-                                  confirm: {
-                                      title: 'Delete user',
-                                      description: (target: UserRecord) =>
-                                          `Delete the user "${target.name}"? This cannot be undone.`,
-                                      confirmLabel: 'Delete',
-                                      icon: <Trash2 />,
-                                      tone: 'danger' as const,
-                                  },
-                                  onAction: (
-                                      target: UserRecord,
-                                      options: ResourceActionOptions,
-                                  ) =>
-                                      router.delete(destroy.url(target.id), {
-                                          preserveScroll: true,
-                                          onSuccess: options.onSuccess,
-                                      }),
-                              },
-                          ]
-                        : []),
+                    ...userRowActions(user),
                 ]}
             />
         </ResourcePage>

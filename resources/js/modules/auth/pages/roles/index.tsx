@@ -1,25 +1,16 @@
 import { router } from '@inertiajs/react';
-import { Eye, History, Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import { Eye, Plus, ShieldCheck } from 'lucide-react';
 import type { DataTableColumn } from '@/components/data-table';
 import { ResourceIndexContent } from '@/components/resource/resource-index-content';
 import { ResourcePage } from '@/components/resource/resource-page';
-import type { ResourceActionOptions } from '@/components/resource/types';
 import type { SelectOption } from '@/components/searchable-list';
 import { Button } from '@/components/tailgrids/core/button';
 import { useAbility } from '@/hooks/use-ability';
 import { useSearch } from '@/hooks/use-search';
-import { index as activityLogIndex } from '@/routes/activity-logs';
+import { roleRowActions } from '@/modules/auth/components/role-row-actions';
+import type { RoleRecord } from '@/modules/auth/components/role-row-actions';
 import { search as permissionsSearch } from '@/routes/permissions';
-import { create, destroy, edit, index, show } from '@/routes/roles';
-
-type RoleRecord = {
-    id: number;
-    name: string;
-    guard_name: string;
-    permissions: { id: number; name: string }[];
-    created_at: string;
-    can: { update: boolean; delete: boolean };
-};
+import { create, index, show } from '@/routes/roles';
 
 type Props = {
     roles: {
@@ -122,63 +113,7 @@ export default function Index({
                         tone: 'primary' as const,
                         onAction: () => router.visit(show.url(role.id)),
                     },
-                    ...(role.can.update
-                        ? [
-                              {
-                                  key: 'edit',
-                                  label: 'Edit',
-                                  icon: <Pencil className="size-4" />,
-                                  tone: 'success' as const,
-                                  onAction: () =>
-                                      router.visit(edit.url(role.id)),
-                              },
-                          ]
-                        : []),
-                    ...(role.can.delete
-                        ? [
-                              {
-                                  key: 'delete',
-                                  label: 'Delete',
-                                  icon: <Trash2 className="size-4" />,
-                                  tone: 'danger' as const,
-                                  confirm: {
-                                      title: 'Delete role',
-                                      description: (target: RoleRecord) =>
-                                          `Delete the role "${target.name}"? Users who hold it lose its permissions.`,
-                                      confirmLabel: 'Delete',
-                                      icon: <Trash2 />,
-                                      tone: 'danger' as const,
-                                  },
-                                  onAction: (
-                                      target: RoleRecord,
-                                      options: ResourceActionOptions,
-                                  ) =>
-                                      router.delete(destroy.url(target.id), {
-                                          preserveScroll: true,
-                                          onSuccess: options.onSuccess,
-                                      }),
-                              },
-                          ]
-                        : []),
-                    ...(ability('activity-logs.index')
-                        ? [
-                              {
-                                  key: 'logs',
-                                  label: 'Activity',
-                                  icon: <History className="size-4" />,
-                                  onAction: () =>
-                                      router.visit(
-                                          activityLogIndex.url({
-                                              query: {
-                                                  subject_type:
-                                                      'App\\Modules\\Auth\\Models\\Role',
-                                                  subject_id: role.id,
-                                              },
-                                          }),
-                                      ),
-                              },
-                          ]
-                        : []),
+                    ...roleRowActions(role),
                 ]}
             />
         </ResourcePage>

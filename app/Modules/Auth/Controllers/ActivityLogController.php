@@ -31,4 +31,15 @@ class ActivityLogController extends Controller
             'filters' => (object) $filters,
         ]);
     }
+
+    public function show(string $activityLog): Response
+    {
+        $log = $this->service->findOrFail($activityLog);
+
+        Gate::authorize('view', $log);
+
+        return Inertia::render('activity-logs/show', [
+            'log' => ActivityLogResource::make($log)->resolve(),
+        ]);
+    }
 }
