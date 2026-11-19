@@ -1,11 +1,12 @@
 import { useForm } from '@inertiajs/react';
+import { ShieldCheck } from 'lucide-react';
 import { ResourceEditContent } from '@/components/resource/resource-edit-content';
 import type {
     RoleFormData,
     SelectedPermission,
 } from '@/modules/auth/components/role-form';
 import { RoleFields } from '@/modules/auth/components/role-form';
-import { index, update } from '@/routes/roles';
+import { edit, index, update } from '@/routes/roles';
 
 type Props = {
     model: {
@@ -36,11 +37,16 @@ export default function Edit({ model }: Props) {
     );
 }
 
-Edit.layout = {
+Edit.layout = (page: Props) => ({
     breadcrumbs: [
         {
             title: 'Roles',
             href: index.url(),
+            icon: <ShieldCheck />,
+        },
+        {
+            title: `Edit role ${page.model.name}`,
+            href: edit.url(page.model.id),
         },
     ],
-};
+});

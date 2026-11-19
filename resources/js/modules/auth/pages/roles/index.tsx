@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import type { DataTableColumn } from '@/components/data-table';
 import { ResourceIndexContent } from '@/components/resource/resource-index-content';
 import { ResourcePage } from '@/components/resource/resource-page';
@@ -190,6 +190,7 @@ Index.layout = {
         {
             title: 'Roles',
             href: index.url(),
+            icon: <ShieldCheck />,
         },
     ],
 };

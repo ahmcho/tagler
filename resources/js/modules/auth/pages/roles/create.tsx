@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import { ShieldCheck } from 'lucide-react';
 import { ResourceCreateContent } from '@/components/resource/resource-create-content';
 import type {
     RoleFormData,
@@ -41,6 +42,7 @@ Create.layout = {
         {
             title: 'Roles',
             href: index.url(),
+            icon: <ShieldCheck />,
         },
         {
             title: 'New role',

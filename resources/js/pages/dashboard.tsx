@@ -1,4 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
+import { LayoutGrid } from 'lucide-react';
 import {
     Card,
     CardContent,
@@ -73,6 +74,7 @@ Dashboard.layout = {
         {
             title: 'Dashboard',
             href: dashboard().url,
+            icon: <LayoutGrid />,
         },
     ],
 };

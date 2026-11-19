@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/tailgrids/core/button';
 import {
     Card,
@@ -6,7 +7,7 @@ import {
     CardHeader,
 } from '@/components/tailgrids/core/card';
 import { index as activityLogIndex } from '@/routes/activity-logs';
-import { index } from '@/routes/roles';
+import { index, show } from '@/routes/roles';
 
 type Props = {
     role: {
@@ -92,11 +93,16 @@ export default function Show({ role }: Props) {
     );
 }
 
-Show.layout = {
+Show.layout = (page: Props) => ({
     breadcrumbs: [
         {
             title: 'Roles',
             href: index.url(),
+            icon: <ShieldCheck />,
+        },
+        {
+            title: page.role.name,
+            href: show.url(page.role.id),
         },
     ],
-};
+});

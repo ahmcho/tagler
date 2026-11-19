@@ -1,9 +1,10 @@
 import { useForm } from '@inertiajs/react';
+import { Languages } from 'lucide-react';
 import { ResourceEditContent } from '@/components/resource/resource-edit-content';
 import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
 import { TextField } from '@/components/tailgrids/core/text-field';
-import { index, update } from '@/routes/translations';
+import { edit, index, update } from '@/routes/translations';
 
 type Locale = {
     code: string;
@@ -79,11 +80,16 @@ export default function Edit({
     );
 }
 
-Edit.layout = {
+Edit.layout = (page: Props) => ({
     breadcrumbs: [
         {
             title: 'Translations',
             href: index.url(),
+            icon: <Languages />,
+        },
+        {
+            title: `${page.group}.${page.translationKey}`,
+            href: edit.url([page.group, page.translationKey]),
         },
     ],
-};
+});

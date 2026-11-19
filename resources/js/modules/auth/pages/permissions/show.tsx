@@ -1,11 +1,12 @@
 import { Head, router } from '@inertiajs/react';
+import { KeyRound } from 'lucide-react';
 import { Button } from '@/components/tailgrids/core/button';
 import {
     Card,
     CardContent,
     CardHeader,
 } from '@/components/tailgrids/core/card';
-import { index } from '@/routes/permissions';
+import { index, show } from '@/routes/permissions';
 import { index as rolesIndex, show as roleShow } from '@/routes/roles';
 
 type Props = {
@@ -95,11 +96,16 @@ export default function Show({ permission }: Props) {
     );
 }
 
-Show.layout = {
+Show.layout = (page: Props) => ({
     breadcrumbs: [
         {
             title: 'Permissions',
             href: index.url(),
+            icon: <KeyRound />,
+        },
+        {
+            title: page.permission.name,
+            href: show.url(page.permission.id),
         },
     ],
-};
+});

@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { KeyRound } from 'lucide-react';
 import type { DataTableColumn } from '@/components/data-table';
 import { ResourceIndexContent } from '@/components/resource/resource-index-content';
 import { ResourcePage } from '@/components/resource/resource-page';
@@ -48,7 +49,7 @@ export default function Index({ permissions, filters }: Props) {
     return (
         <ResourcePage title="Permissions">
             <ResourceIndexContent<PermissionRecord>
-                caption="Permissions"                
+                caption="Permissions"
                 indexUrl={index.url()}
                 dataKey="permissions"
                 query={filters}
@@ -91,6 +92,7 @@ Index.layout = {
         {
             title: 'Permissions',
             href: index.url(),
+            icon: <KeyRound />,
         },
     ],
 };

@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import { Users } from 'lucide-react';
 import { ResourceCreateContent } from '@/components/resource/resource-create-content';
 import type {
     RoleOption,
@@ -51,6 +52,7 @@ Create.layout = {
         {
             title: 'Users',
             href: index.url(),
+            icon: <Users />,
         },
         {
             title: 'New user',
