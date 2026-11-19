@@ -21,6 +21,8 @@ TailGrids uses react-aria. Check the source before you use a prop. For example, 
 
 `SelectField` in `components/select-field.tsx` is the default for a single select with a list of string options. Pass `label`, `value`, `onChange`, `options` and optionally `allOptionLabel`, where `''` means "all". Use the TailGrids `Select` parts from `core/select.tsx` directly only when you need sections, custom items or multiple selection.
 
+`DualListBox` (`components/dual-list-box.tsx`) wraps `react-dual-listbox` for picking many items from one list, for example role permissions. Pass `options`, `value` (ids), `onChange` and `hasError`. Its icons are lucide and its styles are the `.react-dual-listbox` and `.rdl-*` rules in `resources/css/app.css`. The package ships no types, so `resources/js/types/react-dual-listbox.d.ts` declares them.
+
 `DataTable` (`components/data-table.tsx`) has optional toolbar props: `title` and `subtitle` (each a string or any React node; the toolbar wraps them on narrow screens), `search` (controlled, submits on Enter; full width with the buttons on the row below until `lg`), `filter` (a Filter button that opens a `Dialog` with the children as the body), and `bulkActions` (a vertical 3-dot menu for the checked rows; needs `selection`). Row actions keep the horizontal 3-dot menu. Use `downloadCsv` from `utils/download-csv.ts` for CSV exports.
 
 ## Resource pages

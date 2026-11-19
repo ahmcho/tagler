@@ -99,6 +99,18 @@ class RoleController extends Controller
         return $id === null ? null : $resolve($id)->resolve();
     }
 
+    /**
+     * Every permission, sorted by name, for the role form's dual listbox.
+     *
+     * @return array<int, array{id: int, name: string, description: string|null}>
+     */
+    private function permissionOptions(): array
+    {
+        return PermissionSearchResource::collection(
+            $this->permissionService->getAll(columns: ['id', 'name', 'description'])->sortBy('name')->values(),
+        )->resolve();
+    }
+
     public function create(): Response
     {
         $model = new Role;
@@ -106,6 +118,7 @@ class RoleController extends Controller
 
         return Inertia::render('roles/create', [
             'model' => RoleResource::make($model)->resolve(),
+            'permissions' => $this->permissionOptions(),
         ]);
     }
 
@@ -127,6 +140,7 @@ class RoleController extends Controller
     {
         return Inertia::render('roles/edit', [
             'model' => RoleResource::make($role->load('permissions'))->resolve(),
+            'permissions' => $this->permissionOptions(),
         ]);
     }
 
