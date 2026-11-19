@@ -6,7 +6,7 @@ use App\Modules\Auth\Controllers\RoleController;
 use App\Modules\Auth\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified', 'password.confirm'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('roles', RoleController::class)
         ->names('roles')
         ->parameters(['roles' => 'role']);
