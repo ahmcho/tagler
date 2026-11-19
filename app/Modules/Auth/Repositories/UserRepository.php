@@ -26,4 +26,12 @@ class UserRepository extends EloquentRepository implements UserRepositoryContrac
     {
         return $this->model->newQuery()->role($roleName)->count();
     }
+
+    public function findByEmail(string $email): ?User
+    {
+        /** @var User|null $user */
+        $user = $this->model->newQuery()->where('email', $email)->first();
+
+        return $user;
+    }
 }

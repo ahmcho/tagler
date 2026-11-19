@@ -141,6 +141,21 @@
     --color-badge-primary-background: #eff3ff;
     --color-badge-primary-text: #3758f9;
     --color-badge-primary-icon-color: #3758f9;
+    --color-badge-neutral-background: #f3f4f6;
+    --color-badge-neutral-text: #374151;
+    --color-badge-neutral-icon-color: #6b7280;
+    --color-badge-success-background: #dcfce7;
+    --color-badge-success-text: #15803d;
+    --color-badge-success-icon-color: #22c55e;
+    --color-badge-error-background: #fee2e2;
+    --color-badge-error-text: #b91c1c;
+    --color-badge-error-icon-color: #ef4444;
+
+    /* ======== Toggle Color =========*/
+    --color-toggle-active-background: #3758f9;
+    --color-toggle-default-background: #d1d5db;
+    --color-toggle-disabled-background: #e5e7eb;
+    --color-toggle-disabled-foreground: #f3f4f6;
 
     /* ======== Alert Success Color =========*/
     --color-alert-success-background: #f0fdf4;
@@ -304,6 +319,19 @@
     --color-badge-primary-background: #3758f81f;
     --color-badge-primary-text: #91aeff;
     --color-badge-primary-icon-color: #91aeff;
+    --color-badge-neutral-background: #9ca3af26;
+    --color-badge-neutral-text: #d1d5db;
+    --color-badge-neutral-icon-color: #9ca3af;
+    --color-badge-success-background: #22c55e26;
+    --color-badge-success-text: #86efac;
+    --color-badge-success-icon-color: #4ade80;
+    --color-badge-error-background: #ef444426;
+    --color-badge-error-text: #fca5a5;
+    --color-badge-error-icon-color: #f87171;
+    --color-toggle-active-background: #3758f9;
+    --color-toggle-default-background: #4b5563;
+    --color-toggle-disabled-background: #374151;
+    --color-toggle-disabled-foreground: #6b7280;
     --color-alert-success-background: #22c55e0d;
     --color-alert-success-icon-background: #16a34a;
     --color-alert-success-border: #14532d;

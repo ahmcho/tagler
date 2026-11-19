@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Services;
 
 use App\Models\User;
+use App\Modules\Auth\Enums\ModelStatusEnum;
 use App\Modules\Auth\Repositories\Contracts\UserRepositoryContract;
 use App\Modules\Auth\Services\Contracts\UserServiceContract;
 use Crud\Services\BaseCrudService;
@@ -23,6 +24,7 @@ class UserService extends BaseCrudService implements UserServiceContract
                 'name' => $payload['name'],
                 'email' => $payload['email'],
                 'password' => $payload['password'],
+                'status' => $payload['status'] ?? ModelStatusEnum::Active->value,
             ]);
 
             $user->markEmailAsVerified();
@@ -36,6 +38,10 @@ class UserService extends BaseCrudService implements UserServiceContract
     {
         return DB::transaction(function () use ($modelOrModelId, $payload): Model {
             $attributes = ['name' => $payload['name'], 'email' => $payload['email']];
+
+            if (array_key_exists('status', $payload)) {
+                $attributes['status'] = $payload['status'];
+            }
 
             if (! empty($payload['password'])) {
                 $attributes['password'] = $payload['password'];

@@ -5,12 +5,14 @@ import type {
     ResourceRowAction,
 } from '@/components/resource/types';
 import { destroy, edit } from '@/routes/users';
+import type { ModelStatusEnum } from '@/types/generated';
 import { activityLogAction } from './activity-log-action';
 
 export type UserRecord = {
     id: number;
     name: string;
     email: string;
+    status: ModelStatusEnum;
     roles: { id: number; name: string }[];
     created_at: string;
     can: { update: boolean; delete: boolean };

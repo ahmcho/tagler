@@ -9,6 +9,7 @@ import { useAbility } from '@/hooks/use-ability';
 import { useSearch } from '@/hooks/use-search';
 import { userRowActions } from '@/modules/auth/components/user-row-actions';
 import type { UserRecord } from '@/modules/auth/components/user-row-actions';
+import { UserStatusBadge } from '@/modules/auth/components/user-status-badge';
 import { search as rolesSearch } from '@/routes/roles';
 import { create, index, show } from '@/routes/users';
 
@@ -28,14 +29,9 @@ const columns: DataTableColumn<UserRecord>[] = [
     { key: 'name', header: 'Name', accessor: 'name', sortable: true },
     { key: 'email', header: 'Email', accessor: 'email', sortable: true },
     {
-        key: 'roles',
-        header: 'Roles',
-        cell: (user) => user.roles.map((role) => role.name).join(', ') || '—',
-    },
-    {
-        key: 'created_at',
-        header: 'Created',
-        cell: (user) => user.created_at,
+        key: 'status',
+        header: 'Status',
+        cell: (user) => <UserStatusBadge status={user.status} />,
         sortable: true,
     },
 ];
