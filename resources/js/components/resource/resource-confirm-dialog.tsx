@@ -8,7 +8,7 @@ import {
     DialogIcon,
     DialogTitle,
 } from '@/components/tailgrids/core/dialog';
-import type { ResourceActionOptions } from './types';
+import type { ResourceActionOptions, ResourceConfirm } from './types';
 
 /** A confirm request waiting for the user. `run` starts the action once they confirm. */
 export type PendingConfirm = {
@@ -19,6 +19,21 @@ export type PendingConfirm = {
     tone: 'default' | 'danger';
     run: (options: ResourceActionOptions) => void;
 };
+
+export function createPendingConfirm<Target>(
+    confirm: ResourceConfirm<Target>,
+    target: Target,
+    run: (options: ResourceActionOptions) => void,
+): PendingConfirm {
+    return {
+        title: confirm.title,
+        description: confirm.description(target),
+        confirmLabel: confirm.confirmLabel,
+        icon: confirm.icon,
+        tone: confirm.tone ?? 'default',
+        run,
+    };
+}
 
 type ResourceConfirmDialogProps = {
     pending: PendingConfirm | null;

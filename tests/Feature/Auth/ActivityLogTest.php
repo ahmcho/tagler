@@ -137,3 +137,55 @@ test('the activity log collection has indexes for the filters and the sort order
         ->and($indexKeys)->toContain(json_encode(['event' => 1]))
         ->and($indexKeys)->toContain(json_encode(['created_at' => -1]));
 });
+
+test('an Admin can open the detail page of an activity entry', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('Admin');
+
+    $role = Role::query()->create(['name' => 'Editor', 'guard_name' => 'web']);
+
+    $this->actingAs($admin);
+    $role->update(['name' => 'Chief Editor']);
+
+    $log = ActivityLog::query()->where('event', 'updated')->where('subject_type', Role::class)->where('subject_id', $role->id)->firstOrFail();
+
+    $this->actingAs($admin)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('activity-logs.show', $log->id))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('activity-logs/show')
+            ->where('log.id', (string) $log->id)
+            ->where('log.event', 'updated')
+            ->where('log.causer', $admin->name)
+            ->where('log.changes.attributes', ['name' => 'Chief Editor'])
+            ->where('log.changes.old', ['name' => 'Editor']));
+});
+
+test('a user without the activity-logs.index permission cannot open an activity entry', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('Admin');
+
+    $role = Role::query()->create(['name' => 'Editor', 'guard_name' => 'web']);
+    $role->update(['name' => 'Chief Editor']);
+
+    $log = ActivityLog::query()->where('subject_type', Role::class)->firstOrFail();
+
+    $user = User::factory()->create();
+    $user->assignRole('User');
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('activity-logs.show', $log->id))
+        ->assertForbidden();
+});
+
+test('an unknown activity entry returns not found', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('Admin');
+
+    $this->actingAs($admin)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('activity-logs.show', '65f0c0ffee0000000000abcd'))
+        ->assertNotFound();
+});

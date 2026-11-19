@@ -9,13 +9,14 @@ import type {
 import { DataTable } from '@/components/data-table';
 import { Card, CardContent } from '@/components/tailgrids/core/card';
 import { useCan } from '@/hooks/use-can';
-import { ResourceConfirmDialog } from './resource-confirm-dialog';
+import {
+    ResourceConfirmDialog,
+    createPendingConfirm,
+} from './resource-confirm-dialog';
 import type { PendingConfirm } from './resource-confirm-dialog';
 import { ResourceFilterFields } from './resource-filter-fields';
 import type {
-    ResourceActionOptions,
     ResourceBulkAction,
-    ResourceConfirm,
     ResourceFilters,
     ResourcePagination,
     ResourceQuery,
@@ -45,21 +46,6 @@ type ResourceIndexContentProps<Row> = {
 };
 
 const noop = () => {};
-
-function createPending<Target>(
-    confirm: ResourceConfirm<Target>,
-    target: Target,
-    run: (options: ResourceActionOptions) => void,
-): PendingConfirm {
-    return {
-        title: confirm.title,
-        description: confirm.description(target),
-        confirmLabel: confirm.confirmLabel,
-        icon: confirm.icon,
-        tone: confirm.tone ?? 'default',
-        run,
-    };
-}
 
 /**
  * The list part of a resource page: the card, the table with its search,
@@ -101,7 +87,7 @@ export function ResourceIndexContent<Row>({
         }
 
         setPending(
-            createPending(action.confirm, row, (options) =>
+            createPendingConfirm(action.confirm, row, (options) =>
                 action.onAction(row, options),
             ),
         );
@@ -118,7 +104,7 @@ export function ResourceIndexContent<Row>({
         }
 
         setPending(
-            createPending(action.confirm, ids, (options) =>
+            createPendingConfirm(action.confirm, ids, (options) =>
                 action.onAction(ids, options),
             ),
         );

@@ -36,6 +36,15 @@ class ActivityLogRepository implements ActivityLogRepositoryContract
         return $paginator;
     }
 
+    public function findOrFail(string $id): ActivityLog
+    {
+        $log = ActivityLog::query()->findOrFail($id);
+
+        $this->attachCausers(collect([$log]));
+
+        return $log;
+    }
+
     /**
      * @param  Collection<int, ActivityLog>  $logs
      */

@@ -24,4 +24,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->only(['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']);
 
     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('activity-logs/{activityLog}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
 });

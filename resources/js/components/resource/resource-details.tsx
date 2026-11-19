@@ -12,21 +12,32 @@ export type ResourceDetailItem = {
 };
 
 export type ResourceDetailsProps = {
-    title: string;
+    /** Heading on the left of the card. Defaults to "Details". */
+    title?: string;
     items: ResourceDetailItem[];
+    /** Buttons on the right of the heading. They stack below the heading on narrow screens. */
+    actions?: ReactNode;
 };
 
 /**
  * A read-only vertical list of label and value pairs for show pages. Use it
  * for single records. Use `DataTable` for rows of records.
  */
-export function ResourceDetails({ title, items }: ResourceDetailsProps) {
+export function ResourceDetails({
+    title = 'Details',
+    items,
+    actions,
+}: ResourceDetailsProps) {
     return (
         <Card className="border border-base-200 bg-white dark:border-gray-800 dark:bg-white/3">
             <CardHeader className="px-6 pt-6">
-                <CardTitle className="text-lg tracking-normal md:text-lg dark:text-white/90">
-                    {title}
-                </CardTitle>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <CardTitle className="text-lg tracking-normal md:text-lg dark:text-white/90">
+                        {title}
+                    </CardTitle>
+
+                    {actions && <div className="min-w-0">{actions}</div>}
+                </div>
             </CardHeader>
 
             <CardContent className="px-6 pt-2 pb-6">
