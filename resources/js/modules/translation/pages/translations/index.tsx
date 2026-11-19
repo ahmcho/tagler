@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Download, Pencil, RotateCcw } from 'lucide-react';
+import { Download, Languages, Pencil, RotateCcw } from 'lucide-react';
 import type { DataTableColumn, DataTableRowId } from '@/components/data-table';
 import { ResourceIndexContent } from '@/components/resource/resource-index-content';
 import { ResourcePage } from '@/components/resource/resource-page';
@@ -162,6 +162,7 @@ Index.layout = {
         {
             title: 'Translations',
             href: index.url(),
+            icon: <Languages />,
         },
     ],
 };

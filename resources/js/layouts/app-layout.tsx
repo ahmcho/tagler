@@ -25,9 +25,11 @@ export default function AppLayout({
                         {breadcrumbs.length > 0 && (
                             <nav aria-label="Breadcrumb" className="mb-6">
                                 <Breadcrumbs
+                                    dividerType="chevron"
                                     items={breadcrumbs.map((item) => ({
                                         label: item.title,
                                         href: item.href,
+                                        icon: item.icon,
                                     }))}
                                 />
                             </nav>

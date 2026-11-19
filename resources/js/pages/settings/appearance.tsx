@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Monitor, Moon, Settings, Sun } from 'lucide-react';
 import { Button } from '@/components/tailgrids/core/button';
 import {
     Card,
@@ -60,6 +60,7 @@ Appearance.layout = {
         {
             title: 'Appearance settings',
             href: editAppearance().url,
+            icon: <Settings />,
         },
     ],
 };

@@ -1,4 +1,5 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { Settings } from 'lucide-react';
 import ProfileController from '@/actions/App/Modules/Auth/Controllers/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import { Button } from '@/components/tailgrids/core/button';
@@ -139,6 +140,7 @@ Profile.layout = {
         {
             title: 'Profile settings',
             href: edit().url,
+            icon: <Settings />,
         },
     ],
 };

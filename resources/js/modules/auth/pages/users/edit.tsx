@@ -1,11 +1,12 @@
 import { useForm } from '@inertiajs/react';
+import { Users } from 'lucide-react';
 import { ResourceEditContent } from '@/components/resource/resource-edit-content';
 import type {
     RoleOption,
     UserFormData,
 } from '@/modules/auth/components/user-form';
 import { UserFields } from '@/modules/auth/components/user-form';
-import { index, update } from '@/routes/users';
+import { edit, index, update } from '@/routes/users';
 
 type Props = {
     model: {
@@ -46,11 +47,16 @@ export default function Edit({ model, roles }: Props) {
     );
 }
 
-Edit.layout = {
+Edit.layout = (page: Props) => ({
     breadcrumbs: [
         {
             title: 'Users',
             href: index.url(),
+            icon: <Users />,
+        },
+        {
+            title: `Edit user ${page.model.name}`,
+            href: edit.url(page.model.id),
         },
     ],
-};
+});

@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { Pencil } from 'lucide-react';
+import { Pencil, Users } from 'lucide-react';
 import { Button } from '@/components/tailgrids/core/button';
 import {
     Card,
@@ -8,7 +8,7 @@ import {
 } from '@/components/tailgrids/core/card';
 import { useAbility } from '@/hooks/use-ability';
 import { index as activityLogIndex } from '@/routes/activity-logs';
-import { edit, index } from '@/routes/users';
+import { edit, index, show } from '@/routes/users';
 
 type Props = {
     user: {
@@ -107,11 +107,16 @@ export default function Show({ user }: Props) {
     );
 }
 
-Show.layout = {
+Show.layout = (page: Props) => ({
     breadcrumbs: [
         {
             title: 'Users',
             href: index.url(),
+            icon: <Users />,
+        },
+        {
+            title: page.user.name,
+            href: show.url(page.user.id),
         },
     ],
-};
+});

@@ -1,5 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
-import { ShieldCheck } from 'lucide-react';
+import { Settings, ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import SecurityController from '@/actions/App/Modules/Auth/Controllers/SecurityController';
 import { PasswordField } from '@/components/password-field';
@@ -252,6 +252,7 @@ Security.layout = {
         {
             title: 'Security settings',
             href: edit().url,
+            icon: <Settings />,
         },
     ],
 };
