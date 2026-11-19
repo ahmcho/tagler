@@ -8,6 +8,8 @@ import {
 } from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
 import { TextField } from '@/components/tailgrids/core/text-field';
+import { Toggle } from '@/components/tailgrids/core/toggle';
+import { ModelStatusEnum } from '@/types/generated';
 
 export type RoleOption = {
     id: number;
@@ -17,6 +19,7 @@ export type RoleOption = {
 export type UserFormData = {
     name: string;
     email: string;
+    status: ModelStatusEnum;
     password: string;
     password_confirmation: string;
     roles: number[];
@@ -59,6 +62,25 @@ export function UserFields({ form, roles, isCreating }: Props) {
                 <Input type="email" className="w-full" />
                 <FieldError>{form.errors.email}</FieldError>
             </TextField>
+
+            <fieldset className="flex flex-col gap-3">
+                <FieldLegend variant="label">Status</FieldLegend>
+
+                <Toggle
+                    label="Active"
+                    checked={form.data.status === ModelStatusEnum.Active}
+                    onChange={(event) =>
+                        form.setData(
+                            'status',
+                            event.target.checked
+                                ? ModelStatusEnum.Active
+                                : ModelStatusEnum.Inactive,
+                        )
+                    }
+                />
+
+                <FieldError>{form.errors.status}</FieldError>
+            </fieldset>
 
             <PasswordField
                 label={

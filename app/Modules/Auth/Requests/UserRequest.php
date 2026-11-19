@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Requests;
 use App\Models\User;
 use App\Modules\Auth\Concerns\FiltersQuery;
 use App\Modules\Auth\Concerns\PasswordValidationRules;
+use App\Modules\Auth\Enums\ModelStatusEnum;
 use App\Modules\Auth\Models\Role;
 use App\Modules\Auth\Support\LastAdminGuard;
 use Crud\Requests\AppFormRequest;
@@ -37,6 +38,7 @@ class UserRequest extends AppFormRequest
                 'password' => $this->passwordRules(),
                 'roles' => ['required', 'array', 'min:1'],
                 'roles.*' => ['integer', 'exists:roles,id'],
+                'status' => ['sometimes', 'required', Rule::enum(ModelStatusEnum::class)],
             ],
             self::SCENARIO_UPDATE => [
                 'name' => ['required', 'string', 'max:255'],
@@ -44,11 +46,13 @@ class UserRequest extends AppFormRequest
                 'password' => ['nullable', 'string', Password::default(), 'confirmed'],
                 'roles' => ['required', 'array', 'min:1'],
                 'roles.*' => ['integer', 'exists:roles,id'],
+                'status' => ['sometimes', 'required', Rule::enum(ModelStatusEnum::class)],
             ],
             default => [
                 'name' => 'string|nullable',
                 'email' => 'string|nullable',
                 'role' => ['nullable', 'integer', 'exists:roles,id'],
+                'status' => ['nullable', Rule::enum(ModelStatusEnum::class)],
             ],
         };
     }
@@ -84,6 +88,6 @@ class UserRequest extends AppFormRequest
      */
     protected function sortable(): array
     {
-        return ['id', 'name', 'email', 'created_at'];
+        return ['id', 'name', 'email', 'status', 'created_at'];
     }
 }

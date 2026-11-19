@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Providers;
 use App\Models\User;
 use App\Modules\Auth\Actions\CreateNewUser;
 use App\Modules\Auth\Actions\ResetUserPassword;
+use App\Modules\Auth\Enums\ModelStatusEnum;
 use App\Modules\Auth\Models\ActivityLog;
 use App\Modules\Auth\Models\Permission;
 use App\Modules\Auth\Models\Role;
@@ -34,8 +35,10 @@ use Crud\Providers\ModuleServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
@@ -80,6 +83,7 @@ class AuthServiceProvider extends ModuleServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
 
         $this->configureActions();
+        $this->configureAuthentication();
         $this->configureViews();
         $this->configureRateLimiting();
         $this->registerPolicies();
@@ -94,6 +98,27 @@ class AuthServiceProvider extends ModuleServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+    }
+
+    /**
+     * Rejects an inactive user before the session is created. The middleware
+     * covers sessions that were open before the account was deactivated.
+     */
+    private function configureAuthentication(): void
+    {
+        Fortify::authenticateUsing(function (Request $request): ?User {
+            $user = app(UserRepositoryContract::class)->findByEmail((string) $request->input(Fortify::username()));
+
+            if ($user === null || ! Hash::check((string) $request->input('password'), $user->password)) {
+                return null;
+            }
+
+            if ($user->status !== ModelStatusEnum::Active) {
+                throw ValidationException::withMessages([Fortify::username() => __('translations.auth.inactive')]);
+            }
+
+            return $user;
+        });
     }
 
     /**

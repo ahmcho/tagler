@@ -32,7 +32,7 @@ class UserController extends Controller
 
         $paginator = $this->service->getAllPaginated(
             requestParser: $request->parser(),
-            columns: ['id', 'name', 'email', 'created_at'],
+            columns: ['id', 'name', 'email', 'status', 'created_at'],
             relations: ['roles'],
         );
 

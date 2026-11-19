@@ -7,12 +7,14 @@ import type {
 } from '@/modules/auth/components/user-form';
 import { UserFields } from '@/modules/auth/components/user-form';
 import { create, index, store } from '@/routes/users';
+import type { ModelStatusEnum } from '@/types/generated';
 
 type Props = {
     model: {
         id: null;
         name: string | null;
         email: string | null;
+        status: ModelStatusEnum;
         roles: RoleOption[];
     };
     roles: RoleOption[];
@@ -22,6 +24,7 @@ export default function Create({ model, roles }: Props) {
     const form = useForm<UserFormData>({
         name: model.name ?? '',
         email: model.email ?? '',
+        status: model.status,
         password: '',
         password_confirmation: '',
         roles: model.roles.map((role) => role.id),
