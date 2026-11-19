@@ -117,6 +117,7 @@ export default function Index({
                         key: 'edit',
                         label: 'Edit',
                         icon: <Pencil className="size-4" />,
+                        tone: 'success',
                         permission: 'translations.update',
                         onAction: () =>
                             router.visit(

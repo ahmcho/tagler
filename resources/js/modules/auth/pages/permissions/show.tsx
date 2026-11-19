@@ -1,11 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { KeyRound } from 'lucide-react';
+import { ResourceDetails } from '@/components/resource/resource-details';
 import { Button } from '@/components/tailgrids/core/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from '@/components/tailgrids/core/card';
 import { index, show } from '@/routes/permissions';
 import { index as rolesIndex, show as roleShow } from '@/routes/roles';
 
@@ -25,73 +21,60 @@ export default function Show({ permission }: Props) {
         <>
             <Head title={`Permission ${permission.name}`} />
 
-            <Card>
-                <CardHeader>
-                    <h2 className="font-mono text-lg font-semibold text-gray-800 dark:text-white/90">
-                        {permission.name}
-                    </h2>
-                </CardHeader>
+            <div className="space-y-6">
+                <ResourceDetails
+                    title={permission.name}
+                    items={[
+                        {
+                            label: 'Description',
+                            value: permission.description ?? '—',
+                        },
+                        { label: 'Guard', value: permission.guard_name },
+                        { label: 'Created', value: permission.created_at },
+                        {
+                            label: 'Roles with this permission',
+                            value:
+                                permission.roles.length === 0 ? (
+                                    'No role holds this permission.'
+                                ) : (
+                                    <ul className="flex flex-wrap gap-2">
+                                        {permission.roles.map((role) => (
+                                            <li key={role.id}>
+                                                <Button
+                                                    appearance="outline"
+                                                    onPress={() =>
+                                                        router.visit(
+                                                            roleShow.url(
+                                                                role.id,
+                                                            ),
+                                                        )
+                                                    }
+                                                >
+                                                    {role.name}
+                                                </Button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ),
+                        },
+                    ]}
+                />
 
-                <CardContent className="space-y-4">
-                    <dl className="grid gap-3 text-sm md:grid-cols-2">
-                        <div>
-                            <dt className="text-gray-500 dark:text-gray-400">
-                                Description
-                            </dt>
-                            <dd>{permission.description ?? '—'}</dd>
-                        </div>
-                        <div>
-                            <dt className="text-gray-500 dark:text-gray-400">
-                                Guard
-                            </dt>
-                            <dd>{permission.guard_name}</dd>
-                        </div>
-                    </dl>
-
-                    <div>
-                        <h3 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Roles with this permission
-                        </h3>
-                        {permission.roles.length === 0 ? (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                No role holds this permission.
-                            </p>
-                        ) : (
-                            <ul className="flex flex-wrap gap-2">
-                                {permission.roles.map((role) => (
-                                    <li key={role.id}>
-                                        <Button
-                                            appearance="outline"
-                                            onPress={() =>
-                                                router.visit(
-                                                    roleShow.url(role.id),
-                                                )
-                                            }
-                                        >
-                                            {role.name}
-                                        </Button>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-
-                    <div className="flex justify-end">
-                        <Button
-                            appearance="outline"
-                            onPress={() =>
-                                router.visit(
-                                    rolesIndex.url({
-                                        query: { permission: permission.id },
-                                    }),
-                                )
-                            }
-                        >
-                            Filter roles by this permission
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+                <div className="flex justify-end">
+                    <Button
+                        appearance="outline"
+                        onPress={() =>
+                            router.visit(
+                                rolesIndex.url({
+                                    query: { permission: permission.id },
+                                }),
+                            )
+                        }
+                    >
+                        Filter roles by this permission
+                    </Button>
+                </div>
+            </div>
         </>
     );
 }

@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { KeyRound } from 'lucide-react';
+import { Eye, KeyRound } from 'lucide-react';
 import type { DataTableColumn } from '@/components/data-table';
 import { ResourceIndexContent } from '@/components/resource/resource-index-content';
 import { ResourcePage } from '@/components/resource/resource-page';
@@ -79,6 +79,8 @@ export default function Index({ permissions, filters }: Props) {
                     {
                         key: 'view',
                         label: 'View',
+                        icon: <Eye className="size-4" />,
+                        tone: 'primary' as const,
                         onAction: () => router.visit(show.url(permission.id)),
                     },
                 ]}

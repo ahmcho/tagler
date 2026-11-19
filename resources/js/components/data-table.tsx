@@ -77,7 +77,7 @@ export type DataTableRowAction = {
     permission?: string;
     onAction: () => void;
     isDisabled?: boolean;
-    tone?: 'default' | 'danger';
+    tone?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
 };
 
 export type DataTableBulkAction = Omit<DataTableRowAction, 'onAction'> & {
@@ -146,6 +146,16 @@ function isPermitted(
     return !item.permission || !can || can(item.permission);
 }
 
+const menuItemToneClasses = {
+    primary: 'text-primary-500',
+    success: 'text-success-500',
+    warning: 'text-warning-500',
+    danger: 'text-error-500',
+};
+
+const menuContentClassName =
+    'min-w-46 p-1 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08),0px_4px_6px_-2px_rgba(16,24,40,0.03)]';
+
 function DataTableMenuItems({ items }: { items: DataTableMenuItem[] }) {
     return (
         <>
@@ -157,9 +167,10 @@ function DataTableMenuItems({ items }: { items: DataTableMenuItem[] }) {
                     isDisabled={item.isDisabled}
                     onAction={item.onAction}
                     className={cn(
-                        'cursor-pointer gap-2.5 py-2 data-disabled:cursor-not-allowed data-disabled:opacity-50',
-                        item.tone === 'danger' &&
-                            'text-error-500 focus:bg-alert-danger-background focus:text-alert-danger-title',
+                        'cursor-pointer gap-3 rounded-lg px-3 py-2 data-disabled:cursor-not-allowed data-disabled:opacity-50',
+                        item.tone &&
+                            item.tone !== 'default' &&
+                            menuItemToneClasses[item.tone],
                     )}
                 >
                     {item.icon}
@@ -335,14 +346,14 @@ export function DataTable<Row>({
             <DropdownMenu>
                 <DropdownMenuTrigger
                     aria-label={`Actions for row ${String(rowId)}`}
-                    className="inline-flex size-8 items-center justify-center rounded-lg text-text-100 transition hover:bg-background-soft-100 focus-visible:ring-2 focus-visible:ring-primary-300"
+                    className="inline-flex size-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-background-soft-100 focus-visible:ring-2 focus-visible:ring-primary-300"
                 >
                     <MoreHorizontal className="size-5" />
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent
                     placement="bottom end"
-                    className="min-w-40 p-1.5"
+                    className={menuContentClassName}
                 >
                     <DataTableMenuItems items={actions} />
                 </DropdownMenuContent>
@@ -477,7 +488,7 @@ export function DataTable<Row>({
 
                                     <DropdownMenuContent
                                         placement="bottom end"
-                                        className="min-w-48 p-1.5"
+                                        className={menuContentClassName}
                                     >
                                         <DataTableMenuItems
                                             items={visibleBulkActions.map(
