@@ -34,7 +34,7 @@ export type ResourceRowAction<Row> = {
     label: string;
     icon?: ReactNode;
     permission?: string;
-    tone?: 'default' | 'danger';
+    tone?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
     onAction: (row: Row, options: ResourceActionOptions) => void;
     confirm?: ResourceConfirm<Row>;
 };

@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import { Eye, History, Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import type { DataTableColumn } from '@/components/data-table';
 import { ResourceIndexContent } from '@/components/resource/resource-index-content';
 import { ResourcePage } from '@/components/resource/resource-page';
@@ -118,6 +118,8 @@ export default function Index({
                     {
                         key: 'view',
                         label: 'View',
+                        icon: <Eye className="size-4" />,
+                        tone: 'primary' as const,
                         onAction: () => router.visit(show.url(role.id)),
                     },
                     ...(role.can.update
@@ -126,6 +128,7 @@ export default function Index({
                                   key: 'edit',
                                   label: 'Edit',
                                   icon: <Pencil className="size-4" />,
+                                  tone: 'success' as const,
                                   onAction: () =>
                                       router.visit(edit.url(role.id)),
                               },
@@ -162,6 +165,7 @@ export default function Index({
                               {
                                   key: 'logs',
                                   label: 'Activity',
+                                  icon: <History className="size-4" />,
                                   onAction: () =>
                                       router.visit(
                                           activityLogIndex.url({
