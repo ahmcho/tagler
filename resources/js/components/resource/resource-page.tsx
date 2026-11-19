@@ -31,7 +31,7 @@ export function ResourcePage({
 
             <div className="space-y-6">
                 {status && (
-                    <Alert status="success">
+                    <Alert status="success" className="max-w-none">
                         <AlertIndicator />
                         <AlertContent>
                             <AlertTitle>{status}</AlertTitle>
