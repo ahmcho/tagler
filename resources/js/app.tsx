@@ -46,6 +46,9 @@ createInertiaApp({
         }
     },
     strictMode: true,
+    defaults: {
+        visitOptions: () => ({ viewTransition: true }),
+    },
     progress: {
         color: '#3758f9',
     },
