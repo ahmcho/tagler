@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import type { InertiaFormProps } from '@inertiajs/react';
+import { Save, X } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
 import { Button } from '@/components/tailgrids/core/button';
 import {
@@ -106,6 +107,7 @@ export function ResourceForm<TData extends Record<string, unknown>>({
                         appearance="outline"
                         onPress={() => router.visit(backHref)}
                     >
+                        <X className="size-4" />
                         Back
                     </Button>
                     <Button
@@ -113,6 +115,7 @@ export function ResourceForm<TData extends Record<string, unknown>>({
                         disabled={form.processing}
                         pending={form.processing}
                     >
+                        <Save className="size-4" />
                         {isCreating ? 'Create' : 'Save'}
                     </Button>
                 </CardFooter>
