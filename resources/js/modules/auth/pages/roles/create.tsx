@@ -9,6 +9,7 @@ import { RoleFields } from '@/modules/auth/components/role-form';
 import { create, index, store } from '@/routes/roles';
 
 type Props = {
+    permissions: SelectedPermission[];
     model: {
         id: null;
         name: string | null;
@@ -16,7 +17,7 @@ type Props = {
     };
 };
 
-export default function Create({ model }: Props) {
+export default function Create({ model, permissions }: Props) {
     const form = useForm<RoleFormData>({
         name: model.name ?? '',
         permissions: model.permissions.map((permission) => permission.id),
@@ -32,7 +33,7 @@ export default function Create({ model }: Props) {
             resourceName="role"
             backHref={index.url()}
         >
-            <RoleFields form={form} initialPermissions={model.permissions} />
+            <RoleFields form={form} permissions={permissions} />
         </ResourceCreateContent>
     );
 }

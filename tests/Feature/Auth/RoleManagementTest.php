@@ -209,8 +209,9 @@ test('the role list can be filtered to roles that hold a permission', function (
             ->where('selectedPermission.name', 'translations.update'));
 });
 
-test('the role form pages do not receive the full permission list', function () {
+test('the role form pages receive every permission for the dual listbox', function () {
     $role = Role::findByName('User', 'web');
+    $permissionCount = Permission::count();
 
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
@@ -219,7 +220,10 @@ test('the role form pages do not receive the full permission list', function () 
             ->component('roles/create')
             ->where('model.id', null)
             ->has('model.permissions', 0)
-            ->missing('permissions'));
+            ->has('permissions', $permissionCount)
+            ->where('permissions.0.name', Permission::orderBy('name')->value('name'))
+            ->has('permissions.0', fn (AssertableInertia $permission) => $permission
+                ->hasAll(['id', 'name', 'description'])));
 
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
@@ -228,7 +232,7 @@ test('the role form pages do not receive the full permission list', function () 
             ->component('roles/edit')
             ->where('model.id', $role->id)
             ->has('model.permissions')
-            ->missing('permissions'));
+            ->has('permissions', $permissionCount));
 });
 
 test('a user who can create roles can search permissions without permissions.index', function () {
