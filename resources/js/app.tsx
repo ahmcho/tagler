@@ -10,7 +10,7 @@ configureEcho({
     broadcaster: 'reverb',
 });
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const fallbackAppName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 const pages = import.meta.glob<{ default: ComponentType }>([
     './pages/**/*.tsx',
@@ -18,7 +18,11 @@ const pages = import.meta.glob<{ default: ComponentType }>([
 ]);
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title, page) => {
+        const appName = page.props.name || fallbackAppName;
+
+        return title ? `${title} - ${appName}` : appName;
+    },
     resolve: async (name) => {
         const matches = Object.keys(pages).filter((path) =>
             path.endsWith(`/pages/${name}.tsx`),

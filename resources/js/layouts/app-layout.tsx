@@ -3,19 +3,17 @@ import { AppHeader } from '@/components/app-header';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Breadcrumbs } from '@/components/tailgrids/core/breadcrumbs';
 import { SidebarProvider } from '@/components/tailgrids/core/sidebar';
-import { brandImages } from '@/lib/brand';
 import type { AppLayoutProps } from '@/types';
 
 export default function AppLayout({
     breadcrumbs = [],
     children,
 }: AppLayoutProps) {
-    const { name } = usePage().props;
-    const brand = brandImages(name);
+    const { name, favicon } = usePage().props;
 
     return (
         <SidebarProvider className="h-svh overflow-hidden bg-background-soft-50 dark:bg-gray-900">
-            <AppSidebar brand={brand} />
+            <AppSidebar name={name} icon={favicon} />
 
             <div className="flex min-w-0 flex-1 flex-col">
                 <AppHeader />
