@@ -30,14 +30,14 @@ export function AppHeader() {
 
     return (
         <header className="sticky top-0 z-10 flex h-16 w-full items-center justify-between gap-3 border-b border-base-200 bg-background-100 px-4 dark:border-gray-800 dark:bg-gray-900">
-            <SidebarTrigger>
+            <SidebarTrigger className="size-10 rounded-lg">
                 <PanelLeft size={18} />
             </SidebarTrigger>
 
             <div className="flex items-center gap-3">
                 <Button
                     variant="ghost"
-                    size="sm"
+                    iconOnly
                     aria-label="Toggle dark mode"
                     onPress={() =>
                         updateAppearance(
@@ -52,7 +52,7 @@ export function AppHeader() {
                 <DropdownMenu>
                     <DropdownMenuTrigger
                         aria-label="Account menu"
-                        className="group flex items-center gap-2 rounded-full border border-base-200 bg-background-50 px-4 py-2 text-sm font-medium text-title-50 shadow-sm transition-all hover:bg-background-soft-50 focus-visible:bg-background-soft-50"
+                        className="group flex h-10 items-center gap-2 rounded-full border border-base-200 bg-background-50 px-4 text-sm font-medium text-title-50 shadow-sm transition-all hover:bg-background-soft-50 focus-visible:bg-background-soft-50"
                     >
                         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-tr from-white-100 to-button-primary-background text-[10px] text-white-100">
                             {getInitials(auth.user.name)}

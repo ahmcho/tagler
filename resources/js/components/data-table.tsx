@@ -22,7 +22,6 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuTrigger,
 } from '@/components/tailgrids/core/dropdown';
 import { Input } from '@/components/tailgrids/core/input';
 import { Pagination } from '@/components/tailgrids/core/pagination';
@@ -344,12 +343,13 @@ export function DataTable<Row>({
 
         return (
             <DropdownMenu>
-                <DropdownMenuTrigger
+                <Button
                     aria-label={`Actions for row ${String(rowId)}`}
-                    className="inline-flex size-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-background-soft-100 focus-visible:ring-2 focus-visible:ring-primary-300"
+                    variant="ghost"
+                    iconOnly
                 >
                     <MoreHorizontal className="size-5" />
-                </DropdownMenuTrigger>
+                </Button>
 
                 <DropdownMenuContent
                     placement="bottom end"

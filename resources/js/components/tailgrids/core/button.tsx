@@ -123,14 +123,21 @@ export const buttonStyles = cva(
             },
             {
                 iconOnly: false,
+                appearance: 'fill',
                 className: 'py-2.5',
+            },
+            {
+                iconOnly: false,
+                appearance: 'outline',
+                // 1px border top and bottom, so the total height matches fill
+                className: 'py-[9px]',
             },
         ],
         defaultVariants: {
             variant: 'primary',
             appearance: 'fill',
             iconOnly: false,
-            size: 'md',
+            size: 'sm',
         },
     },
 );
