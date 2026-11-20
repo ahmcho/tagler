@@ -40,7 +40,7 @@ export default function DeleteUser() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Alert status="error">
+                <Alert status="error" className="max-w-none">
                     <AlertIndicator />
                     <AlertContent>
                         <AlertTitle>Warning</AlertTitle>
