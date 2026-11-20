@@ -11,4 +11,5 @@ enum SettingInputEnum: string
 {
     case Text = 'text';
     case File = 'file';
+    case Select = 'select';
 }

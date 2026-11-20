@@ -7,6 +7,18 @@ export enum AllowedMimeTypes {
     Zip = 'application/zip',
     Pdf = 'application/pdf',
 }
+export enum DateFormatVariantEnum {
+    DayMonthYearDot = 'd.m.Y',
+    YearMonthDayDash = 'Y-m-d',
+    DayMonthYearSlash = 'd/m/Y',
+    MonthDayYearSlash = 'm/d/Y',
+}
+export enum DateTimeFormatVariantEnum {
+    DayMonthYearDotTimeWithSeconds = 'd.m.Y H:i:s',
+    DayMonthYearDotTime = 'd.m.Y H:i',
+    YearMonthDayDashTimeWithSeconds = 'Y-m-d H:i:s',
+    DayMonthYearSlashTime = 'd/m/Y H:i',
+}
 export enum InputValueTypeEnum {
     String = 0,
     Integer = 1,
@@ -21,10 +33,13 @@ export enum ModelStatusEnum {
 export enum SettingInputEnum {
     Text = 'text',
     File = 'file',
+    Select = 'select',
 }
 export enum SettingKeyEnum {
     AppName = 'app_name',
     Favicon = 'favicon',
+    DateFormat = 'date_format',
+    DateTimeFormat = 'datetime_format',
 }
 export enum TranslationGroupEnum {
     Auth = 'auth',

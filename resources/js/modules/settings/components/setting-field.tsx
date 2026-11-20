@@ -7,8 +7,24 @@ import {
     FieldLabel,
 } from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
+import {
+    Select,
+    SelectContent,
+    SelectDescription,
+    SelectErrorMessage,
+    SelectIndicator,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/tailgrids/core/select';
 import { TextField } from '@/components/tailgrids/core/text-field';
 import { AllowedMimeTypes, SettingInputEnum } from '@/types/generated';
+
+export type SettingOption = {
+    value: string;
+    label: string;
+};
 
 export type SettingField = {
     key: string;
@@ -16,6 +32,7 @@ export type SettingField = {
     description: string;
     tab: string;
     input: SettingInputEnum;
+    options: SettingOption[];
     value: string | number | boolean | null;
     required: boolean;
 };
@@ -50,6 +67,38 @@ function TextSettingControl({
             <FieldDescription>{field.description}</FieldDescription>
             <FieldError>{error}</FieldError>
         </TextField>
+    );
+}
+
+function SelectSettingControl({
+    field,
+    value,
+    error,
+    onChange,
+}: SettingControlProps) {
+    return (
+        <Select
+            name={`settings.${field.key}`}
+            value={typeof value === 'string' ? value : null}
+            onChange={(key) => onChange(key === null ? null : String(key))}
+            isRequired={field.required}
+            isInvalid={Boolean(error)}
+        >
+            <SelectLabel>{field.label}</SelectLabel>
+            <SelectTrigger>
+                <SelectValue />
+                <SelectIndicator />
+            </SelectTrigger>
+            <SelectContent>
+                {field.options.map((option) => (
+                    <SelectItem key={option.value} id={option.value}>
+                        {option.label}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+            <SelectDescription>{field.description}</SelectDescription>
+            <SelectErrorMessage>{error}</SelectErrorMessage>
+        </Select>
     );
 }
 
@@ -132,6 +181,7 @@ const SETTING_CONTROLS: Record<
 > = {
     [SettingInputEnum.Text]: TextSettingControl,
     [SettingInputEnum.File]: FileSettingControl,
+    [SettingInputEnum.Select]: SelectSettingControl,
 };
 
 export function SettingFieldControl(props: SettingControlProps) {

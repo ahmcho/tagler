@@ -44,9 +44,9 @@ export default function Application({ tabs, fields }: Props) {
         settings: Object.fromEntries(
             fields.map((field) => [
                 field.key,
-                field.input === SettingInputEnum.Text
-                    ? String(field.value ?? '')
-                    : null,
+                field.input === SettingInputEnum.File
+                    ? null
+                    : String(field.value ?? ''),
             ]),
         ),
     });

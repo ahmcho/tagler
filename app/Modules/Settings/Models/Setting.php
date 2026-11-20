@@ -3,6 +3,7 @@
 namespace App\Modules\Settings\Models;
 
 use App\Modules\Auth\Concerns\HasActivityLogs;
+use App\Modules\Settings\Concerns\HasLocalDates;
 use App\Modules\Settings\Enums\InputValueTypeEnum;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['key', 'value', 'type'])]
 class Setting extends Model
 {
-    use HasActivityLogs;
+    use HasActivityLogs, HasLocalDates;
 
     /**
      * @return array<string, string>
