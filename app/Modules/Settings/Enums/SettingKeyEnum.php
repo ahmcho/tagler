@@ -3,11 +3,14 @@
 namespace App\Modules\Settings\Enums;
 
 use App\Modules\Settings\Rules\FileUploadRule;
+use Illuminate\Validation\Rule;
 
 enum SettingKeyEnum: string
 {
     case AppName = 'app_name';
     case Favicon = 'favicon';
+    case DateFormat = 'date_format';
+    case DateTimeFormat = 'datetime_format';
 
     /**
      * How this setting's stored value should be cast and validated.
@@ -17,6 +20,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => InputValueTypeEnum::String,
             self::Favicon => InputValueTypeEnum::File,
+            self::DateFormat, self::DateTimeFormat => InputValueTypeEnum::String,
         };
     }
 
@@ -28,6 +32,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => SettingInputEnum::Text,
             self::Favicon => SettingInputEnum::File,
+            self::DateFormat, self::DateTimeFormat => SettingInputEnum::Select,
         };
     }
 
@@ -39,6 +44,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => 'general',
             self::Favicon => 'general',
+            self::DateFormat, self::DateTimeFormat => 'general',
         };
     }
 
@@ -50,6 +56,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => 'settings',
             self::Favicon => 'settings',
+            self::DateFormat, self::DateTimeFormat => 'settings',
         };
     }
 
@@ -61,6 +68,22 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => config('app.name'),
             self::Favicon => '/favicon.ico',
+            self::DateFormat => DateFormatVariantEnum::DayMonthYearDot->value,
+            self::DateTimeFormat => DateTimeFormatVariantEnum::DayMonthYearDotTimeWithSeconds->value,
+        };
+    }
+
+    /**
+     * The choices of a Select input, as value and label pairs. Empty for keys that are not selects.
+     *
+     * @return array<int, array{value: string, label: string}>
+     */
+    public function options(): array
+    {
+        return match ($this) {
+            self::DateFormat => $this->optionsFrom(DateFormatVariantEnum::cases()),
+            self::DateTimeFormat => $this->optionsFrom(DateTimeFormatVariantEnum::cases()),
+            default => [],
         };
     }
 
@@ -92,10 +115,29 @@ enum SettingKeyEnum: string
      */
     public function rules(): array
     {
+        if ($this->input() === SettingInputEnum::Select) {
+            return ['required', Rule::in(array_column($this->options(), 'value'))];
+        }
+
         return match ($this->type()) {
             InputValueTypeEnum::String => ['required', 'string', 'max:255'],
             InputValueTypeEnum::File => ['nullable', 'file', new FileUploadRule([AllowedMimeTypes::Png]), 'max:1024'],
             default => ['nullable'],
         };
+    }
+
+    /**
+     * @param  array<int, DateFormatVariantEnum|DateTimeFormatVariantEnum>  $cases
+     * @return array<int, array{value: string, label: string}>
+     */
+    private function optionsFrom(array $cases): array
+    {
+        return array_map(
+            fn (DateFormatVariantEnum|DateTimeFormatVariantEnum $case): array => [
+                'value' => $case->value,
+                'label' => $case->label(),
+            ],
+            $cases,
+        );
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Models;
 
+use App\Modules\Settings\Concerns\HasLocalDates;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Collection;
 use MongoDB\Laravel\Eloquent\DocumentModel;
@@ -15,7 +16,7 @@ use Spatie\Activitylog\Models\Activity;
  */
 class ActivityLog extends Activity
 {
-    use DocumentModel;
+    use DocumentModel, HasLocalDates;
 
     /**
      * @var string

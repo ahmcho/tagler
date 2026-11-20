@@ -2,6 +2,7 @@
 
 namespace App\Modules\Translation\Models;
 
+use App\Modules\Settings\Concerns\HasLocalDates;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,8 @@ use Illuminate\Support\Str;
 #[Fillable(['lang', 'group', 'table', 'key', 'value'])]
 class Translation extends Model
 {
+    use HasLocalDates;
+
     /**
      * The table-name candidate of a key: its first segment, for the
      * `translations` group only (`owners.title` -> `owners`). Whether it is

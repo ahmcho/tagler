@@ -2,6 +2,7 @@
 
 namespace App\Modules\Translation\Models;
 
+use App\Modules\Settings\Concerns\HasLocalDates;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 #[Fillable(['translatable_type', 'translatable_id', 'locale', 'field', 'value'])]
 class ModelTranslation extends Model
 {
+    use HasLocalDates;
+
     /**
      * @return MorphTo<Model, $this>
      */

@@ -55,6 +55,7 @@ class SettingService implements SettingServiceContract
                 'description' => $key->description(),
                 'tab' => $key->tab(),
                 'input' => $key->input(),
+                'options' => $key->options(),
                 'value' => $values[$key->value] ?? $key->defaultValue(),
                 'required' => $key->isRequired(),
             ],
