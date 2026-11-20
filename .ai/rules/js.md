@@ -5,25 +5,27 @@ paths:
 
 # Frontend
 
+Visual rules (sizes, spacing, layout, colors, copy style) live in `.ai/rules/design.md`.
+
 ## Use the TailGrids components
 
 The UI comes from TailGrids (https://tailgrids.com). Its source is copied into `resources/js/components/tailgrids/core/`. It is not an npm component package. Import components from `@/components/tailgrids/core/...` and use them directly. Do not add wrappers that copy an older API. Do not edit those copies unless the user asks. Local changes to the copies, all documented here:
 
-- `dialog.tsx`: the modal is wrapped in `ModalOverlay` to draw the dimmed backdrop. The layout follows the TailGrids success confirmation modal: 400px card, centered header, optional `DialogIcon` badge (`tone` `success` or `danger`), and footer buttons that share the width.
-- `button.tsx`: the defaults are `variant="primary"`, `appearance="fill"`, `size="md"`.
+- `dialog.tsx`: the modal is wrapped in `ModalOverlay` to draw the dimmed backdrop.
+- `button.tsx`: the defaults are `variant="primary"`, `appearance="fill"`, `size="sm"`. Outline text buttons use `py-[9px]`, so the border keeps the same height as fill buttons.
 - `input.tsx`: `ref` is added to the props type.
 - `sidebar.tsx`: `useIsMobile` uses `useSyncExternalStore`.
 - `tooltip.tsx`: the `react-hooks/refs` lint rule is disabled for the file.
 - `text-field.tsx`: `validationBehavior` defaults to `'aria'`. React Aria's default is `'native'`, which sets a custom validity message from the `invalid` prop. The browser then blocks submit, and the server error is never cleared. With `'aria'`, server errors show on the field without blocking the next submit. Server validation is the only validation, so `required` does not block submit either.
-- `pagination.tsx`: the page list follows a fixed pattern. Up to 10 pages show all. From page 1 to 10 the list is pages 1–10 and the last 2. In the middle it is 1, 2, a window of 5 around the current page, and the last 2. In the last 10 pages it is 1, 2 and the last 10. Gaps show an ellipsis. Logic is in `getPaginationItems`. When there are more than 10 pages, a "Go to page" number input with a Go button sits in the bar. Out-of-range input is ignored. Below `xl` the page list and "Go to page" wrap onto a second row under Previous and Next. From `xl` they sit between the arrows. The optional `summary` prop renders a centered line above the bar, for example "Showing 1627 entries". `DataTable` passes it through `pagination.summary` and shows the bar when there is more than one page or a summary.
+- `pagination.tsx`: the page list logic is in `getPaginationItems`. The optional `summary` prop renders a line above the bar. `DataTable` passes it through `pagination.summary` and shows the bar when there is more than one page or a summary.
 
 TailGrids uses react-aria. Check the source before you use a prop. For example, `Button` takes `onPress`, not `onClick`, and `isDisabled` is `disabled`. `TextField` passes its value to `onChange` as a string. Use `NativeSelect` for native selects. `PasswordField` in `components/password-field.tsx` is a local composition of TailGrids pieces, because TailGrids has no password input.
 
 `SelectField` in `components/select-field.tsx` is the default for a single select with a list of string options. Pass `label`, `value`, `onChange`, `options` and optionally `allOptionLabel`, where `''` means "all". Use the TailGrids `Select` parts from `core/select.tsx` directly only when you need sections, custom items or multiple selection.
 
-`DualListBox` (`components/dual-list-box.tsx`) wraps `react-dual-listbox` for picking many items from one list, for example role permissions. Pass `options`, `value` (ids), `onChange` and `hasError`. Its icons are lucide and its styles are the `.react-dual-listbox` and `.rdl-*` rules in `resources/css/app.css`. The package ships no types, so `resources/js/types/react-dual-listbox.d.ts` declares them.
+`DualListBox` (`components/dual-list-box.tsx`) wraps `react-dual-listbox` for picking many items from one list. Pass `options`, `value` (ids), `onChange` and `hasError`. The package ships no types, so `resources/js/types/react-dual-listbox.d.ts` declares them.
 
-`DataTable` (`components/data-table.tsx`) has optional toolbar props: `title` and `subtitle` (each a string or any React node; the toolbar wraps them on narrow screens), `search` (controlled, submits on Enter; full width with the buttons on the row below until `lg`), `filter` (a Filter button that opens a `Dialog` with the children as the body), and `bulkActions` (a vertical 3-dot menu for the checked rows; needs `selection`). Row actions keep the horizontal 3-dot menu. Use `downloadCsv` from `utils/download-csv.ts` for CSV exports.
+`DataTable` (`components/data-table.tsx`) has optional props: `title` and `subtitle` (string or React node), `search` (controlled, submits on Enter), `filter` (opens a `Dialog` with the children as the body), and `bulkActions` (needs `selection`). Use `downloadCsv` from `utils/download-csv.ts` for CSV exports.
 
 ## Resource pages
 
@@ -34,6 +36,8 @@ TailGrids uses react-aria. Check the source before you use a prop. For example, 
 - `useResourceIndex` (in `use-resource-index.ts`) holds the Inertia requests: sort, page, apply, reset and selection. Reloads use `only: [dataKey, 'filters', 'status']`.
 
 Filters are declared as fields: `select`, `text`, or `searchable` (async, with a `loadOptions` from `useSearch`). Row and bulk actions take `onAction(target, { onSuccess })`. Set `confirm` to show the shared confirm dialog. The dialog closes only when `onSuccess` runs, so a failed request keeps it open. Selection is on only when `bulkActions` is set.
+
+On list pages, put the New button in the `subtitle` prop, guarded by the permission: `subtitle={ability('x.store') ? <Button …/> : undefined}`.
 
 Create and edit pages use the shared form in `components/resource/`:
 
@@ -60,17 +64,13 @@ Module pages go in `resources/js/modules/{module}/pages/...`. The page resolver 
 
 Set `Page.layout = { breadcrumbs: [...] }` as `security.tsx` does.
 
-## Labels
-
-The existing pages use English labels written in the component. Follow that style for module pages unless the user asks for translated UI labels.
-
 ## Navigation
 
 Add new admin pages to `resources/js/components/app-sidebar.tsx`.
 
 ## Verify
 
-Run `npx tsc --noEmit`, `npx eslint <paths>` and `npx prettier --check <paths>` on the files you touched. Build with `docker exec tagler-cms-app npm run build` when you change UI, because `public/build` is root-owned on the host. Then open the page in a browser before you report it as done.
+Run `npx tsc --noEmit`, `npx eslint <paths>` and `npx prettier --check <paths>` on the files you touched. Build with `docker exec tagler-cms-app npm run build` when you change UI, because `public/build` is root-owned on the host. Then open the page in a browser before you report it as done. Design checks: see `.ai/rules/design.md`.
 
 ## Types
 

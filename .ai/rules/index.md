@@ -15,6 +15,7 @@ Before planning or editing, find every row whose globs match the file's path and
 | routes/**, app/Modules/*/routes/**, app/Modules/*/Controllers/** | .ai/rules/routes.md |
 | routes/**, app/Modules/*/Controllers/**, resources/js/routes/**, resources/js/actions/** | .ai/rules/wayfinder.md |
 | resources/js/** | .ai/rules/js.md |
+| resources/js/**, resources/css/** | .ai/rules/design.md |
 | tests/** | .ai/rules/tests.md |
 | composer.json, composer.lock, package.json, package-lock.json | .ai/rules/dependencies.md |
 | ** | .ai/rules/general.md |

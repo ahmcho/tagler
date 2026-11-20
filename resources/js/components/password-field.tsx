@@ -45,9 +45,9 @@ export function PasswordField({
                 />
                 <Button
                     variant="ghost"
-                    size="sm"
+                    iconOnly
                     aria-label={isVisible ? 'Hide password' : 'Show password'}
-                    className="absolute inset-y-0 right-2 my-auto size-8 justify-center p-0"
+                    className="absolute inset-y-0 right-2 my-auto"
                     onPress={() => setIsVisible(!isVisible)}
                 >
                     {isVisible ? <EyeOff size={18} /> : <Eye size={18} />}

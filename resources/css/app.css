@@ -523,8 +523,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     color: var(--color-button-outline-text);
     background: var(--color-button-outline-background);
     border: 1px solid var(--color-button-outline-border);
