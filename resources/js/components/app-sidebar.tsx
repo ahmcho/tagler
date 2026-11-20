@@ -2,7 +2,6 @@ import { router, usePage } from '@inertiajs/react';
 import {
     History,
     KeyRound,
-    Languages,
     LayoutGrid,
     ShieldCheck,
     Users,
@@ -27,7 +26,6 @@ import { dashboard } from '@/routes';
 import { index as activityLogsIndex } from '@/routes/activity-logs';
 import { index as permissionsIndex } from '@/routes/permissions';
 import { index as rolesIndex } from '@/routes/roles';
-import { index as translationsIndex } from '@/routes/translations';
 import { index as usersIndex } from '@/routes/users';
 
 type NavigationItem = {
@@ -84,17 +82,6 @@ const navigationGroups: NavigationGroup[] = [
                 href: activityLogsIndex.url(),
                 icon: <History />,
                 ability: 'activity-logs.index',
-            },
-        ],
-    },
-    {
-        label: 'Settings',
-        items: [
-            {
-                label: 'Translations',
-                href: translationsIndex.url(),
-                icon: <Languages />,
-                ability: 'translations.index',
             },
         ],
     },

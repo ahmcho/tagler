@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import {
+    Languages,
     Palette,
     ShieldCheck,
     SlidersHorizontal,
@@ -17,6 +18,7 @@ import { useAbility } from '@/hooks/use-ability';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
+import { index as translationsIndex } from '@/routes/translations';
 
 const settingsNavigationItems = [
     {
@@ -47,6 +49,13 @@ const settingsNavigationItems = [
         icon: Palette,
         permission: null,
     },
+    {
+        value: 'translations',
+        title: 'Translations',
+        href: translationsIndex.url(),
+        icon: Languages,
+        permission: 'translations.index',
+    },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
@@ -59,6 +68,9 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     );
     const activeItem =
         navigationItems.find((item) => item.href === currentPath) ??
+        navigationItems.find((item) =>
+            currentPath.startsWith(`${item.href}/`),
+        ) ??
         navigationItems[0];
 
     return (
