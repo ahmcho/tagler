@@ -30,8 +30,8 @@
             }
         </style>
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        @php($favicon = $page['props']['favicon'] ?? '/favicon.ico')
+        <link rel="icon" href="{{ $favicon }}">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         @fonts
@@ -39,7 +39,7 @@
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', \App\Support\Inertia\PageEntrypoint::for($page['component'])])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            <title>{{ $page['props']['name'] ?? config('app.name', 'Laravel') }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">

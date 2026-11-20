@@ -23,7 +23,6 @@ import {
     SidebarMenuSubItem,
 } from '@/components/tailgrids/core/sidebar';
 import { useAbility } from '@/hooks/use-ability';
-import type { BrandImages } from '@/lib/brand';
 import { dashboard } from '@/routes';
 import { index as activityLogsIndex } from '@/routes/activity-logs';
 import { index as permissionsIndex } from '@/routes/permissions';
@@ -106,7 +105,7 @@ const activeItemClassName =
 
 const activeSubItemClassName = `${activeItemClassName} data-[active=true]:[&>svg]:text-white`;
 
-export function AppSidebar({ brand }: { brand: BrandImages }) {
+export function AppSidebar({ name, icon }: { name: string; icon: string }) {
     const pathname = usePage().url.split('?')[0];
     const ability = useAbility();
 
@@ -127,22 +126,16 @@ export function AppSidebar({ brand }: { brand: BrandImages }) {
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader className="px-4 py-5 group-data-[collapsible=icon]:px-2">
-                <div className="group-data-[collapsible=icon]:hidden">
-                    <img
-                        className="h-8 dark:hidden"
-                        src={brand.logo}
-                        alt="Logo"
-                    />
-                    <img
-                        className="hidden h-8 dark:block"
-                        src={brand.logoDark}
-                        alt="Logo"
-                    />
+                <div className="flex items-center gap-3 group-data-[collapsible=icon]:hidden">
+                    <img src={icon} alt="" className="size-8" />
+                    <span className="text-2xl font-semibold text-gray-800 dark:text-white/90">
+                        {name}
+                    </span>
                 </div>
                 <img
+                    src={icon}
+                    alt=""
                     className="hidden size-8 group-data-[collapsible=icon]:block"
-                    src={brand.icon}
-                    alt="Logo"
                 />
             </SidebarHeader>
 

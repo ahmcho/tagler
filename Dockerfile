@@ -19,11 +19,15 @@ RUN apt-get update && apt-get install -y \
         libpq-dev \
         libssl-dev \
         libzip-dev \
+        libpng-dev \
+        libjpeg-dev \
+        libfreetype6-dev \
         postgresql-client \
     && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install -j$(nproc) pdo_pgsql pgsql mbstring bcmath pcntl zip intl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) pdo_pgsql pgsql mbstring bcmath pcntl zip intl gd \
     && pecl install mongodb \
     && docker-php-ext-enable mongodb
 

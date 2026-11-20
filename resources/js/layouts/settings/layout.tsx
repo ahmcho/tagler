@@ -1,12 +1,19 @@
 import { router, usePage } from '@inertiajs/react';
-import { Palette, ShieldCheck, UserRound } from 'lucide-react';
+import {
+    Palette,
+    ShieldCheck,
+    SlidersHorizontal,
+    UserRound,
+} from 'lucide-react';
 import type { PropsWithChildren } from 'react';
+import SettingController from '@/actions/App/Modules/Settings/Controllers/SettingController';
 import {
     TabContent,
     TabList,
     TabRoot,
     TabTrigger,
 } from '@/components/tailgrids/core/tabs';
+import { useAbility } from '@/hooks/use-ability';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
@@ -17,27 +24,42 @@ const settingsNavigationItems = [
         title: 'Profile',
         href: edit().url,
         icon: UserRound,
+        permission: null,
     },
     {
         value: 'security',
         title: 'Security',
         href: editSecurity().url,
         icon: ShieldCheck,
+        permission: null,
+    },
+    {
+        value: 'application',
+        title: 'Application settings',
+        href: SettingController.index.url(),
+        icon: SlidersHorizontal,
+        permission: 'settings.index',
     },
     {
         value: 'appearance',
         title: 'Appearance',
         href: editAppearance().url,
         icon: Palette,
+        permission: null,
     },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { url } = usePage();
+    const can = useAbility();
     const currentPath = url.split('?')[0];
+
+    const navigationItems = settingsNavigationItems.filter(
+        (item) => item.permission === null || can(item.permission),
+    );
     const activeItem =
-        settingsNavigationItems.find((item) => item.href === currentPath) ??
-        settingsNavigationItems[0];
+        navigationItems.find((item) => item.href === currentPath) ??
+        navigationItems[0];
 
     return (
         <div className="space-y-6">
@@ -57,7 +79,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 className="gap-10 border-0 p-0"
             >
                 <TabList>
-                    {settingsNavigationItems.map((item) => (
+                    {navigationItems.map((item) => (
                         <TabTrigger
                             key={item.value}
                             value={item.value}

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Modules\Auth\Support\AbilityRegistry;
+use App\Modules\Settings\Enums\SettingKeyEnum;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,7 +39,8 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => setting(SettingKeyEnum::AppName),
+            'favicon' => setting(SettingKeyEnum::Favicon),
             'auth' => [
                 'user' => $request->user(),
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->sort()->values()->all() ?? [],
