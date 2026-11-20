@@ -31,3 +31,6 @@ yarn-error.log
 
 # Playwright MCP browser output (snapshots, logs, screenshots)
 /.playwright-mcp
+
+# Local theme feature task notes
+/THEME_FEATURE.md
