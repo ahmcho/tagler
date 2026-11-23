@@ -145,11 +145,11 @@ export default function Index({
                             icon: <RotateCcw />,
                             tone: 'danger',
                         },
-                        onAction: (ids, { onSuccess }) =>
+                        onAction: (ids, { onFinish }) =>
                             router.post(
                                 reset.url(),
                                 { ids },
-                                { preserveScroll: true, onSuccess },
+                                { preserveScroll: true, onFinish },
                             ),
                     },
                 ]}

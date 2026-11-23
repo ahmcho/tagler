@@ -57,7 +57,7 @@ export function userRowActions(
                       ) =>
                           router.delete(destroy.url(target.id), {
                               preserveScroll: true,
-                              onSuccess: options.onSuccess,
+                              onFinish: options.onFinish,
                           }),
                   },
               ]

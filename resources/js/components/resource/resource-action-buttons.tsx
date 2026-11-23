@@ -41,7 +41,7 @@ export function ResourceActionButtons<Row>({
 
     const request = (action: ResourceRowAction<Row>) => {
         if (!action.confirm) {
-            action.onAction(target, { onSuccess: noop });
+            action.onAction(target, { onFinish: noop });
 
             return;
         }
@@ -73,7 +73,7 @@ export function ResourceActionButtons<Row>({
                 pending={pending}
                 onClose={() => setPending(null)}
                 onConfirm={() =>
-                    pending?.run({ onSuccess: () => setPending(null) })
+                    pending?.run({ onFinish: () => setPending(null) })
                 }
             />
         </>

@@ -17,8 +17,8 @@ export type ResourcePagination = {
 };
 
 export type ResourceActionOptions = {
-    /** Call when the request succeeds. The confirm dialog closes only then. */
-    onSuccess: () => void;
+    /** Call when the request ends, on success or failure. The confirm dialog closes then, so errors show on the page. */
+    onFinish: () => void;
 };
 
 export type ResourceConfirm<Target> = {

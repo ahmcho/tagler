@@ -81,7 +81,7 @@ export function ResourceIndexContent<Row>({
 
     const requestRowAction = (row: Row, action: ResourceRowAction<Row>) => {
         if (!action.confirm) {
-            action.onAction(row, { onSuccess: noop });
+            action.onAction(row, { onFinish: noop });
 
             return;
         }
@@ -98,7 +98,7 @@ export function ResourceIndexContent<Row>({
         action: ResourceBulkAction,
     ) => {
         if (!action.confirm) {
-            action.onAction(ids, { onSuccess: noop });
+            action.onAction(ids, { onFinish: noop });
 
             return;
         }
@@ -116,7 +116,7 @@ export function ResourceIndexContent<Row>({
         }
 
         pending.run({
-            onSuccess: () => {
+            onFinish: () => {
                 setPending(null);
                 index.clearSelection();
             },
