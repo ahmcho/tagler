@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import {
+    FileText,
     History,
     KeyRound,
     LayoutGrid,
@@ -24,6 +25,7 @@ import {
 import { useAbility } from '@/hooks/use-ability';
 import { dashboard } from '@/routes';
 import { index as activityLogsIndex } from '@/routes/activity-logs';
+import { index as pagesIndex } from '@/routes/pages';
 import { index as permissionsIndex } from '@/routes/permissions';
 import { index as rolesIndex } from '@/routes/roles';
 import { index as usersIndex } from '@/routes/users';
@@ -51,6 +53,17 @@ const ungroupedItems: NavigationItem[] = [
 ];
 
 const navigationGroups: NavigationGroup[] = [
+    {
+        label: 'Content',
+        items: [
+            {
+                label: 'Pages',
+                href: pagesIndex.url(),
+                icon: <FileText />,
+                ability: 'pages.index',
+            },
+        ],
+    },
     {
         label: 'RBAC',
         items: [

@@ -30,6 +30,11 @@ export enum ModelStatusEnum {
     Inactive = 0,
     Active = 1,
 }
+export enum PageStatus {
+    Draft = 'draft',
+    Published = 'published',
+    Scheduled = 'scheduled',
+}
 export enum SettingInputEnum {
     Text = 'text',
     File = 'file',

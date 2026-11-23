@@ -147,6 +147,9 @@
     --color-badge-success-background: #dcfce7;
     --color-badge-success-text: #15803d;
     --color-badge-success-icon-color: #22c55e;
+    --color-badge-warning-background: #fef3c7;
+    --color-badge-warning-text: #b45309;
+    --color-badge-warning-icon-color: #f59e0b;
     --color-badge-error-background: #fee2e2;
     --color-badge-error-text: #b91c1c;
     --color-badge-error-icon-color: #ef4444;
@@ -325,6 +328,9 @@
     --color-badge-success-background: #22c55e26;
     --color-badge-success-text: #86efac;
     --color-badge-success-icon-color: #4ade80;
+    --color-badge-warning-background: #f59e0b26;
+    --color-badge-warning-text: #fcd34d;
+    --color-badge-warning-icon-color: #fbbf24;
     --color-badge-error-background: #ef444426;
     --color-badge-error-text: #fca5a5;
     --color-badge-error-icon-color: #f87171;

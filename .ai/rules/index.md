@@ -13,6 +13,8 @@ Before planning or editing, find every row whose globs match the file's path and
 | app/Modules/Translation/**, lang/** | .ai/rules/translations.md |
 | app/Modules/*/Requests/**, app/Modules/*/Resources/** | .ai/rules/requests.md |
 | routes/**, app/Modules/*/routes/**, app/Modules/*/Controllers/** | .ai/rules/routes.md |
+| app/Modules/*/Controllers/** | .ai/rules/controllers.md |
+| app/** (backed enums) | .ai/rules/enums.md |
 | routes/**, app/Modules/*/Controllers/**, resources/js/routes/**, resources/js/actions/** | .ai/rules/wayfinder.md |
 | resources/js/** | .ai/rules/js.md |
 | resources/js/**, resources/css/** | .ai/rules/design.md |

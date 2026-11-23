@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
     return {
         plugins: [
             laravel({
-                input: ['resources/css/app.css', 'resources/js/app.tsx'],
+                input: ['resources/css/app.css', 'resources/js/app.tsx', 'resources/js/public.tsx'],
                 refresh: true,
                 fonts: [
                     bunny('Outfit', {
