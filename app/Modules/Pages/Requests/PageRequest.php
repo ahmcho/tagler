@@ -2,11 +2,11 @@
 
 namespace App\Modules\Pages\Requests;
 
+use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Enums\PageStatus;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use App\Modules\Pages\Services\PageContentValidator;
-use App\Modules\Pages\Support\PageLocales;
 use Crud\Requests\AppFormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\Rule;
@@ -49,8 +49,8 @@ class PageRequest extends AppFormRequest
     {
         $rules = [];
 
-        foreach (app(PageLocales::class)->codes() as $locale) {
-            $isDefault = $locale === app(PageLocales::class)->default();
+        foreach (LocaleEnum::codes() as $locale) {
+            $isDefault = $locale === LocaleEnum::default();
 
             $rules["translations.{$locale}.title"] = [$isDefault ? 'required' : 'nullable', 'string', 'max:255'];
             $rules["translations.{$locale}.subtitle"] = ['nullable', 'string', 'max:255'];
@@ -70,7 +70,7 @@ class PageRequest extends AppFormRequest
     {
         $messages = [];
 
-        foreach (app(PageLocales::class)->codes() as $locale) {
+        foreach (LocaleEnum::codes() as $locale) {
             $messages["translations.{$locale}.content.array"] = __('pages.errors.content_not_json');
         }
 
@@ -99,10 +99,8 @@ class PageRequest extends AppFormRequest
 
     private function checkUnsupportedLocales(Validator $validator): void
     {
-        $locales = app(PageLocales::class);
-
         foreach (array_keys((array) $this->input('translations', [])) as $locale) {
-            if (! $locales->isSupported((string) $locale)) {
+            if (! LocaleEnum::isSupported((string) $locale)) {
                 $validator->errors()->add('translations', __('pages.errors.unsupported_locale', ['locale' => $locale]));
             }
         }
@@ -136,7 +134,7 @@ class PageRequest extends AppFormRequest
         $page = $routePage instanceof Page ? $routePage : null;
         $parentId = $this->input('parent_id');
 
-        foreach (app(PageLocales::class)->codes() as $locale) {
+        foreach (LocaleEnum::codes() as $locale) {
             $translation = (array) $this->input("translations.{$locale}", []);
 
             if (! $this->hasAnyValue($translation)) {
@@ -174,7 +172,7 @@ class PageRequest extends AppFormRequest
             }
 
             if (in_array($path->firstSegment(), config('modules.pages.reserved_paths'), true)
-                || in_array($path->firstSegment(), app(PageLocales::class)->codes(), true)) {
+                || in_array($path->firstSegment(), LocaleEnum::codes(), true)) {
                 $validator->errors()->add("translations.{$locale}.slug", __('pages.errors.reserved_path', ['path' => $path->value]));
 
                 continue;

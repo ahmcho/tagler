@@ -2,10 +2,10 @@
 
 use App\Modules\Pages\Controllers\PublicNotFoundController;
 use App\Modules\Pages\Controllers\PublicPageController;
-use App\Modules\Pages\Support\PageLocales;
+use App\Modules\Pages\Enums\LocaleEnum;
 use Illuminate\Support\Facades\Route;
 
-$localeCodes = implode('|', app(PageLocales::class)->codes());
+$localeCodes = implode('|', LocaleEnum::codes());
 
 Route::get('/', PublicPageController::class)->name('home');
 

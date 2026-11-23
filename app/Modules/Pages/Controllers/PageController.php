@@ -3,6 +3,7 @@
 namespace App\Modules\Pages\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Requests\PageRequest;
 use App\Modules\Pages\Resources\PageResource;
@@ -10,7 +11,6 @@ use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use App\Modules\Pages\Support\ContentElementRegistry;
 use App\Modules\Pages\Support\ContentElements\ContentElement;
 use App\Modules\Pages\Support\PageContentDocument;
-use App\Modules\Pages\Support\PageLocales;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,7 +19,6 @@ class PageController extends Controller
 {
     public function __construct(
         private readonly PageServiceContract $service,
-        private readonly PageLocales $locales,
     ) {
         $this->authorizeResource(Page::class, 'page');
     }
@@ -56,7 +55,7 @@ class PageController extends Controller
             ],
             'filters' => (object) $request->only(['sort', 'direction']),
             'locales' => $this->localeOptions(),
-            'defaultLocale' => $this->locales->default(),
+            'defaultLocale' => LocaleEnum::default(),
             'status' => session('status'),
         ]);
     }
@@ -67,7 +66,7 @@ class PageController extends Controller
             'model' => $this->formModel(null),
             'parents' => $this->parentOptions(null),
             'locales' => $this->localeOptions(),
-            'defaultLocale' => $this->locales->default(),
+            'defaultLocale' => LocaleEnum::default(),
             ...$this->editorProps(),
         ]);
     }
@@ -85,7 +84,7 @@ class PageController extends Controller
             'model' => $this->formModel($page->load('translations')),
             'parents' => $this->parentOptions($page),
             'locales' => $this->localeOptions(),
-            'defaultLocale' => $this->locales->default(),
+            'defaultLocale' => LocaleEnum::default(),
             ...$this->editorProps(),
         ]);
     }
@@ -134,7 +133,7 @@ class PageController extends Controller
     {
         $translations = [];
 
-        foreach ($this->locales->codes() as $locale) {
+        foreach (LocaleEnum::codes() as $locale) {
             $translation = $page?->translationFor($locale);
 
             $translations[$locale] = [
@@ -204,7 +203,7 @@ class PageController extends Controller
      */
     private function parentOptions(?Page $page): array
     {
-        $defaultLocale = $this->locales->default();
+        $defaultLocale = LocaleEnum::default();
 
         return Page::query()
             ->with('translations')

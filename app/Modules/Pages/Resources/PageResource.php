@@ -2,8 +2,8 @@
 
 namespace App\Modules\Pages\Resources;
 
+use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Models\Page;
-use App\Modules\Pages\Support\PageLocales;
 use App\Modules\Pages\Support\PagePath;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -21,7 +21,7 @@ class PageResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $defaultTranslation = $this->translationFor(app(PageLocales::class)->default());
+        $defaultTranslation = $this->translationFor(LocaleEnum::default());
         $isLive = $this->isLive(Carbon::now());
 
         return [
@@ -51,7 +51,7 @@ class PageResource extends JsonResource
      */
     private function publicUrl(string $path): string
     {
-        $locale = app(PageLocales::class)->default();
+        $locale = LocaleEnum::default();
 
         return $path === PagePath::HOMEPAGE ? "/{$locale}" : "/{$locale}/{$path}";
     }

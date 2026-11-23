@@ -2,9 +2,9 @@
 
 namespace App\Modules\Pages\Services;
 
+use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Repositories\Contracts\PageRepositoryContract;
-use App\Modules\Pages\Support\PageLocales;
 use App\Modules\Pages\Support\PagePath;
 use Illuminate\Support\Carbon;
 
@@ -17,12 +17,11 @@ class PageResolver
 {
     public function __construct(
         private readonly PageRepositoryContract $pageRepository,
-        private readonly PageLocales $locales,
     ) {}
 
     public function resolve(string $locale, string $rawPath): ?Page
     {
-        if (! $this->locales->isSupported($locale)) {
+        if (! LocaleEnum::isSupported($locale)) {
             return null;
         }
 
@@ -62,7 +61,7 @@ class PageResolver
 
         return in_array($firstSegment, array_merge(
             config('modules.pages.reserved_paths', []),
-            $this->locales->codes(),
+            LocaleEnum::codes(),
         ), true);
     }
 }
