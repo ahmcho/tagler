@@ -3,13 +3,16 @@
 namespace App\Modules\Pages\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Pages\Enums\LocaleEnum;
+use App\Modules\Pages\Resources\PublicPageResource;
 use App\Modules\Pages\Services\PageComponentResolver;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * A plain 404 for visitors. It uses the `public` root view, so no admin styles load.
+ * The 404 page for visitors. It uses the `public` root view. Its props have the same shape as a public page, so the
+ * default theme's not-found template and the plain fallback both receive a `page` and no sections.
  */
 class PublicNotFoundController extends Controller
 {
@@ -22,7 +25,28 @@ class PublicNotFoundController extends Controller
     {
         Inertia::setRootView('public');
 
-        return Inertia::render(app(PageComponentResolver::class)->notFound())
+        $locale = (string) $request->segment(1);
+
+        if (LocaleEnum::isSupported($locale)) {
+            app()->setLocale($locale);
+        }
+
+        $locale = app()->getLocale();
+
+        return Inertia::render(app(PageComponentResolver::class)->notFound(), [
+            'page' => [
+                'locale' => $locale,
+                'title' => __('pages.public.not_found_title'),
+                'subtitle' => null,
+                'path' => '',
+                'layout' => null,
+                'seo_title' => null,
+                'seo_description' => null,
+                'canonical_url' => null,
+                'og_locale' => PublicPageResource::ogLocaleFor($locale),
+            ],
+            'sections' => [],
+        ])
             ->toResponse($request)
             ->setStatusCode(404);
     }

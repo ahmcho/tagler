@@ -2,6 +2,7 @@
 
 namespace App\Modules\Pages\Repositories;
 
+use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Enums\PageStatus;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Repositories\Contracts\PageRepositoryContract;
@@ -83,7 +84,7 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
 
         $query->orderByRaw(
             '(select title from page_translations where page_translations.page_id = pages.id and page_translations.locale = ? limit 1) '.$direction,
-            [config('app.locale')],
+            [LocaleEnum::default()],
         );
     }
 }

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'public' => [
+        'not_found_title' => 'Səhifə tapılmadı',
+    ],
+
     'errors' => [
         'homepage_requires_live_page' => 'Ana səhifə olmaq üçün yalnız aktiv səhifə seçilə bilər. Əvvəl səhifəni dərc edin.',
         'parent_is_descendant' => 'Səhifə özünün və ya öz alt səhifələrindən birinin altına yerləşdirilə bilməz.',

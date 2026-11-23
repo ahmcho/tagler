@@ -35,6 +35,7 @@ class PageResource extends JsonResource
             'is_live' => $isLive,
             'locales' => $this->translations->pluck('locale')->values(),
             'layout' => $this->layout,
+            'theme_layout' => $this->theme_layout,
             'published_at' => $this->published_at?->format('Y-m-d H:i'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i'),
             'can' => [

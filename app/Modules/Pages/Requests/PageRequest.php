@@ -33,6 +33,7 @@ class PageRequest extends AppFormRequest
                 'parent_id' => ['nullable', 'integer', 'exists:pages,id'],
                 'published_at' => ['nullable', 'date', 'required_if:status,'.PageStatus::Scheduled->value],
                 'layout' => ['nullable', 'string', 'max:64'],
+                'theme_layout' => ['sometimes', 'boolean'],
                 'translations' => ['required', 'array'],
                 ...$this->translationRules(),
             ],

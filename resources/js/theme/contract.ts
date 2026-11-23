@@ -12,6 +12,10 @@ export type ThemePage = {
     layout: string | null;
     seo_title: string | null;
     seo_description: string | null;
+    /** The default-locale address of the page, or null when it has none. */
+    canonical_url: string | null;
+    /** The Open Graph locale, for example en_GB. */
+    og_locale: string;
 };
 
 export type ThemeElement = {

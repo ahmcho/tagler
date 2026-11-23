@@ -4,7 +4,7 @@ namespace App\Modules\Pages\Enums;
 
 /**
  * The locales pages can be written in. `config/app.php` builds `supported_locales` from these cases.
- * The default locale is `app.locale`, used for the root URL `/`.
+ * The default locale is `app.default_locale`, used for the root URL `/`. It does not change during a request.
  */
 enum LocaleEnum: string
 {
@@ -22,7 +22,7 @@ enum LocaleEnum: string
 
     public static function default(): string
     {
-        return (string) config('app.locale');
+        return (string) config('app.default_locale');
     }
 
     public static function isSupported(string $locale): bool

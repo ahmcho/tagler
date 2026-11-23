@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property PageStatus $status
  * @property bool $is_homepage
  * @property string|null $layout
+ * @property bool $theme_layout Whether the active theme's template shows this page
  * @property CarbonInterface|null $published_at
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
@@ -34,7 +35,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Table(name: 'pages')]
 #[UseFactory(PageFactory::class)]
-#[Fillable(['parent_id', 'status', 'layout', 'published_at'])]
+#[Fillable(['parent_id', 'status', 'layout', 'theme_layout', 'published_at'])]
 #[ObservedBy([PageObserver::class])]
 class Page extends Model
 {
@@ -49,6 +50,7 @@ class Page extends Model
         return [
             'status' => PageStatus::class,
             'is_homepage' => 'boolean',
+            'theme_layout' => 'boolean',
             'published_at' => 'datetime',
         ];
     }

@@ -36,6 +36,7 @@ import {
     SelectValue,
 } from '@/components/tailgrids/core/select';
 import { TextField } from '@/components/tailgrids/core/text-field';
+import { Toggle } from '@/components/tailgrids/core/toggle';
 import type {
     ContentDocument,
     ContentEditorConfig,
@@ -95,6 +96,8 @@ export type PageFormData = {
     status: PageStatus;
     published_at: string;
     layout: string;
+    /** Whether the active theme's template shows this page. Off means the plain view. */
+    theme_layout: boolean;
     translations: Record<string, PageTranslationFormData>;
 };
 
@@ -239,6 +242,14 @@ export function PageFields({
                     <Input className="w-full" />
                     <FieldError>{form.errors.layout}</FieldError>
                 </TextField>
+
+                <Toggle
+                    label="Use the theme layout"
+                    checked={form.data.theme_layout}
+                    onChange={(event) =>
+                        form.setData('theme_layout', event.target.checked)
+                    }
+                />
             </div>
 
             <div className="flex flex-col gap-4">

@@ -52,12 +52,31 @@ test('the locale homepage uses the theme home template too', function (): void {
         ->assertInertia(fn (Assert $page) => $page->component('theme/default/home'));
 });
 
-test('a page that is not the homepage keeps the plain view', function (): void {
+test('a page that is not the homepage uses the theme page template', function (): void {
     PageFixtures::create(['status' => 'published'], ['locale' => $this->locale, 'title' => 'About', 'slug' => 'about', 'path' => 'about']);
 
     $this->get("/{$this->locale}/about")
         ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('theme/default/page'));
+});
+
+test('a page with the theme layout turned off uses the plain view', function (): void {
+    PageFixtures::create(['status' => 'published', 'theme_layout' => false], ['locale' => $this->locale, 'title' => 'Plain', 'slug' => 'plain', 'path' => 'plain']);
+
+    $this->get("/{$this->locale}/plain")
+        ->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('pages/public/show'));
+});
+
+test('a homepage with the theme layout turned off uses the plain view', function (): void {
+    PageFixtures::create(['is_homepage' => true, 'status' => 'published', 'theme_layout' => false], [
+        'locale' => $this->locale,
+        'title' => 'Plain home',
+        'slug' => 'home',
+        'path' => PagePath::HOMEPAGE,
+    ]);
+
+    $this->get('/')->assertInertia(fn (Assert $page) => $page->component('pages/public/show'));
 });
 
 test('a preview of the homepage is themed too', function (): void {
@@ -73,7 +92,17 @@ test('a preview of the homepage is themed too', function (): void {
         ->assertInertia(fn (Assert $inertia) => $inertia->component('theme/default/home'));
 });
 
-test('the not-found page keeps the plain view because the default theme does not provide it', function (): void {
+test('the not-found page uses the theme not-found template', function (): void {
+    $this->get("/{$this->locale}/no-such-page")
+        ->assertNotFound()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('theme/default/not-found')
+            ->where('page.title', 'Page not found'));
+});
+
+test('the not-found page falls back to the plain view when the theme is missing', function (): void {
+    app(SettingServiceContract::class)->setString('active_theme', 'ghost');
+
     $this->get("/{$this->locale}/no-such-page")
         ->assertNotFound()
         ->assertInertia(fn (Assert $page) => $page->component('pages/public/not-found'));

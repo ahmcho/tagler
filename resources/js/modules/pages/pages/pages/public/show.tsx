@@ -1,7 +1,7 @@
-import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import type { PageSection } from '@/modules/pages/components/page-sections';
 import { PageSections } from '@/modules/pages/components/page-sections';
+import { PageHead } from '@/theme/api';
 
 type Props = {
     page: {
@@ -12,6 +12,8 @@ type Props = {
         layout: string | null;
         seo_title: string | null;
         seo_description: string | null;
+        canonical_url: string | null;
+        og_locale: string;
     };
     sections: PageSection[];
 };
@@ -23,11 +25,7 @@ type Props = {
 export default function Show({ page, sections }: Props): ReactNode {
     return (
         <main lang={page.locale} data-layout={page.layout ?? undefined}>
-            <Head title={page.seo_title ?? page.title}>
-                {page.seo_description && (
-                    <meta name="description" content={page.seo_description} />
-                )}
-            </Head>
+            <PageHead page={page} />
 
             <header>
                 <h1>{page.title}</h1>

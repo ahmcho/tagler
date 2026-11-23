@@ -6,8 +6,9 @@ use App\Modules\Pages\Models\Page;
 use App\Modules\Theme\Contracts\ThemeServiceContract;
 
 /**
- * Picks the frontend component that shows a public page. The homepage uses the theme's `home` template when the
- * active theme provides one. Every other page uses the plain view. The choice is made per request, after the cache read.
+ * Picks the frontend component that shows a public page. Every page uses the active theme: the homepage uses the
+ * theme's `home` template and every other page uses its `page` template. A page with `theme_layout` off uses the
+ * plain view. A missing theme or template also falls back to the plain view. The choice is made per request, after the cache read.
  */
 class PageComponentResolver
 {
@@ -19,9 +20,11 @@ class PageComponentResolver
 
     public function forPage(Page $page): string
     {
-        return $page->is_homepage
-            ? $this->themes->componentFor('home', self::PAGE_VIEW)
-            : self::PAGE_VIEW;
+        if (! $page->theme_layout) {
+            return self::PAGE_VIEW;
+        }
+
+        return $this->themes->componentFor($page->is_homepage ? 'home' : 'page', self::PAGE_VIEW);
     }
 
     public function notFound(): string

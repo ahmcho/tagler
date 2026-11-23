@@ -71,6 +71,7 @@ function EditForm({
         status: model.status,
         published_at: model.published_at ?? '',
         layout: model.layout,
+        theme_layout: model.theme_layout,
         translations: model.translations,
     });
 

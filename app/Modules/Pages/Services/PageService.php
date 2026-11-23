@@ -157,6 +157,7 @@ class PageService extends BaseCrudService implements PageServiceContract
             'parent_id' => $page->parent_id,
             'published_at' => $page->published_at?->toIso8601String(),
             'layout' => $page->layout,
+            'theme_layout' => $page->theme_layout,
             'translations' => $page->translations
                 ->mapWithKeys(fn (PageTranslation $translation): array => [$translation->locale => [
                     'title' => $translation->title,
@@ -267,6 +268,7 @@ class PageService extends BaseCrudService implements PageServiceContract
             'parent_id' => $parent?->id,
             'status' => $payload['status'],
             'layout' => $payload['layout'] ?? null,
+            'theme_layout' => (bool) ($payload['theme_layout'] ?? true),
             'published_at' => $payload['published_at'] ?? null,
         ];
     }

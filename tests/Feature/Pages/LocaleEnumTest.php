@@ -14,10 +14,18 @@ test('an unknown or differently cased locale is not supported', function (string
     expect(LocaleEnum::isSupported($locale))->toBeFalse();
 })->with(['de', '', 'EN', 'en-US']);
 
-test('the default is the configured app locale', function (): void {
-    config(['app.locale' => 'ru']);
+test('the default is the configured default locale', function (): void {
+    config(['app.default_locale' => 'ru']);
 
     expect(LocaleEnum::default())->toBe('ru');
+});
+
+test('the default does not change when the request locale changes', function (): void {
+    config(['app.default_locale' => 'en']);
+
+    app()->setLocale('az');
+
+    expect(LocaleEnum::default())->toBe('en');
 });
 
 test('config supported_locales is built from the enum', function (): void {

@@ -19,6 +19,8 @@ use App\Modules\Pages\Support\ContentElementRegistry;
 use Crud\Providers\ModuleServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Ssr\Gateway;
+use Inertia\Ssr\HttpGateway;
 
 class PagesServiceProvider extends ModuleServiceProvider
 {
@@ -56,6 +58,28 @@ class PagesServiceProvider extends ModuleServiceProvider
         $this->registerAbilities();
         $this->registerContentElements();
         $this->registerConsole();
+        $this->disableSsrForPublicPages();
+    }
+
+    /**
+     * Public pages load only public.tsx, which has no server render entry. Server rendering would replace the
+     * search and sharing tags in the root view with the dev server's own head, so public pages skip it.
+     */
+    private function disableSsrForPublicPages(): void
+    {
+        /** @var object $gateway The SSR gateway is an HttpGateway unless another package replaces it. */
+        $gateway = $this->app->make(Gateway::class);
+
+        if ($gateway instanceof HttpGateway) {
+            $gateway->disable(fn (): bool => $this->isPublicPageRequest());
+        }
+    }
+
+    private function isPublicPageRequest(): bool
+    {
+        $name = request()->route()?->getName();
+
+        return $name === null || in_array($name, ['home', 'pages.localized', 'pages.preview.show'], true);
     }
 
     private function registerConsole(): void

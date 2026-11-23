@@ -197,7 +197,7 @@ class PageController extends Controller
     /**
      * The form values of a saved page.
      *
-     * @return array{parent_id: int|null, status: string, published_at: string|null, layout: string, translations: array<string, array<string, mixed>|null>}
+     * @return array{parent_id: int|null, status: string, published_at: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}
      */
     private function pageValues(?Page $page): array
     {
@@ -206,6 +206,7 @@ class PageController extends Controller
             'status' => $page?->status->value ?? 'draft',
             'published_at' => $page?->published_at?->format('Y-m-d\TH:i'),
             'layout' => $page->layout ?? '',
+            'theme_layout' => $page === null || $page->theme_layout,
             'translations' => collect(LocaleEnum::codes())
                 ->mapWithKeys(fn (string $locale): array => [$locale => $page?->translationFor($locale)?->only(self::TRANSLATION_FIELDS)])
                 ->all(),
@@ -216,7 +217,7 @@ class PageController extends Controller
      * The form values stored in a revision, in the same shape as `pageValues()`.
      *
      * @param  array<string, mixed>  $snapshot
-     * @return array{parent_id: int|null, status: string, published_at: string|null, layout: string, translations: array<string, array<string, mixed>|null>}
+     * @return array{parent_id: int|null, status: string, published_at: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}
      */
     private function snapshotValues(array $snapshot): array
     {
@@ -225,6 +226,7 @@ class PageController extends Controller
             'status' => (string) ($snapshot['status'] ?? 'draft'),
             'published_at' => isset($snapshot['published_at']) ? Carbon::parse($snapshot['published_at'])->format('Y-m-d\TH:i') : null,
             'layout' => (string) ($snapshot['layout'] ?? ''),
+            'theme_layout' => (bool) ($snapshot['theme_layout'] ?? true),
             'translations' => $snapshot['translations'] ?? [],
         ];
     }
@@ -232,7 +234,7 @@ class PageController extends Controller
     /**
      * The form model. Every supported locale gets an entry, blank when the page has no translation there.
      *
-     * @param  array{parent_id: int|null, status: string, published_at: string|null, layout: string, translations: array<string, array<string, mixed>|null>}  $values
+     * @param  array{parent_id: int|null, status: string, published_at: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}  $values
      * @return array<string, mixed>
      */
     private function formModel(?Page $page, array $values): array
@@ -258,6 +260,7 @@ class PageController extends Controller
             'status' => $values['status'],
             'published_at' => $values['published_at'],
             'layout' => $values['layout'],
+            'theme_layout' => $values['theme_layout'],
             'translations' => $translations,
         ];
     }

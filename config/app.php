@@ -82,6 +82,12 @@ return [
 
     'locale' => env('APP_LOCALE', 'en'),
 
+    /*
+     * The site's default locale. Unlike `locale`, it does not change while a request runs, so the public pages
+     * keep one canonical locale. `locale` changes on each request, through setLocale().
+     */
+    'default_locale' => env('APP_LOCALE', 'en'),
+
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
     'supported_locales' => array_map(

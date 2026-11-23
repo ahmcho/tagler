@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'public' => [
+        'not_found_title' => 'Page not found',
+    ],
+
     'errors' => [
         'homepage_requires_live_page' => 'Only a live page can be the homepage. Publish the page first.',
         'parent_is_descendant' => 'A page cannot be placed under itself or one of its children.',
