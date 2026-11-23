@@ -432,6 +432,7 @@ export function DataTable<Row>({
                                     isOpen={isFilterOpen}
                                     onOpenChange={setIsFilterOpen}
                                     isDismissable
+                                    className="flex max-h-[calc(100dvh-2rem)] flex-col"
                                 >
                                     <DialogHeader>
                                         <DialogTitle>
@@ -444,7 +445,9 @@ export function DataTable<Row>({
                                         )}
                                     </DialogHeader>
 
-                                    <DialogBody>{filter.children}</DialogBody>
+                                    <DialogBody className="min-h-0 flex-1 overflow-y-auto">
+                                        {filter.children}
+                                    </DialogBody>
 
                                     <DialogFooter>
                                         <Button
