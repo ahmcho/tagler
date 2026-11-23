@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Resources;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -21,9 +22,9 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'status' => $this->status,
-            'roles' => $this->whenLoaded('roles', fn () => $this->roles->map(fn ($role): array => [
-                'id' => $role->id,
-                'name' => $role->name,
+            'roles' => $this->whenLoaded('roles', fn () => $this->roles->map(fn (Model $role): array => [
+                'id' => $role->getKey(),
+                'name' => $role->getAttribute('name'),
             ])->values()),
             'created_at' => $this->created_at?->format('Y-m-d H:i'),
             'can' => [

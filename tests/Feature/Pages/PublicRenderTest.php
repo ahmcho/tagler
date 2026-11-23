@@ -4,7 +4,7 @@ use App\Modules\Pages\Models\PageTranslation;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PageFixtures;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->locale = config('app.locale');
 });
 
@@ -13,7 +13,7 @@ function contentOf(array $sections): array
     return ['version' => 1, 'sections' => $sections];
 }
 
-test('the public page passes live sections and their elements to the view', function () {
+test('the public page passes live sections and their elements to the view', function (): void {
     PageFixtures::create(['is_homepage' => true], [
         'locale' => $this->locale,
         'slug' => 'home',
@@ -37,7 +37,7 @@ test('the public page passes live sections and their elements to the view', func
         ->where('sections.0.elements.1.data.url', '/contact'));
 });
 
-test('a disabled section is not shown', function () {
+test('a disabled section is not shown', function (): void {
     PageFixtures::create(['is_homepage' => true], [
         'locale' => $this->locale,
         'slug' => 'home',
@@ -52,7 +52,7 @@ test('a disabled section is not shown', function () {
         ->where('sections.0.id', '44444444-4444-4444-8444-444444444444'));
 });
 
-test('a section whose layout is no longer available is skipped and the page still renders', function () {
+test('a section whose layout is no longer available is skipped and the page still renders', function (): void {
     PageFixtures::create(['is_homepage' => true], [
         'locale' => $this->locale,
         'slug' => 'home',
@@ -63,7 +63,7 @@ test('a section whose layout is no longer available is skipped and the page stil
     $this->get('/')->assertOk()->assertInertia(fn (Assert $page) => $page->has('sections', 0));
 });
 
-test('an element type that is not registered is skipped', function () {
+test('an element type that is not registered is skipped', function (): void {
     PageFixtures::create(['is_homepage' => true], [
         'locale' => $this->locale,
         'slug' => 'home',
@@ -83,7 +83,7 @@ test('an element type that is not registered is skipped', function () {
         ->where('sections.0.elements.0.type', 'divider'));
 });
 
-test('markdown is rendered to HTML with raw HTML escaped', function () {
+test('markdown is rendered to HTML with raw HTML escaped', function (): void {
     PageFixtures::create(['is_homepage' => true], [
         'locale' => $this->locale,
         'slug' => 'home',
@@ -106,7 +106,7 @@ test('markdown is rendered to HTML with raw HTML escaped', function () {
         ->and($html)->not->toContain('<script');
 });
 
-test('the stored translation keeps the content of its locale only', function () {
+test('the stored translation keeps the content of its locale only', function (): void {
     $page = PageFixtures::create(['is_homepage' => true], ['locale' => $this->locale, 'slug' => 'home', 'path' => '/']);
     PageTranslation::factory()->create(['page_id' => $page->id, 'locale' => 'az', 'slug' => 'ana', 'path' => '/az-only']);
 

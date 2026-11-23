@@ -10,13 +10,13 @@ use Tests\Feature\Crud\Fixtures\CrudNote;
 use Tests\Feature\Crud\Fixtures\CrudParent;
 use Tests\Feature\Crud\Fixtures\CrudParentRepository;
 
-beforeEach(function () {
+beforeEach(function (): void {
     CrudFixtures::up();
 
     $this->repository = app(CrudParentRepository::class);
 });
 
-it('paginates results', function () {
+it('paginates results', function (): void {
     foreach (['Alpha', 'Beta', 'Gamma'] as $name) {
         CrudParent::create(['name' => $name]);
     }
@@ -27,7 +27,7 @@ it('paginates results', function () {
         ->and($page->items())->toHaveCount(2);
 });
 
-it('applies plain conditions', function () {
+it('applies plain conditions', function (): void {
     CrudParent::create(['name' => 'Alpha']);
     CrudParent::create(['name' => 'Beta']);
 
@@ -37,7 +37,7 @@ it('applies plain conditions', function () {
         ->and($page->items()[0]->name)->toBe('Alpha');
 });
 
-it('matches LIKE conditions case-insensitively', function () {
+it('matches LIKE conditions case-insensitively', function (): void {
     CrudParent::create(['name' => 'Alpha']);
     CrudParent::create(['name' => 'Alphabet']);
     CrudParent::create(['name' => 'Beta']);
@@ -50,7 +50,7 @@ it('matches LIKE conditions case-insensitively', function () {
         ->and($notLike->items()[0]->name)->toBe('Beta');
 });
 
-it('sorts by a column in the requested direction', function () {
+it('sorts by a column in the requested direction', function (): void {
     CrudParent::create(['name' => 'Alpha']);
     CrudParent::create(['name' => 'Gamma']);
 
@@ -59,7 +59,7 @@ it('sorts by a column in the requested direction', function () {
     expect($page->items()[0]->name)->toBe('Gamma');
 });
 
-it('uses a custom sorting hook', function () {
+it('uses a custom sorting hook', function (): void {
     CrudParent::create(['name' => 'First']);
     CrudParent::create(['name' => 'Second']);
 
@@ -68,7 +68,7 @@ it('uses a custom sorting hook', function () {
     expect($page->items()[0]->name)->toBe('Second');
 });
 
-it('uses a custom condition hook', function () {
+it('uses a custom condition hook', function (): void {
     CrudParent::create(['name' => 'Alpha']);
     CrudParent::create(['name' => 'Alphabet']);
     CrudParent::create(['name' => 'Beta']);
@@ -78,7 +78,7 @@ it('uses a custom condition hook', function () {
     expect($page->total())->toBe(2);
 });
 
-it('adds custom relations', function () {
+it('adds custom relations', function (): void {
     $parent = CrudParent::create(['name' => 'Alpha']);
     CrudChild::create(['crud_parent_id' => $parent->id, 'name' => 'Child']);
 
@@ -87,7 +87,7 @@ it('adds custom relations', function () {
     expect($page->items()[0]->children_count)->toBe(1);
 });
 
-it('finds a model by id and fails for a missing id', function () {
+it('finds a model by id and fails for a missing id', function (): void {
     $parent = CrudParent::create(['name' => 'Alpha']);
 
     expect($this->repository->findById($parent->id)->name)->toBe('Alpha');
@@ -95,7 +95,7 @@ it('finds a model by id and fails for a missing id', function () {
     expect(fn () => $this->repository->findById(999999))->toThrow(ModelNotFoundException::class);
 });
 
-it('creates and updates a model', function () {
+it('creates and updates a model', function (): void {
     $parent = $this->repository->create(['name' => 'Alpha']);
     $updated = $this->repository->update($parent, ['name' => 'Beta']);
 
@@ -103,21 +103,21 @@ it('creates and updates a model', function () {
         ->and($updated->name)->toBe('Beta');
 });
 
-it('deletes a model without relations and returns true', function () {
+it('deletes a model without relations and returns true', function (): void {
     $parent = CrudParent::create(['name' => 'Alpha']);
 
     expect($this->repository->deleteById($parent->id))->toBeTrue()
         ->and(CrudParent::count())->toBe(0);
 });
 
-it('maps a foreign key violation to ModelHasRelationsException', function () {
+it('maps a foreign key violation to ModelHasRelationsException', function (): void {
     $parent = CrudParent::create(['name' => 'Alpha']);
     CrudChild::create(['crud_parent_id' => $parent->id, 'name' => 'Child']);
 
     $this->repository->deleteById($parent->id);
 })->throws(ModelHasRelationsException::class);
 
-it('keeps the transaction usable after a foreign key violation', function () {
+it('keeps the transaction usable after a foreign key violation', function (): void {
     $parent = CrudParent::create(['name' => 'Alpha']);
     CrudChild::create(['crud_parent_id' => $parent->id, 'name' => 'Child']);
 
@@ -132,7 +132,7 @@ it('keeps the transaction usable after a foreign key violation', function () {
     });
 });
 
-it('soft deletes, restores and permanently deletes a model', function () {
+it('soft deletes, restores and permanently deletes a model', function (): void {
     $notes = new class(new CrudNote) extends EloquentRepository {};
     $note = $notes->create(['title' => 'Draft']);
 

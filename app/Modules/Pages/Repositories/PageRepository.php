@@ -63,6 +63,8 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
 
     /**
      * Sorts by the title in the default locale. Pages with no title in that locale sort first.
+     *
+     * @param  Builder<Page>  $query
      */
     protected function addTitleSorting(Builder $query, string $direction): void
     {

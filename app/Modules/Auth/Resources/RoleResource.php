@@ -2,10 +2,10 @@
 
 namespace App\Modules\Auth\Resources;
 
-use App\Modules\Auth\Models\Permission;
 use App\Modules\Auth\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Spatie\Permission\Models\Permission;
 
 /**
  * @mixin Role

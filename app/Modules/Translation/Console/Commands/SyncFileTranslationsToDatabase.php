@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Modules\Translation\Console\Commands;
 
 use App\Modules\Translation\Models\Translation;
-use App\Modules\Translation\Support\CachingTranslationLoader;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Finder\SplFileInfo;
 use Throwable;
 
+#[Description('Sync the lang/{locale} files into the translations table')]
+#[Signature('tagler:translations:sync
+                            {--locale= : Sync only this locale folder (default: every supported locale)}
+                            {--force : Overwrite translations that already exist in the database}')]
 class SyncFileTranslationsToDatabase extends Command
 {
-    protected $signature = 'tagler:translations:sync
-                            {--locale= : Sync only this locale folder (default: every supported locale)}
-                            {--force : Overwrite translations that already exist in the database}';
-
-    protected $description = 'Sync the lang/{locale} files into the translations table';
-
     /**
      * Sync every supported locale folder, or only the one given by --locale.
      */
@@ -100,7 +100,7 @@ class SyncFileTranslationsToDatabase extends Command
      *
      * @return array{synced: int, skipped: int, failed: int}
      */
-    protected function processFile(\SplFileInfo $file, string $locale, bool $force): array
+    protected function processFile(SplFileInfo $file, string $locale, bool $force): array
     {
         $counts = ['synced' => 0, 'skipped' => 0, 'failed' => 0];
 
@@ -202,10 +202,6 @@ class SyncFileTranslationsToDatabase extends Command
      */
     protected function flushLoaderCache(): void
     {
-        $loader = app('translation.loader');
-
-        if ($loader instanceof CachingTranslationLoader) {
-            $loader->forgetAll();
-        }
+        app('translation.loader')->forgetAll();
     }
 }

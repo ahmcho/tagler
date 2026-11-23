@@ -6,6 +6,7 @@ use App\Modules\Auth\Models\Permission;
 use App\Modules\Auth\Repositories\Contracts\PermissionRepositoryContract;
 use Crud\Repositories\EloquentRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
 
 class PermissionRepository extends EloquentRepository implements PermissionRepositoryContract
 {
@@ -14,6 +15,9 @@ class PermissionRepository extends EloquentRepository implements PermissionRepos
         parent::__construct($model);
     }
 
+    /**
+     * @return LengthAwarePaginator<int, Model>
+     */
     public function search(string $term): LengthAwarePaginator
     {
         return $this->model->newQuery()

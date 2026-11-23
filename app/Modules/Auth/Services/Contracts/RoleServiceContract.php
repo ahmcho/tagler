@@ -16,12 +16,12 @@ interface RoleServiceContract extends BaseCrudServiceContract
     public function search(string $term): LengthAwarePaginator;
 
     /**
-     * @param  array{name: string, permissions: array<int, int>}  $payload
+     * @param  array<string, mixed>  $payload  Validated input: name and permission ids
      */
     public function create(array $payload): Model;
 
     /**
-     * @param  array{name: string, permissions: array<int, int>}  $payload
+     * @param  array<string, mixed>  $payload  Validated input: name and permission ids
      */
     public function update(int|Model $modelOrModelId, array $payload): Model;
 }

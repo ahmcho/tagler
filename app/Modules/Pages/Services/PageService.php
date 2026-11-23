@@ -36,6 +36,7 @@ class PageService extends BaseCrudService implements PageServiceContract
         return DB::transaction(function () use ($payload): Model {
             $parent = $this->findParent($payload['parent_id'] ?? null);
 
+            /** @var Page $page */
             $page = $this->pageRepository->create($this->pageAttributes($payload, $parent));
 
             $this->syncTranslations($page, $parent, $payload['translations']);
@@ -54,6 +55,7 @@ class PageService extends BaseCrudService implements PageServiceContract
 
             $this->assertNotUnderItself($page, $parent);
 
+            /** @var Page $page */
             $page = $this->pageRepository->update($page, $this->pageAttributes($payload, $parent));
 
             $this->syncTranslations($page, $parent, $payload['translations']);
@@ -95,6 +97,7 @@ class PageService extends BaseCrudService implements PageServiceContract
      */
     public function delete(int|Model $modelOrModelId): bool
     {
+        /** @var Page $page */
         $page = $modelOrModelId instanceof Model
             ? $modelOrModelId
             : $this->pageRepository->findById($modelOrModelId);

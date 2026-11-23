@@ -2,12 +2,12 @@
 
 use App\Modules\Translation\Models\Translation;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Translation::query()->delete();
     $this->app->useLangPath(base_path('tests/Fixtures/lang'));
 });
 
-test('the sync command writes every locale folder into the translations table', function () {
+test('the sync command writes every locale folder into the translations table', function (): void {
     $this->artisan('tagler:translations:sync')->assertSuccessful();
 
     expect(Translation::where('lang', 'en')->where('group', 'auth')->where('key', 'failed')->value('value'))
@@ -18,7 +18,7 @@ test('the sync command writes every locale folder into the translations table', 
         ->toBe('Welcome');
 });
 
-test('the sync command leaves existing rows alone unless --force is given', function () {
+test('the sync command leaves existing rows alone unless --force is given', function (): void {
     Translation::create(['lang' => 'en', 'group' => 'auth', 'key' => 'failed', 'value' => 'Edited in admin']);
 
     $this->artisan('tagler:translations:sync')->assertSuccessful();
@@ -32,14 +32,14 @@ test('the sync command leaves existing rows alone unless --force is given', func
         ->toBe('These credentials do not match our records.');
 });
 
-test('the --locale option limits the sync to one locale', function () {
+test('the --locale option limits the sync to one locale', function (): void {
     $this->artisan('tagler:translations:sync --locale=az')->assertSuccessful();
 
     expect(Translation::where('lang', 'az')->count())->toBe(2)
         ->and(Translation::where('lang', 'en')->count())->toBe(0);
 });
 
-test('the sync command fails when no locale folder exists', function () {
+test('the sync command fails when no locale folder exists', function (): void {
     $this->app->useLangPath(base_path('tests/Fixtures/missing'));
 
     $this->artisan('tagler:translations:sync')->assertFailed();

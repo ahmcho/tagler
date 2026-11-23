@@ -13,7 +13,7 @@ final class PageLocales
      */
     public function codes(): array
     {
-        return array_values(array_column(config('app.supported_locales', []), 'code'));
+        return array_column(config('app.supported_locales', []), 'code');
     }
 
     public function default(): string

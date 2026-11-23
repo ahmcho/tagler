@@ -10,6 +10,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 trait RendersPaginatedRecords
 {
     /**
+     * @param  LengthAwarePaginator<int, mixed>  $paginator
      * @param  class-string  $resource
      * @return array{data: array<int, mixed>, current_page: int, last_page: int, total: int}
      */

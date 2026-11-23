@@ -14,7 +14,7 @@ class TypeScriptTransformerServiceProvider extends BaseTypeScriptTransformerServ
     {
         $config
             ->transformer(new EnumTransformer(useUnionEnums: false))
-            ->transformDirectories(...glob(app_path('Modules/*/Enums'), GLOB_ONLYDIR))
+            ->transformDirectories(...(glob(app_path('Modules/*/Enums'), GLOB_ONLYDIR) ?: []))
             ->outputDirectory(resource_path('js/types/generated'))
             ->writer(new FlatModuleWriter('index.ts'))
             ->withoutManifest()

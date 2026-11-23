@@ -10,7 +10,7 @@ use Illuminate\Database\QueryException;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PageFixtures;
 
-beforeEach(function () {
+beforeEach(function (): void {
     (new RolesAndPermissionsSeeder)->run();
 });
 
@@ -44,17 +44,17 @@ function pagePayload(array $fields = [], array $translations = []): array
     return PageFixtures::payload($fields, $translations);
 }
 
-test('guests are redirected to the admin login page', function () {
+test('guests are redirected to the admin login page', function (): void {
     $this->get(route('pages.index'))->assertRedirect(route('login'));
 });
 
-test('a user without the page permissions is forbidden', function () {
+test('a user without the page permissions is forbidden', function (): void {
     $this->actingAs(User::factory()->create())
         ->get(route('pages.index'))
         ->assertForbidden();
 });
 
-test('an admin creates a top-level page with a translation in the default locale', function () {
+test('an admin creates a top-level page with a translation in the default locale', function (): void {
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), pagePayload())
         ->assertRedirect(route('pages.index'))
@@ -66,7 +66,7 @@ test('an admin creates a top-level page with a translation in the default locale
         ->and($translation?->content)->toBe(['version' => 1, 'sections' => []]);
 });
 
-test('a child page path combines its parent path and its slug in the same locale', function () {
+test('a child page path combines its parent path and its slug in the same locale', function (): void {
     $parent = PageFixtures::create(['status' => PageStatus::Published], ['slug' => 'services', 'path' => 'services']);
 
     $this->actingAs(pageAdmin())
@@ -78,7 +78,7 @@ test('a child page path combines its parent path and its slug in the same locale
     expect(PageTranslation::query()->where('path', 'services/web')->where('locale', config('app.locale'))->exists())->toBeTrue();
 });
 
-test('the same slug is allowed in a different locale', function () {
+test('the same slug is allowed in a different locale', function (): void {
     PageFixtures::create([], ['locale' => config('app.locale'), 'slug' => 'about', 'path' => 'about']);
 
     $this->actingAs(pageAdmin())
@@ -91,7 +91,7 @@ test('the same slug is allowed in a different locale', function () {
     expect(PageTranslation::query()->where('locale', 'az')->where('path', 'about')->exists())->toBeTrue();
 });
 
-test('a path that is already used in the same locale is rejected', function () {
+test('a path that is already used in the same locale is rejected', function (): void {
     PageFixtures::create([], ['slug' => 'about', 'path' => 'about']);
 
     $this->actingAs(pageAdmin())
@@ -101,37 +101,37 @@ test('a path that is already used in the same locale is rejected', function () {
     expect(PageTranslation::query()->where('path', 'about')->count())->toBe(1);
 });
 
-test('a slug that uses a reserved system path is rejected', function () {
+test('a slug that uses a reserved system path is rejected', function (): void {
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), pagePayload([], [config('app.locale') => ['title' => 'Admin', 'slug' => 'admin']]))
         ->assertSessionHasErrors('translations.'.config('app.locale').'.slug');
 });
 
-test('a slug that is a locale code is rejected because it would clash with the locale homepage', function () {
+test('a slug that is a locale code is rejected because it would clash with the locale homepage', function (): void {
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), pagePayload([], [config('app.locale') => ['title' => 'Az', 'slug' => 'az']]))
         ->assertSessionHasErrors('translations.'.config('app.locale').'.slug');
 });
 
-test('a slug with uppercase letters or spaces is rejected', function (string $slug) {
+test('a slug with uppercase letters or spaces is rejected', function (string $slug): void {
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), pagePayload([], [config('app.locale') => ['title' => 'Bad', 'slug' => $slug]]))
         ->assertSessionHasErrors('translations.'.config('app.locale').'.slug');
 })->with(['About', 'has space', 'under_score']);
 
-test('a scheduled page needs a publish date', function () {
+test('a scheduled page needs a publish date', function (): void {
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), pagePayload(['status' => 'scheduled']))
         ->assertSessionHasErrors('published_at');
 });
 
-test('a locale with a title but no slug is rejected', function () {
+test('a locale with a title but no slug is rejected', function (): void {
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), pagePayload([], ['az' => ['title' => 'Haqqımızda']]))
         ->assertSessionHasErrors('translations.az.slug');
 });
 
-test('a locale that is not supported is rejected', function () {
+test('a locale that is not supported is rejected', function (): void {
     $payload = pagePayload();
     $payload['translations']['fr'] = ['title' => 'À propos', 'slug' => 'a-propos'];
 
@@ -140,7 +140,7 @@ test('a locale that is not supported is rejected', function () {
         ->assertSessionHasErrors('translations');
 });
 
-test('a child cannot be created in a locale its parent does not have', function () {
+test('a child cannot be created in a locale its parent does not have', function (): void {
     $parent = PageFixtures::create([], ['locale' => config('app.locale'), 'slug' => 'services', 'path' => 'services']);
 
     $this->actingAs(pageAdmin())
@@ -150,7 +150,7 @@ test('a child cannot be created in a locale its parent does not have', function 
         ->assertSessionHasErrors('translations.az.slug');
 });
 
-test('renaming a parent updates the paths of its descendants in every locale', function () {
+test('renaming a parent updates the paths of its descendants in every locale', function (): void {
     $parent = PageFixtures::create([], ['slug' => 'services', 'path' => 'services']);
     $child = PageFixtures::create(['parent_id' => $parent->id], ['slug' => 'web', 'path' => 'services/web']);
     $grandchild = PageFixtures::create(['parent_id' => $child->id], ['slug' => 'design', 'path' => 'services/web/design']);
@@ -163,7 +163,7 @@ test('renaming a parent updates the paths of its descendants in every locale', f
         ->and(PageTranslation::query()->where('page_id', $grandchild->id)->value('path'))->toBe('offers/web/design');
 });
 
-test('a page cannot be moved under its own child', function () {
+test('a page cannot be moved under its own child', function (): void {
     $parent = PageFixtures::create([], ['slug' => 'a', 'path' => 'a']);
     $child = PageFixtures::create(['parent_id' => $parent->id], ['slug' => 'b', 'path' => 'a/b']);
 
@@ -174,7 +174,7 @@ test('a page cannot be moved under its own child', function () {
     expect($parent->refresh()->parent_id)->toBeNull();
 });
 
-test('a locale cannot be removed while a child page still uses it', function () {
+test('a locale cannot be removed while a child page still uses it', function (): void {
     $parent = PageFixtures::create([], ['locale' => config('app.locale'), 'slug' => 'services', 'path' => 'services']);
     PageFixtures::create(['parent_id' => $parent->id], ['locale' => config('app.locale'), 'slug' => 'web', 'path' => 'services/web']);
     PageTranslation::factory()->create(['page_id' => $parent->id, 'locale' => 'az', 'slug' => 'xidmet', 'path' => 'xidmet']);
@@ -187,7 +187,7 @@ test('a locale cannot be removed while a child page still uses it', function () 
     expect(PageTranslation::query()->where('page_id', $parent->id)->where('locale', 'az')->exists())->toBeTrue();
 });
 
-test('a locale can be removed when no child uses it', function () {
+test('a locale can be removed when no child uses it', function (): void {
     $page = PageFixtures::create([], ['locale' => config('app.locale'), 'slug' => 'news', 'path' => 'news']);
     PageTranslation::factory()->create(['page_id' => $page->id, 'locale' => 'az', 'slug' => 'xeberler', 'path' => 'xeberler']);
 
@@ -198,7 +198,7 @@ test('a locale can be removed when no child uses it', function () {
     expect(PageTranslation::query()->where('page_id', $page->id)->where('locale', 'az')->exists())->toBeFalse();
 });
 
-test('a page with children cannot be deleted and the error reaches the list page', function () {
+test('a page with children cannot be deleted and the error reaches the list page', function (): void {
     $parent = PageFixtures::create([], ['slug' => 'a', 'path' => 'a']);
     PageFixtures::create(['parent_id' => $parent->id], ['slug' => 'b', 'path' => 'a/b']);
 
@@ -209,7 +209,7 @@ test('a page with children cannot be deleted and the error reaches the list page
     expect(Page::query()->whereKey($parent->id)->exists())->toBeTrue();
 });
 
-test('a draft page cannot become the homepage', function () {
+test('a draft page cannot become the homepage', function (): void {
     $page = PageFixtures::create(['status' => PageStatus::Draft, 'published_at' => null], ['slug' => 'about', 'path' => 'about']);
 
     $this->actingAs(pageAdmin())
@@ -219,7 +219,7 @@ test('a draft page cannot become the homepage', function () {
     expect($page->refresh()->is_homepage)->toBeFalse();
 });
 
-test('assigning a new homepage moves the flag, keeps one homepage and gives the homepage path in each locale', function () {
+test('assigning a new homepage moves the flag, keeps one homepage and gives the homepage path in each locale', function (): void {
     $first = PageFixtures::create(['is_homepage' => true], ['slug' => 'first', 'path' => '/']);
     $second = PageFixtures::create([], ['slug' => 'second', 'path' => 'second']);
 
@@ -231,14 +231,14 @@ test('assigning a new homepage moves the flag, keeps one homepage and gives the 
         ->and(PageTranslation::query()->where('page_id', $second->id)->value('path'))->toBe('/');
 });
 
-test('the database rejects a second homepage', function () {
+test('the database rejects a second homepage', function (): void {
     PageFixtures::create(['is_homepage' => true], ['slug' => 'one', 'path' => '/']);
 
     expect(fn () => PageFixtures::create(['is_homepage' => true], ['slug' => 'two', 'path' => '/two']))
         ->toThrow(QueryException::class);
 });
 
-test('unpublishing the homepage keeps the homepage flag', function () {
+test('unpublishing the homepage keeps the homepage flag', function (): void {
     $page = PageFixtures::create(['is_homepage' => true], ['slug' => 'home', 'path' => '/']);
 
     $this->actingAs(pageAdmin())->post(route('pages.unpublish', $page))->assertSessionHasNoErrors();
@@ -247,7 +247,7 @@ test('unpublishing the homepage keeps the homepage flag', function () {
         ->and($page->is_homepage)->toBeTrue();
 });
 
-test('publishing sets the publish date when none was set', function () {
+test('publishing sets the publish date when none was set', function (): void {
     $page = PageFixtures::create(['status' => PageStatus::Draft, 'published_at' => null], ['slug' => 'news', 'path' => 'news']);
 
     $this->actingAs(pageAdmin())->post(route('pages.publish', $page))->assertSessionHasNoErrors();
@@ -256,7 +256,7 @@ test('publishing sets the publish date when none was set', function () {
         ->and($page->published_at)->not->toBeNull();
 });
 
-test('a user who cannot publish is forbidden from publishing', function () {
+test('a user who cannot publish is forbidden from publishing', function (): void {
     $page = PageFixtures::create(['status' => PageStatus::Draft, 'published_at' => null], ['slug' => 'news', 'path' => 'news']);
 
     $this->actingAs(pageViewer())
@@ -266,7 +266,7 @@ test('a user who cannot publish is forbidden from publishing', function () {
     expect($page->refresh()->status)->toBe(PageStatus::Draft);
 });
 
-test('a user who cannot assign the homepage is forbidden from doing so', function () {
+test('a user who cannot assign the homepage is forbidden from doing so', function (): void {
     $page = PageFixtures::create([], ['slug' => 'about', 'path' => 'about']);
 
     $this->actingAs(pageViewer())
@@ -274,7 +274,7 @@ test('a user who cannot assign the homepage is forbidden from doing so', functio
         ->assertForbidden();
 });
 
-test('the list page renders the pages with their locales and row permissions', function () {
+test('the list page renders the pages with their locales and row permissions', function (): void {
     PageFixtures::create([], ['slug' => 'about', 'path' => 'about', 'title' => 'About us']);
 
     $this->actingAs(pageAdmin())
@@ -287,7 +287,7 @@ test('the list page renders the pages with their locales and row permissions', f
             ->where('pages.data.0.can.delete', true));
 });
 
-test('the list page can be sorted by title in the default locale', function () {
+test('the list page can be sorted by title in the default locale', function (): void {
     PageFixtures::create([], ['slug' => 'zeta', 'path' => 'zeta', 'title' => 'Zeta']);
     PageFixtures::create([], ['slug' => 'alpha', 'path' => 'alpha', 'title' => 'Alpha']);
 
@@ -298,7 +298,7 @@ test('the list page can be sorted by title in the default locale', function () {
             ->where('pages.data.1.title', 'Zeta'));
 });
 
-test('the edit page gets every locale, blank where the page has no translation, and the parent options', function () {
+test('the edit page gets every locale, blank where the page has no translation, and the parent options', function (): void {
     $page = PageFixtures::create([], ['slug' => 'about', 'path' => 'about']);
     $other = PageFixtures::create([], ['slug' => 'news', 'path' => 'news']);
 
@@ -312,7 +312,7 @@ test('the edit page gets every locale, blank where the page has no translation, 
             ->where('parents.0.id', $other->id));
 });
 
-test('the content box must hold valid JSON', function () {
+test('the content box must hold valid JSON', function (): void {
     $payload = pagePayload([], [config('app.locale') => ['title' => 'Bad', 'slug' => 'bad', 'content' => '{not json']]);
 
     $this->actingAs(pageAdmin())
@@ -320,7 +320,7 @@ test('the content box must hold valid JSON', function () {
         ->assertSessionHasErrors('translations.'.config('app.locale').'.content');
 });
 
-test('a new homepage takes the root path and the old homepage keeps its slug path', function () {
+test('a new homepage takes the root path and the old homepage keeps its slug path', function (): void {
     $old = PageFixtures::create(['is_homepage' => true], ['slug' => 'home', 'path' => '/']);
     $child = PageFixtures::create(['parent_id' => $old->id], ['slug' => 'contact', 'path' => 'contact']);
     $new = PageFixtures::create([], ['slug' => 'landing', 'path' => 'landing']);
@@ -334,7 +334,7 @@ test('a new homepage takes the root path and the old homepage keeps its slug pat
         ->and(PageTranslation::query()->where('page_id', $child->id)->value('path'))->toBe('home/contact');
 });
 
-test('the homepage assignment is rejected with a validation error when the old slug is taken', function () {
+test('the homepage assignment is rejected with a validation error when the old slug is taken', function (): void {
     $old = PageFixtures::create(['is_homepage' => true], ['slug' => 'home', 'path' => '/']);
     PageFixtures::create([], ['slug' => 'home-2', 'path' => 'home-2']);
     PageTranslation::query()->where('page_id', $old->id)->update(['slug' => 'home-2']);
@@ -347,7 +347,7 @@ test('the homepage assignment is rejected with a validation error when the old s
     expect($old->refresh()->is_homepage)->toBeTrue();
 });
 
-test('a blank locale is skipped even when its content box holds the empty document', function () {
+test('a blank locale is skipped even when its content box holds the empty document', function (): void {
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), pagePayload([], [
             'ru' => ['content' => ['version' => 1, 'sections' => []]],
@@ -357,7 +357,7 @@ test('a blank locale is skipped even when its content box holds the empty docume
     expect(PageTranslation::query()->where('locale', 'ru')->exists())->toBeFalse();
 });
 
-test('the list page passes the sort state back so the header can toggle the direction', function () {
+test('the list page passes the sort state back so the header can toggle the direction', function (): void {
     $this->actingAs(pageAdmin())
         ->get(route('pages.index', ['sort' => 'title', 'direction' => 'desc']))
         ->assertInertia(fn (Assert $page) => $page
@@ -365,7 +365,7 @@ test('the list page passes the sort state back so the header can toggle the dire
             ->where('filters.direction', 'desc'));
 });
 
-test('the list page gives each locale its name and flag country', function () {
+test('the list page gives each locale its name and flag country', function (): void {
     PageFixtures::create([], ['slug' => 'about', 'path' => 'about']);
 
     $this->actingAs(pageAdmin())

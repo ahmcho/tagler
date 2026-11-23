@@ -37,7 +37,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $adminEmail = env('ADMIN_EMAIL');
+        $adminEmail = config('modules.auth.admin_email');
 
         if (is_string($adminEmail) && $adminEmail !== '') {
             User::query()->where('email', $adminEmail)->first()?->assignRole(config('modules.auth.admin_role_name'));

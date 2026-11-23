@@ -38,7 +38,7 @@ class SettingService implements SettingServiceContract
             ->map(fn ($keys, string $tab) => [
                 'value' => $tab,
                 'label' => __("translations.settings.groups.{$tab}.title"),
-                'icon' => $keys->first()->tabIcon(),
+                'icon' => $keys->first()?->tabIcon(),
             ])
             ->values()
             ->all();
@@ -189,7 +189,7 @@ class SettingService implements SettingServiceContract
         );
     }
 
-    private function encode(mixed $value): ?string
+    private function encode(mixed $value): string
     {
         return is_scalar($value) || $value === null ? (string) $value : json_encode($value, JSON_THROW_ON_ERROR);
     }

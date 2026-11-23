@@ -10,9 +10,9 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
  * may use http, https and mailto, and relative links are allowed. Scripts,
  * event handlers and unknown elements are removed.
  */
-final class PageHtmlSanitizer
+final readonly class PageHtmlSanitizer
 {
-    private readonly HtmlSanitizer $sanitizer;
+    private HtmlSanitizer $sanitizer;
 
     public function __construct()
     {

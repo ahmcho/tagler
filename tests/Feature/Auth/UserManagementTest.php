@@ -6,14 +6,14 @@ use App\Modules\Auth\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $this->admin = User::factory()->create();
     $this->admin->assignRole('Admin');
 });
 
-test('an Admin can open the user list', function () {
+test('an Admin can open the user list', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->get(route('users.index'))
@@ -21,7 +21,7 @@ test('an Admin can open the user list', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page->component('users/index'));
 });
 
-test('an Admin can create a user with roles', function () {
+test('an Admin can create a user with roles', function (): void {
     $userRoleId = Role::findByName('User', 'web')->id;
 
     $this->actingAs($this->admin)
@@ -42,7 +42,7 @@ test('an Admin can create a user with roles', function () {
         ->and($created->email_verified_at)->not->toBeNull();
 });
 
-test('creating a user requires at least one role', function () {
+test('creating a user requires at least one role', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->post(route('users.store'), [
@@ -55,7 +55,7 @@ test('creating a user requires at least one role', function () {
         ->assertSessionHasErrors('roles');
 });
 
-test('updating a user without a password keeps the current password', function () {
+test('updating a user without a password keeps the current password', function (): void {
     $user = User::factory()->create();
     $user->assignRole('User');
     $passwordBefore = $user->password;
@@ -74,7 +74,7 @@ test('updating a user without a password keeps the current password', function (
         ->and($user->fresh()->password)->toBe($passwordBefore);
 });
 
-test('an Admin can remove the Admin role from a user when another Admin remains', function () {
+test('an Admin can remove the Admin role from a user when another Admin remains', function (): void {
     $otherAdmin = User::factory()->create();
     $otherAdmin->assignRole('Admin');
 
@@ -90,7 +90,7 @@ test('an Admin can remove the Admin role from a user when another Admin remains'
     expect($otherAdmin->fresh()->hasRole('Admin'))->toBeFalse();
 });
 
-test('the last Admin cannot lose the Admin role', function () {
+test('the last Admin cannot lose the Admin role', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->put(route('users.update', $this->admin), [
@@ -103,7 +103,7 @@ test('the last Admin cannot lose the Admin role', function () {
     expect($this->admin->fresh()->hasRole('Admin'))->toBeTrue();
 });
 
-test('an Admin can delete a user who is not the last Admin', function () {
+test('an Admin can delete a user who is not the last Admin', function (): void {
     $user = User::factory()->create();
     $user->assignRole('User');
 
@@ -115,7 +115,7 @@ test('an Admin can delete a user who is not the last Admin', function () {
     expect(User::query()->whereKey($user->id)->exists())->toBeFalse();
 });
 
-test('the last Admin cannot be deleted', function () {
+test('the last Admin cannot be deleted', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->delete(route('users.destroy', $this->admin))
@@ -124,7 +124,7 @@ test('the last Admin cannot be deleted', function () {
     expect(User::query()->whereKey($this->admin->id)->exists())->toBeTrue();
 });
 
-test('the last Admin cannot delete their own account from the profile page', function () {
+test('the last Admin cannot delete their own account from the profile page', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->delete(route('profile.destroy'), ['password' => 'password'])
@@ -134,7 +134,7 @@ test('the last Admin cannot delete their own account from the profile page', fun
     expect(User::query()->whereKey($this->admin->id)->exists())->toBeTrue();
 });
 
-test('a user without users.destroy cannot delete a user', function () {
+test('a user without users.destroy cannot delete a user', function (): void {
     $user = User::factory()->create();
     $user->assignRole('User');
     $target = User::factory()->create();
@@ -147,7 +147,7 @@ test('a user without users.destroy cannot delete a user', function () {
     expect(User::query()->whereKey($target->id)->exists())->toBeTrue();
 });
 
-test('an Admin can open a user detail page', function () {
+test('an Admin can open a user detail page', function (): void {
     $user = User::factory()->create();
     $user->assignRole('User');
 
@@ -160,7 +160,7 @@ test('an Admin can open a user detail page', function () {
             ->where('user.roles.0.name', 'User'));
 });
 
-test('a user without users.show cannot open a user detail page', function () {
+test('a user without users.show cannot open a user detail page', function (): void {
     $viewer = User::factory()->create();
     $viewer->assignRole('User');
     $target = User::factory()->create();
@@ -171,7 +171,7 @@ test('a user without users.show cannot open a user detail page', function () {
         ->assertForbidden();
 });
 
-test('the user list can be filtered to users that hold a role', function () {
+test('the user list can be filtered to users that hold a role', function (): void {
     $member = User::factory()->create(['name' => 'Role Member']);
     $member->assignRole('User');
     $other = User::factory()->create(['name' => 'Other Person']);
@@ -186,7 +186,7 @@ test('the user list can be filtered to users that hold a role', function () {
             ->where('selectedRole.name', 'User'));
 });
 
-test('the user create page receives an empty model and the edit page receives the bound user', function () {
+test('the user create page receives an empty model and the edit page receives the bound user', function (): void {
     $user = User::factory()->create();
     $user->assignRole('User');
 

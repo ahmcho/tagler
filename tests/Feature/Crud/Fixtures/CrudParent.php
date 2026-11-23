@@ -2,15 +2,15 @@
 
 namespace Tests\Feature\Crud\Fixtures;
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[Unguarded]
+#[Table(name: 'crud_parents')]
 class CrudParent extends Model
 {
-    protected $table = 'crud_parents';
-
-    protected $guarded = [];
-
     /**
      * @return HasMany<CrudChild, $this>
      */

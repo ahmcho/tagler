@@ -2,7 +2,7 @@
 
 use App\Modules\Pages\Support\PageHtmlSanitizer;
 
-test('scripts, event handlers and unsafe links are removed', function () {
+test('scripts, event handlers and unsafe links are removed', function (): void {
     $clean = (new PageHtmlSanitizer)->sanitize('<p onclick="x()">Hi <script>alert(1)</script></p><a href="javascript:alert(2)">bad</a>');
 
     expect($clean)->not->toContain('<script')
@@ -11,7 +11,7 @@ test('scripts, event handlers and unsafe links are removed', function () {
         ->and($clean)->toContain('Hi');
 });
 
-test('safe formatting is kept and links get a safe rel', function () {
+test('safe formatting is kept and links get a safe rel', function (): void {
     $clean = (new PageHtmlSanitizer)->sanitize('<p><strong>Bold</strong> <a href="https://example.com">link</a></p>');
 
     expect($clean)->toContain('<strong>Bold</strong>')

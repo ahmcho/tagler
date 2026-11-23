@@ -7,6 +7,7 @@ use App\Modules\Auth\Repositories\Contracts\RoleRepositoryContract;
 use Crud\Repositories\EloquentRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class RoleRepository extends EloquentRepository implements RoleRepositoryContract
 {
@@ -15,6 +16,9 @@ class RoleRepository extends EloquentRepository implements RoleRepositoryContrac
         parent::__construct($model);
     }
 
+    /**
+     * @return LengthAwarePaginator<int, Model>
+     */
     public function search(string $term): LengthAwarePaginator
     {
         return $this->model->newQuery()
@@ -26,6 +30,8 @@ class RoleRepository extends EloquentRepository implements RoleRepositoryContrac
 
     /**
      * Roles that hold the given permission.
+     *
+     * @param  Builder<Role>  $query
      */
     protected function addPermissionCondition(Builder $query, mixed $permissionId): void
     {

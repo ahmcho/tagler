@@ -15,7 +15,7 @@ interface SettingServiceContract
     /**
      * The tabs of the application settings page, one per tab name in SettingKeyEnum.
      *
-     * @return array<int, array{value: string, label: string, icon: string}>
+     * @return array<int, array{value: string, label: string, icon: string|null}>
      */
     public function tabs(): array;
 

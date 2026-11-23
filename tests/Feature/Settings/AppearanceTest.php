@@ -3,7 +3,7 @@
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
-test('appearance page is displayed for verified users', function () {
+test('appearance page is displayed for verified users', function (): void {
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -13,7 +13,7 @@ test('appearance page is displayed for verified users', function () {
         );
 });
 
-test('appearance page redirects guests to login', function () {
+test('appearance page redirects guests to login', function (): void {
     $this->get(route('appearance.edit'))
         ->assertRedirect(route('login'));
 });

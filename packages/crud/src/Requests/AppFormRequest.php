@@ -130,7 +130,7 @@ abstract class AppFormRequest extends FormRequest
 
     final protected function perPage(): ?int
     {
-        $perPage = (int) $this->get('per-page');
+        $perPage = (int) $this->input('per-page');
 
         if ($perPage < 1) {
             return $this->perPage ?: config('crud.items_count_per_page');
@@ -143,7 +143,7 @@ abstract class AppFormRequest extends FormRequest
 
     final protected function autoSorting(): ?string
     {
-        $sorting = $this->get('sort');
+        $sorting = $this->input('sort');
 
         if (in_array($sorting, $this->customSortable())) {
             return null;
@@ -158,7 +158,7 @@ abstract class AppFormRequest extends FormRequest
 
     final protected function customSorting(): ?string
     {
-        $sorting = $this->get('sort');
+        $sorting = $this->input('sort');
 
         if (! in_array($sorting, $this->customSortable())) {
             return null;
@@ -184,13 +184,13 @@ abstract class AppFormRequest extends FormRequest
 
     private function requestedExpand(): Collection
     {
-        return collect(explode(',', (string) $this->get('expand')))
+        return collect(explode(',', (string) $this->input('expand')))
             ->map(fn ($e) => trim($e));
     }
 
     private function withDirection(string $attr): string
     {
-        $direction = strtolower($this->get('direction'));
+        $direction = strtolower($this->input('direction'));
 
         return $direction === 'desc' ? "-{$attr}" : $attr;
     }

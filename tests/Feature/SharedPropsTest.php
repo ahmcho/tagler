@@ -4,7 +4,7 @@ use App\Models\User;
 use App\Modules\Auth\Database\Seeders\RolesAndPermissionsSeeder;
 use Inertia\Testing\AssertableInertia;
 
-test('the application name is shared with every page', function () {
+test('the application name is shared with every page', function (): void {
     config(['app.name' => 'Tagler CMS']);
 
     $this->get(route('login'))->assertInertia(fn (AssertableInertia $page) => $page
@@ -12,12 +12,12 @@ test('the application name is shared with every page', function () {
         ->missing('sidebarOpen'));
 });
 
-test('a guest has no permissions shared with the page', function () {
+test('a guest has no permissions shared with the page', function (): void {
     $this->get(route('login'))->assertInertia(fn (AssertableInertia $page) => $page
         ->where('auth.permissions', []));
 });
 
-test('the signed in user permission names are shared with every page', function () {
+test('the signed in user permission names are shared with every page', function (): void {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $user = User::factory()->create();
@@ -27,7 +27,7 @@ test('the signed in user permission names are shared with every page', function 
         ->where('auth.permissions', ['translations.update']));
 });
 
-test('the class-level abilities are shared as the can prop', function () {
+test('the class-level abilities are shared as the can prop', function (): void {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $admin = User::factory()->create();
@@ -44,7 +44,7 @@ test('the class-level abilities are shared as the can prop', function () {
     ]);
 });
 
-test('a User role holder gets false for every class-level ability', function () {
+test('a User role holder gets false for every class-level ability', function (): void {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $user = User::factory()->create();

@@ -6,7 +6,7 @@ use App\Modules\Auth\Controllers\RoleController;
 use App\Modules\Auth\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->middleware(['auth'])->group(function (): void {
     Route::resource('roles', RoleController::class)
         ->names('roles')
         ->parameters(['roles' => 'role']);

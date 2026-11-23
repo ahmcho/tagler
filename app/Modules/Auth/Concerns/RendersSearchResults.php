@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 trait RendersSearchResults
 {
     /**
+     * @param  LengthAwarePaginator<int, mixed>  $paginator
      * @param  class-string  $resource
      */
     private function searchResponse(LengthAwarePaginator $paginator, string $resource): JsonResponse

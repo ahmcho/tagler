@@ -34,6 +34,11 @@ class PublicPageController extends Controller
         app()->setLocale($locale);
 
         $translation = $page->translationFor($locale);
+
+        if ($translation === null) {
+            return PublicNotFoundController::response($request);
+        }
+
         $translation->setRelation('page', $page);
 
         return Inertia::render('pages/public/show', [

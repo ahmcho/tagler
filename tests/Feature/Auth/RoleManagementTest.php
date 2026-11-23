@@ -6,14 +6,14 @@ use App\Modules\Auth\Models\Permission;
 use App\Modules\Auth\Models\Role;
 use Inertia\Testing\AssertableInertia;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $this->admin = User::factory()->create();
     $this->admin->assignRole('Admin');
 });
 
-test('an Admin can open the role list', function () {
+test('an Admin can open the role list', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->get(route('roles.index'))
@@ -21,7 +21,7 @@ test('an Admin can open the role list', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page->component('roles/index'));
 });
 
-test('a user without roles.index cannot open the role list', function () {
+test('a user without roles.index cannot open the role list', function (): void {
     $user = User::factory()->create();
     $user->assignRole('User');
 
@@ -31,7 +31,7 @@ test('a user without roles.index cannot open the role list', function () {
         ->assertForbidden();
 });
 
-test('an Admin can create a role with selected permissions', function () {
+test('an Admin can create a role with selected permissions', function (): void {
     $permissionIds = Permission::query()->whereIn('name', ['translations.index', 'users.index'])->pluck('id')->all();
 
     $this->actingAs($this->admin)
@@ -44,14 +44,14 @@ test('an Admin can create a role with selected permissions', function () {
     expect($role->permissions->pluck('name')->sort()->values()->all())->toBe(['translations.index', 'users.index']);
 });
 
-test('creating a role requires a name', function () {
+test('creating a role requires a name', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->post(route('roles.store'), ['name' => '', 'permissions' => []])
         ->assertSessionHasErrors('name');
 });
 
-test('a role must keep at least one permission', function () {
+test('a role must keep at least one permission', function (): void {
     $role = Role::findByName('User', 'web');
 
     $this->actingAs($this->admin)
@@ -67,7 +67,7 @@ test('a role must keep at least one permission', function () {
     expect(Role::query()->where('name', 'Empty')->exists())->toBeFalse();
 });
 
-test('a role name must be unique', function () {
+test('a role name must be unique', function (): void {
     $permissionIds = Permission::query()->pluck('id')->take(1)->all();
 
     $this->actingAs($this->admin)
@@ -76,7 +76,7 @@ test('a role name must be unique', function () {
         ->assertSessionHasErrors('name');
 });
 
-test('an Admin can update the permissions of a role', function () {
+test('an Admin can update the permissions of a role', function (): void {
     $role = Role::findByName('User', 'web');
     $permissionIds = Permission::query()->where('name', 'translations.index')->pluck('id')->all();
 
@@ -88,7 +88,7 @@ test('an Admin can update the permissions of a role', function () {
     expect($role->fresh()->permissions->pluck('name')->all())->toBe(['translations.index']);
 });
 
-test('the Admin role cannot be edited', function () {
+test('the Admin role cannot be edited', function (): void {
     $role = Role::findByName('Admin', 'web');
     $permissionIds = Permission::query()->pluck('id')->take(1)->all();
 
@@ -100,7 +100,7 @@ test('the Admin role cannot be edited', function () {
     expect($role->fresh()->name)->toBe('Admin');
 });
 
-test('the Admin role cannot be deleted', function () {
+test('the Admin role cannot be deleted', function (): void {
     $role = Role::findByName('Admin', 'web');
 
     $this->actingAs($this->admin)
@@ -111,7 +111,7 @@ test('the Admin role cannot be deleted', function () {
     expect(Role::query()->where('name', 'Admin')->exists())->toBeTrue();
 });
 
-test('an Admin can delete a role that is not Admin', function () {
+test('an Admin can delete a role that is not Admin', function (): void {
     $role = Role::query()->create(['name' => 'Editor', 'guard_name' => 'web']);
 
     $this->actingAs($this->admin)
@@ -122,7 +122,7 @@ test('an Admin can delete a role that is not Admin', function () {
     expect(Role::query()->whereKey($role->id)->exists())->toBeFalse();
 });
 
-test('a user without roles.store cannot create a role', function () {
+test('a user without roles.store cannot create a role', function (): void {
     $user = User::factory()->create();
     $user->assignRole('User');
     $permissionIds = Permission::query()->pluck('id')->take(1)->all();
@@ -135,7 +135,7 @@ test('a user without roles.store cannot create a role', function () {
     expect(Role::query()->where('name', 'Editor')->exists())->toBeFalse();
 });
 
-test('an Admin can open the permission list', function () {
+test('an Admin can open the permission list', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->get(route('permissions.index'))
@@ -143,7 +143,7 @@ test('an Admin can open the permission list', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page->component('permissions/index'));
 });
 
-test('a user without permissions.index cannot open the permission list', function () {
+test('a user without permissions.index cannot open the permission list', function (): void {
     $user = User::factory()->create();
     $user->assignRole('User');
 
@@ -153,7 +153,7 @@ test('a user without permissions.index cannot open the permission list', functio
         ->assertForbidden();
 });
 
-test('an Admin can open a permission detail page with the roles that hold it', function () {
+test('an Admin can open a permission detail page with the roles that hold it', function (): void {
     $permission = Permission::findByName('translations.index', 'web');
 
     $this->actingAs($this->admin)
@@ -166,7 +166,7 @@ test('an Admin can open a permission detail page with the roles that hold it', f
             ->where('permission.roles.0.name', 'Admin'));
 });
 
-test('a user without permissions.show cannot open a permission detail page', function () {
+test('a user without permissions.show cannot open a permission detail page', function (): void {
     $user = User::factory()->create();
     $user->assignRole('User');
 
@@ -176,7 +176,7 @@ test('a user without permissions.show cannot open a permission detail page', fun
         ->assertForbidden();
 });
 
-test('the role search returns matching roles with only id and name', function () {
+test('the role search returns matching roles with only id and name', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->getJson(route('roles.search', ['q' => 'Us']))
@@ -187,7 +187,7 @@ test('the role search returns matching roles with only id and name', function ()
         ]);
 });
 
-test('the permission search returns matching permissions', function () {
+test('the permission search returns matching permissions', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->getJson(route('permissions.search', ['q' => 'translations']))
@@ -197,7 +197,7 @@ test('the permission search returns matching permissions', function () {
         ->assertJsonPath('has_more', false);
 });
 
-test('the role list can be filtered to roles that hold a permission', function () {
+test('the role list can be filtered to roles that hold a permission', function (): void {
     $permission = Permission::findByName('translations.update', 'web');
 
     $this->actingAs($this->admin)
@@ -209,7 +209,7 @@ test('the role list can be filtered to roles that hold a permission', function (
             ->where('selectedPermission.name', 'translations.update'));
 });
 
-test('the role form pages receive every permission for the dual listbox', function () {
+test('the role form pages receive every permission for the dual listbox', function (): void {
     $role = Role::findByName('User', 'web');
     $permissionCount = Permission::count();
 
@@ -235,7 +235,7 @@ test('the role form pages receive every permission for the dual listbox', functi
             ->has('permissions', $permissionCount));
 });
 
-test('a user who can create roles can search permissions without permissions.index', function () {
+test('a user who can create roles can search permissions without permissions.index', function (): void {
     $user = User::factory()->create();
     $user->givePermissionTo('roles.store');
 
@@ -247,7 +247,7 @@ test('a user who can create roles can search permissions without permissions.ind
         ->assertJsonFragment(['name' => 'translations.update']);
 });
 
-test('a user who cannot manage roles cannot search permissions', function () {
+test('a user who cannot manage roles cannot search permissions', function (): void {
     $user = User::factory()->create();
 
     $this->actingAs($user)

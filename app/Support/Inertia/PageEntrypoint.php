@@ -19,8 +19,8 @@ class PageEntrypoint
     public static function for(string $component): string
     {
         $matches = [
-            ...glob(resource_path("js/pages/{$component}.tsx")),
-            ...glob(resource_path("js/modules/*/pages/{$component}.tsx")),
+            ...(glob(resource_path("js/pages/{$component}.tsx")) ?: []),
+            ...(glob(resource_path("js/modules/*/pages/{$component}.tsx")) ?: []),
         ];
 
         if (count($matches) !== 1) {

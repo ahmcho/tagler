@@ -6,7 +6,7 @@ use App\Modules\Translation\Models\Translation;
 use Illuminate\Support\Arr;
 use Inertia\Testing\AssertableInertia as Assert;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Translation::query()->delete();
 });
 
@@ -20,17 +20,17 @@ function translationManager(): User
     return $user;
 }
 
-test('guests are redirected to the login page', function () {
+test('guests are redirected to the login page', function (): void {
     $this->get(route('translations.index'))->assertRedirect(route('login'));
 });
 
-test('a user without a confirmed password is redirected to confirm it', function () {
+test('a user without a confirmed password is redirected to confirm it', function (): void {
     $this->actingAs(translationManager())
         ->get(route('translations.index'))
         ->assertRedirect(route('password.confirm'));
 });
 
-test('a user without the translation permissions is forbidden', function () {
+test('a user without the translation permissions is forbidden', function (): void {
     (new RolesAndPermissionsSeeder)->run();
 
     $user = User::factory()->create();
@@ -42,7 +42,7 @@ test('a user without the translation permissions is forbidden', function () {
         ->assertForbidden();
 });
 
-test('a user with view permission but not update permission cannot edit', function () {
+test('a user with view permission but not update permission cannot edit', function (): void {
     (new RolesAndPermissionsSeeder)->run();
 
     $user = User::factory()->create();
@@ -66,7 +66,7 @@ test('a user with view permission but not update permission cannot edit', functi
         ->assertForbidden();
 });
 
-test('a manager can view the translations list', function () {
+test('a manager can view the translations list', function (): void {
     $manager = translationManager();
 
     Translation::create([
@@ -88,7 +88,7 @@ test('a manager can view the translations list', function () {
         );
 });
 
-test('the index lists tables and filters by an exact table match', function () {
+test('the index lists tables and filters by an exact table match', function (): void {
     $manager = translationManager();
 
     Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'users.title', 'value' => 'Users']);
@@ -106,7 +106,7 @@ test('the index lists tables and filters by an exact table match', function () {
         );
 });
 
-test('the filters prop is a JSON object even when no filter is applied', function () {
+test('the filters prop is a JSON object even when no filter is applied', function (): void {
     $manager = translationManager();
 
     $response = $this->actingAs($manager)
@@ -117,7 +117,7 @@ test('the filters prop is a JSON object even when no filter is applied', functio
     expect($response->viewData('page')['props']['filters'])->toBeInstanceOf(stdClass::class);
 });
 
-test('the index sorts by a sortable column and echoes the sort in filters', function () {
+test('the index sorts by a sortable column and echoes the sort in filters', function (): void {
     $manager = translationManager();
 
     Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'a.first', 'value' => 'First']);
@@ -135,7 +135,7 @@ test('the index sorts by a sortable column and echoes the sort in filters', func
         );
 });
 
-test('a partial reload of the index returns only the records and filters', function () {
+test('a partial reload of the index returns only the records and filters', function (): void {
     $manager = translationManager();
 
     Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'a.first', 'value' => 'First']);
@@ -153,7 +153,7 @@ test('a partial reload of the index returns only the records and filters', funct
         );
 });
 
-test('a manager can open the edit form for a key', function () {
+test('a manager can open the edit form for a key', function (): void {
     $manager = translationManager();
 
     Translation::create(['lang' => 'az', 'group' => 'translations', 'key' => 'common.save', 'value' => 'Yadda saxla']);
@@ -171,7 +171,7 @@ test('a manager can open the edit form for a key', function () {
         );
 });
 
-test('a manager can update a translation for every supported locale', function () {
+test('a manager can update a translation for every supported locale', function (): void {
     $manager = translationManager();
 
     $this->actingAs($manager)
@@ -193,7 +193,7 @@ test('a manager can update a translation for every supported locale', function (
         ->toBe('Сохранить');
 });
 
-test('an unknown locale code is rejected', function () {
+test('an unknown locale code is rejected', function (): void {
     $manager = translationManager();
 
     $this->actingAs($manager)
@@ -204,7 +204,7 @@ test('an unknown locale code is rejected', function () {
         ->assertSessionHasErrors('translations.fr');
 });
 
-test('database translation overrides file translation', function () {
+test('database translation overrides file translation', function (): void {
     app()->setLocale('en');
 
     Translation::create([
@@ -217,7 +217,7 @@ test('database translation overrides file translation', function () {
     expect(__('auth.failed'))->toBe('Database Value');
 });
 
-test('saving a translation invalidates the cached value so a fresh value is served', function () {
+test('saving a translation invalidates the cached value so a fresh value is served', function (): void {
     app()->setLocale('en');
 
     __('auth.failed');
@@ -232,7 +232,7 @@ test('saving a translation invalidates the cached value so a fresh value is serv
     expect(__('auth.failed'))->toBe('Fresh Value');
 });
 
-test('table is the key prefix only when it names a real table in the translations group', function () {
+test('table is the key prefix only when it names a real table in the translations group', function (): void {
     $tableTranslation = Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'users.title', 'value' => 'Users']);
     $authTranslation = Translation::create(['lang' => 'en', 'group' => 'auth', 'key' => 'failed', 'value' => 'Failed']);
     $unknownTranslation = Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'nope.title', 'value' => 'Nope']);
@@ -244,15 +244,15 @@ test('table is the key prefix only when it names a real table in the translation
         ->and($flatTranslation->fresh()->table)->toBeNull();
 });
 
-test('package translations still use the file system only', function () {
+test('package translations still use the file system only', function (): void {
     expect(__('fortify::auth.failed'))->toBeString();
 });
 
-test('fallback to file when database is missing a key', function () {
+test('fallback to file when database is missing a key', function (): void {
     expect(__('validation.required'))->toBeString();
 });
 
-test('trans_choice works with database translations', function () {
+test('trans_choice works with database translations', function (): void {
     Translation::create([
         'lang' => 'en',
         'group' => 'translations',
@@ -265,7 +265,7 @@ test('trans_choice works with database translations', function () {
         ->and(trans_choice('translations.test.items', 5))->toContain('Many items');
 });
 
-test('placeholder replacement works with database translations', function () {
+test('placeholder replacement works with database translations', function (): void {
     Translation::create([
         'lang' => 'en',
         'group' => 'translations',
@@ -276,11 +276,11 @@ test('placeholder replacement works with database translations', function () {
     expect(__('translations.test.welcome', ['name' => 'Ahmad']))->toBe('Welcome, Ahmad!');
 });
 
-test('a missing key returns the key itself', function () {
+test('a missing key returns the key itself', function (): void {
     expect(__('nonexistent.key'))->toBe('nonexistent.key');
 });
 
-test('a user with only view permission is forbidden from resetting translations', function () {
+test('a user with only view permission is forbidden from resetting translations', function (): void {
     (new RolesAndPermissionsSeeder)->run();
 
     $user = User::factory()->create();
@@ -296,7 +296,7 @@ test('a user with only view permission is forbidden from resetting translations'
     expect($row->fresh()->value)->toBe('Changed');
 });
 
-test('a manager resets a checked key to its file value in every locale', function () {
+test('a manager resets a checked key to its file value in every locale', function (): void {
     $manager = translationManager();
 
     $rows = collect(['en', 'az', 'ru'])->map(fn (string $locale) => Translation::create([
@@ -318,7 +318,7 @@ test('a manager resets a checked key to its file value in every locale', functio
     }
 });
 
-test('a key with no file value is skipped and keeps its database value', function () {
+test('a key with no file value is skipped and keeps its database value', function (): void {
     $manager = translationManager();
 
     $row = Translation::create(['lang' => 'en', 'group' => 'translations', 'key' => 'database.only', 'value' => 'Only in database']);
@@ -331,7 +331,7 @@ test('a key with no file value is skipped and keeps its database value', functio
     expect($row->fresh()->value)->toBe('Only in database');
 });
 
-test('reset rejects an empty, unknown or oversized selection', function (array $ids, string $errorKey) {
+test('reset rejects an empty, unknown or oversized selection', function (array $ids, string $errorKey): void {
     $manager = translationManager();
 
     $this->actingAs($manager)

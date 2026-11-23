@@ -41,6 +41,9 @@ class RoleService extends BaseCrudService implements RoleServiceContract
         });
     }
 
+    /**
+     * @return LengthAwarePaginator<int, Model>
+     */
     public function search(string $term): LengthAwarePaginator
     {
         return $this->repository->search(term: $term);

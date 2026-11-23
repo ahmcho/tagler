@@ -75,7 +75,7 @@ class UserRequest extends AppFormRequest
                 return;
             }
 
-            $keepsAdmin = in_array($adminRoleId, array_map('intval', (array) $this->input('roles', [])), true);
+            $keepsAdmin = in_array($adminRoleId, array_map(intval(...), (array) $this->input('roles', [])), true);
 
             if (! $keepsAdmin && app(LastAdminGuard::class)->isLastAdmin($user)) {
                 $validator->errors()->add('roles', __('translations.users.validation.last_admin_role_required'));

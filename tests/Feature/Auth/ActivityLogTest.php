@@ -8,14 +8,14 @@ use App\Modules\Auth\Models\Role;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     // The seeder itself writes activity, so start each test from an empty log.
     DB::connection('mongodb')->getCollection('activity_log')->deleteMany([]);
 });
 
-test('activity is stored as a MongoDB document in the test database, not in SQL', function () {
+test('activity is stored as a MongoDB document in the test database, not in SQL', function (): void {
     $user = User::factory()->create();
 
     DB::connection('mongodb')->getCollection('activity_log')->deleteMany([]);
@@ -28,7 +28,7 @@ test('activity is stored as a MongoDB document in the test database, not in SQL'
         ->and(DB::connection('pgsql')->getSchemaBuilder()->hasTable('activity_log'))->toBeFalse();
 });
 
-test('updating a role writes exactly one activity document with only the changed attribute', function () {
+test('updating a role writes exactly one activity document with only the changed attribute', function (): void {
     $role = Role::query()->create(['name' => 'Editor', 'guard_name' => 'web']);
 
     DB::connection('mongodb')->getCollection('activity_log')->deleteMany([]);
@@ -46,7 +46,7 @@ test('updating a role writes exactly one activity document with only the changed
         ->and(iterator_to_array($document['properties']['old']))->toBe(['name' => 'Editor']);
 });
 
-test('the activity log records the IP address of the request', function () {
+test('the activity log records the IP address of the request', function (): void {
     $admin = User::factory()->create();
     $admin->assignRole('Admin');
 
@@ -61,7 +61,7 @@ test('the activity log records the IP address of the request', function () {
     expect(ActivityLog::query()->where('subject_type', Role::class)->first()->ip_address)->toBe('10.1.2.3');
 });
 
-test('an Admin can open the activity log page', function () {
+test('an Admin can open the activity log page', function (): void {
     $admin = User::factory()->create();
     $admin->assignRole('Admin');
 
@@ -72,7 +72,7 @@ test('an Admin can open the activity log page', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page->component('activity-logs/index'));
 });
 
-test('a user without the activity-logs.index permission cannot open the activity log', function () {
+test('a user without the activity-logs.index permission cannot open the activity log', function (): void {
     $user = User::factory()->create();
     $user->assignRole('User');
 
@@ -82,7 +82,7 @@ test('a user without the activity-logs.index permission cannot open the activity
         ->assertForbidden();
 });
 
-test('the activity log can be filtered by event', function () {
+test('the activity log can be filtered by event', function (): void {
     $admin = User::factory()->create();
     $admin->assignRole('Admin');
 
@@ -97,7 +97,7 @@ test('the activity log can be filtered by event', function () {
             ->where('filters.event', 'updated'));
 });
 
-test('changing a user name writes an activity entry but changing the password does not expose it', function () {
+test('changing a user name writes an activity entry but changing the password does not expose it', function (): void {
     $user = User::factory()->create(['name' => 'Old Name']);
 
     DB::connection('mongodb')->getCollection('activity_log')->deleteMany([]);
@@ -112,7 +112,7 @@ test('changing a user name writes an activity entry but changing the password do
         ->and(iterator_to_array($document['properties']['attributes']))->not->toHaveKey('password');
 });
 
-test('the activity log can be filtered to one model', function () {
+test('the activity log can be filtered to one model', function (): void {
     $admin = User::factory()->create();
     $admin->assignRole('Admin');
 
@@ -127,7 +127,7 @@ test('the activity log can be filtered to one model', function () {
             ->where('records.data.0.subject_id', $editor->id));
 });
 
-test('the activity log collection has indexes for the filters and the sort order', function () {
+test('the activity log collection has indexes for the filters and the sort order', function (): void {
     $indexKeys = collect(DB::connection('mongodb')->getCollection('activity_log')->listIndexes())
         ->map(fn ($index) => json_encode($index->getKey()))
         ->all();
@@ -138,7 +138,7 @@ test('the activity log collection has indexes for the filters and the sort order
         ->and($indexKeys)->toContain(json_encode(['created_at' => -1]));
 });
 
-test('an Admin can open the detail page of an activity entry', function () {
+test('an Admin can open the detail page of an activity entry', function (): void {
     $admin = User::factory()->create();
     $admin->assignRole('Admin');
 
@@ -162,7 +162,7 @@ test('an Admin can open the detail page of an activity entry', function () {
             ->where('log.changes.old', ['name' => 'Editor']));
 });
 
-test('a user without the activity-logs.index permission cannot open an activity entry', function () {
+test('a user without the activity-logs.index permission cannot open an activity entry', function (): void {
     $admin = User::factory()->create();
     $admin->assignRole('Admin');
 
@@ -180,7 +180,7 @@ test('a user without the activity-logs.index permission cannot open an activity 
         ->assertForbidden();
 });
 
-test('an unknown activity entry returns not found', function () {
+test('an unknown activity entry returns not found', function (): void {
     $admin = User::factory()->create();
     $admin->assignRole('Admin');
 

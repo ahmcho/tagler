@@ -3,7 +3,7 @@
 use App\Modules\Pages\Controllers\PageController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'verified'])->group(function (): void {
     Route::resource('pages', PageController::class)
         ->names('pages')
         ->parameters(['pages' => 'page'])

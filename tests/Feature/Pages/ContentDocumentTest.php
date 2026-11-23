@@ -7,7 +7,7 @@ use App\Modules\Pages\Models\PageTranslation;
 use Illuminate\Support\Str;
 use Tests\Support\PageFixtures;
 
-beforeEach(function () {
+beforeEach(function (): void {
     (new RolesAndPermissionsSeeder)->run();
     $this->locale = config('app.locale');
 });
@@ -51,7 +51,7 @@ function contentPayload(array $content): array
     return PageFixtures::payload([], [config('app.locale') => ['title' => 'Doc', 'slug' => 'doc-'.Str::lower(Str::random(5)), 'content' => $content]]);
 }
 
-test('a valid document is saved with generated ids where none were given', function () {
+test('a valid document is saved with generated ids where none were given', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload(document([
             section([['type' => 'heading', 'version' => 1, 'data' => ['text' => 'Welcome', 'level' => 1]]]),
@@ -65,7 +65,7 @@ test('a valid document is saved with generated ids where none were given', funct
         ->and($content['sections'][0]['elements'][0]['data'])->toBe(['text' => 'Welcome', 'level' => 1]);
 });
 
-test('an element type that is not registered is kept and does not block the save', function () {
+test('an element type that is not registered is kept and does not block the save', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload(document([
             section([['id' => (string) Str::uuid(), 'type' => 'video', 'version' => 1, 'data' => ['src' => 'x'], 'vendor_key' => 'kept']]),
@@ -78,7 +78,7 @@ test('an element type that is not registered is kept and does not block the save
         ->and($element['vendor_key'])->toBe('kept');
 });
 
-test('unknown top-level and section keys are preserved', function () {
+test('unknown top-level and section keys are preserved', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload([
             'version' => 1,
@@ -93,19 +93,19 @@ test('unknown top-level and section keys are preserved', function () {
         ->and($content['sections'][0]['future_option'])->toBe('yes');
 });
 
-test('a section with a layout that is not configured is rejected', function () {
+test('a section with a layout that is not configured is rejected', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload(document([section([], ['layout' => 'hero-banner'])])))
         ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections.0.layout');
 });
 
-test('a document with an unsupported version is rejected', function () {
+test('a document with an unsupported version is rejected', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload(['version' => 9, 'sections' => []]))
         ->assertSessionHasErrors('translations.'.$this->locale.'.content.version');
 });
 
-test('a heading with a level outside 1 to 6 is rejected with the field path', function () {
+test('a heading with a level outside 1 to 6 is rejected with the field path', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload(document([
             section([['type' => 'heading', 'version' => 1, 'data' => ['text' => 'Hi', 'level' => 9]]]),
@@ -113,7 +113,7 @@ test('a heading with a level outside 1 to 6 is rejected with the field path', fu
         ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections.0.elements.0.data.level');
 });
 
-test('duplicate ids inside one document are rejected', function () {
+test('duplicate ids inside one document are rejected', function (): void {
     $id = (string) Str::uuid();
 
     $this->actingAs(editor())
@@ -124,13 +124,13 @@ test('duplicate ids inside one document are rejected', function () {
         ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections.1.id');
 });
 
-test('a malformed id is rejected', function () {
+test('a malformed id is rejected', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload(document([section([], ['id' => 'not-a-uuid'])])))
         ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections.0.id');
 });
 
-test('a button with a javascript link is rejected', function () {
+test('a button with a javascript link is rejected', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload(document([
             section([['type' => 'button', 'version' => 1, 'data' => ['label' => 'Go', 'url' => 'javascript:alert(1)']]]),
@@ -138,7 +138,7 @@ test('a button with a javascript link is rejected', function () {
         ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections.0.elements.0.data.url');
 });
 
-test('an html block needs the html permission', function () {
+test('an html block needs the html permission', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload(document([
             section([['type' => 'html', 'version' => 1, 'data' => ['source' => '<p>Hi</p>']]]),
@@ -146,7 +146,7 @@ test('an html block needs the html permission', function () {
         ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections.0.elements.0.type');
 });
 
-test('an editor with the html permission saves an html block sanitised', function () {
+test('an editor with the html permission saves an html block sanitised', function (): void {
     $this->actingAs(editor(withHtml: true))
         ->post(route('pages.store'), contentPayload(document([
             section([['type' => 'html', 'version' => 1, 'data' => ['source' => '<p>Hi</p><script>alert(1)</script>']]]),
@@ -159,7 +159,7 @@ test('an editor with the html permission saves an html block sanitised', functio
         ->and($source)->not->toContain('<script');
 });
 
-test('a document above the section limit is rejected', function () {
+test('a document above the section limit is rejected', function (): void {
     $sections = array_fill(0, 201, section([]));
 
     $this->actingAs(editor())
@@ -167,7 +167,7 @@ test('a document above the section limit is rejected', function () {
         ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections');
 });
 
-test('an element with missing data is rejected with the field path', function () {
+test('an element with missing data is rejected with the field path', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload(document([
             section([['type' => 'paragraph', 'version' => 1, 'data' => []]]),
@@ -175,7 +175,7 @@ test('an element with missing data is rejected with the field path', function ()
         ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections.0.elements.0.data.html');
 });
 
-test('a heading level outside the range gets a readable message', function () {
+test('a heading level outside the range gets a readable message', function (): void {
     $this->actingAs(editor())
         ->post(route('pages.store'), contentPayload(document([
             section([['type' => 'heading', 'version' => 1, 'data' => ['text' => 'Hi', 'level' => 9]]]),

@@ -10,14 +10,14 @@ use App\Modules\Settings\Services\Contracts\SettingServiceContract;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $this->admin = User::factory()->create();
     $this->admin->assignRole('Admin');
 });
 
-test('date and datetime format settings offer one select option per enum case', function () {
+test('date and datetime format settings offer one select option per enum case', function (): void {
     $fields = collect(app(SettingServiceContract::class)->fields())->keyBy('key');
 
     expect($fields['date_format']['options'])->toHaveCount(count(DateFormatVariantEnum::cases()))
@@ -26,14 +26,14 @@ test('date and datetime format settings offer one select option per enum case', 
         ->toBe(array_map(fn (DateFormatVariantEnum $case) => $case->value, DateFormatVariantEnum::cases()));
 });
 
-test('an enum option label is a fixed sample date in that format', function () {
+test('an enum option label is a fixed sample date in that format', function (): void {
     expect(DateFormatVariantEnum::DayMonthYearDot->label())->toBe('20.11.2026')
         ->and(DateFormatVariantEnum::MonthDayYearSlash->label())->toBe('11/20/2026')
         ->and(DateTimeFormatVariantEnum::DayMonthYearDotTimeWithSeconds->label())->toBe('20.11.2026 13:45:30')
         ->and(DateTimeFormatVariantEnum::DayMonthYearSlashTime->label())->toBe('20/11/2026 13:45');
 });
 
-test('an Admin can save a date and datetime format from the list', function () {
+test('an Admin can save a date and datetime format from the list', function (): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->put(route('settings.update'), [
@@ -49,7 +49,7 @@ test('an Admin can save a date and datetime format from the list', function () {
         ->and(app(SettingServiceContract::class)->string(SettingKeyEnum::DateTimeFormat))->toBe('d/m/Y H:i');
 });
 
-test('a format outside the enum list is rejected', function (string $key) {
+test('a format outside the enum list is rejected', function (string $key): void {
     $this->actingAs($this->admin)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->put(route('settings.update'), [
@@ -63,7 +63,7 @@ test('a format outside the enum list is rejected', function (string $key) {
         ->assertSessionHasErrors("settings.{$key}");
 })->with(['date_format', 'datetime_format']);
 
-test('a user shows created_at in the configured datetime format', function () {
+test('a user shows created_at in the configured datetime format', function (): void {
     $user = User::factory()->create(['created_at' => '2026-11-20 13:45:30']);
 
     app(SettingServiceContract::class)->setMany([
@@ -74,13 +74,13 @@ test('a user shows created_at in the configured datetime format', function () {
     expect($user->toArray()['created_at'])->toBe('20/11/2026 13:45');
 });
 
-test('the default datetime format is used when no format is saved', function () {
+test('the default datetime format is used when no format is saved', function (): void {
     $user = User::factory()->create(['created_at' => '2026-11-20 13:45:30']);
 
     expect($user->toArray()['created_at'])->toBe('20.11.2026 13:45:30');
 });
 
-test('changing the format does not change the stored value or the model attribute type', function () {
+test('changing the format does not change the stored value or the model attribute type', function (): void {
     $user = User::factory()->create(['created_at' => '2026-11-20 13:45:30']);
     $storedBefore = DB::table('users')->where('id', $user->id)->value('created_at');
 
@@ -93,7 +93,7 @@ test('changing the format does not change the stored value or the model attribut
         ->and($user->created_at)->toBeInstanceOf(CarbonInterface::class);
 });
 
-test('a role shows created_at in the configured datetime format', function () {
+test('a role shows created_at in the configured datetime format', function (): void {
     $role = Role::create(['name' => 'Reviewer', 'guard_name' => 'web']);
     DB::table('roles')->where('id', $role->id)->update(['created_at' => '2026-11-20 13:45:30']);
     $role->refresh();

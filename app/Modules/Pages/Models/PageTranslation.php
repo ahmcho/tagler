@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['page_id', 'locale', 'title', 'subtitle', 'slug', 'path', 'seo_title', 'seo_description', 'content'])]
 class PageTranslation extends Model
 {
+    /** @use HasFactory<PageTranslationFactory> */
     use HasActivityLogs, HasFactory, HasLocalDates;
 
     /**

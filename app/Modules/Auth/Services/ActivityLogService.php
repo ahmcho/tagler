@@ -11,6 +11,10 @@ class ActivityLogService implements ActivityLogServiceContract
 {
     public function __construct(private readonly ActivityLogRepositoryContract $repository) {}
 
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return LengthAwarePaginator<int, ActivityLog>
+     */
     public function getAllPaginated(array $filters, int $perPage): LengthAwarePaginator
     {
         return $this->repository->getAllPaginated(filters: $filters, perPage: $perPage);

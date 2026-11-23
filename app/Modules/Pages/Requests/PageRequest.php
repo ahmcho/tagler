@@ -3,6 +3,7 @@
 namespace App\Modules\Pages\Requests;
 
 use App\Modules\Pages\Enums\PageStatus;
+use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use App\Modules\Pages\Services\PageContentValidator;
 use App\Modules\Pages\Support\PageLocales;
@@ -131,7 +132,8 @@ class PageRequest extends AppFormRequest
     private function checkEachLocale(Validator $validator): void
     {
         $service = app(PageServiceContract::class);
-        $page = $this->route('page');
+        $routePage = $this->route('page');
+        $page = $routePage instanceof Page ? $routePage : null;
         $parentId = $this->input('parent_id');
 
         foreach (app(PageLocales::class)->codes() as $locale) {
@@ -163,7 +165,7 @@ class PageRequest extends AppFormRequest
                 continue;
             }
 
-            $path = $service->resolvePath($locale, $parentId, (string) ($translation['slug'] ?? ''));
+            $path = $service->resolvePath($locale, $parentId, (string) $translation['slug']);
 
             if ($path === null) {
                 $validator->errors()->add("translations.{$locale}.slug", __('pages.errors.invalid_slug'));
@@ -200,7 +202,7 @@ class PageRequest extends AppFormRequest
         $this->cleanContent[$locale] = $result['document'];
 
         foreach ($result['errors'] as $key => $message) {
-            $validator->errors()->add("translations.{$locale}.{$key}", $message);
+            $validator->errors()->add("translations.{$locale}.{$key}", is_string($message) ? $message : implode(' ', $message));
         }
     }
 

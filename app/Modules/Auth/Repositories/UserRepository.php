@@ -16,6 +16,8 @@ class UserRepository extends EloquentRepository implements UserRepositoryContrac
 
     /**
      * Users that hold the given role.
+     *
+     * @param  Builder<User>  $query
      */
     protected function addRoleCondition(Builder $query, mixed $roleId): void
     {

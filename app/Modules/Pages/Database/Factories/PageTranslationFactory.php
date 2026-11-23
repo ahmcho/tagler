@@ -5,7 +5,6 @@ namespace App\Modules\Pages\Database\Factories;
 use App\Modules\Pages\Models\PageTranslation;
 use App\Modules\Pages\Support\PageContentDocument;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<PageTranslation>
@@ -17,7 +16,7 @@ class PageTranslationFactory extends Factory
      */
     public function definition(): array
     {
-        $slug = Str::slug(fake()->unique()->words(2, true));
+        $slug = fake()->unique()->slug(2);
 
         return [
             'locale' => config('app.locale'),

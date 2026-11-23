@@ -5,7 +5,7 @@ use App\Modules\Auth\Controllers\SecurityController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->middleware(['auth'])->group(function (): void {
     Route::get('settings', fn (): RedirectResponse => redirect()->route('profile.edit'));
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $is_homepage
  * @property string|null $layout
  * @property CarbonInterface|null $published_at
+ * @property CarbonInterface|null $created_at
+ * @property CarbonInterface|null $updated_at
  * @property-read Collection<int, PageTranslation> $translations
  */
 #[Table(name: 'pages')]
@@ -33,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['parent_id', 'status', 'layout', 'published_at'])]
 class Page extends Model
 {
+    /** @use HasFactory<PageFactory> */
     use HasActivityLogs, HasFactory, HasLocalDates;
 
     /**

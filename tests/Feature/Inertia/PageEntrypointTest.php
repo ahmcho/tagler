@@ -2,15 +2,15 @@
 
 use App\Support\Inertia\PageEntrypoint;
 
-it('resolves a top-level page', function () {
+it('resolves a top-level page', function (): void {
     expect(PageEntrypoint::for('dashboard'))->toBe('resources/js/pages/dashboard.tsx');
 });
 
-it('resolves a page inside a module', function () {
+it('resolves a page inside a module', function (): void {
     expect(PageEntrypoint::for('auth/login'))->toBe('resources/js/modules/auth/pages/auth/login.tsx');
 });
 
-it('fails for a page that does not exist', function () {
+it('fails for a page that does not exist', function (): void {
     expect(fn () => PageEntrypoint::for('missing/page'))
         ->toThrow(RuntimeException::class, 'matched 0 files');
 });

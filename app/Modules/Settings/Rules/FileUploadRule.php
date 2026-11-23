@@ -61,12 +61,6 @@ class FileUploadRule implements ValidationRule
     {
         $segments = array_slice(explode('.', strtolower(trim($fileName))), 1);
 
-        foreach ($segments as $segment) {
-            if (in_array(preg_replace('/\d+$/', '', $segment), self::FORBIDDEN_EXTENSIONS, true)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($segments, fn ($segment) => in_array(preg_replace('/\d+$/', '', $segment), self::FORBIDDEN_EXTENSIONS, true));
     }
 }

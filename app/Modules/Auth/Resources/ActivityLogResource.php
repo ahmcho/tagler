@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Resources;
 
+use App\Models\User;
 use App\Modules\Auth\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -22,7 +23,7 @@ class ActivityLogResource extends JsonResource
             'description' => $this->description,
             'subject_type' => $this->subject_type,
             'subject_id' => $this->subject_id,
-            'causer' => $this->causer?->name,
+            'causer' => $this->causer instanceof User ? $this->causer->name : null,
             'causer_id' => $this->causer_id,
             'ip_address' => $this->ip_address,
             'changes' => $this->changes()->toArray(),

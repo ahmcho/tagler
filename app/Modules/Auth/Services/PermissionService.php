@@ -6,6 +6,7 @@ use App\Modules\Auth\Repositories\Contracts\PermissionRepositoryContract;
 use App\Modules\Auth\Services\Contracts\PermissionServiceContract;
 use Crud\Services\BaseCrudService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
 
 class PermissionService extends BaseCrudService implements PermissionServiceContract
 {
@@ -14,6 +15,9 @@ class PermissionService extends BaseCrudService implements PermissionServiceCont
         parent::__construct($repository);
     }
 
+    /**
+     * @return LengthAwarePaginator<int, Model>
+     */
     public function search(string $term): LengthAwarePaginator
     {
         return $this->repository->search(term: $term);

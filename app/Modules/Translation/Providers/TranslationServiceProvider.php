@@ -15,7 +15,7 @@ use App\Modules\Translation\Services\TranslationService;
 use App\Modules\Translation\Support\CachingTranslationLoader;
 use App\Modules\Translation\Support\DatabaseTranslationLoader;
 use Crud\Providers\ModuleServiceProvider;
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Gate;
 
 class TranslationServiceProvider extends ModuleServiceProvider

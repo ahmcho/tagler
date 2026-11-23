@@ -2,40 +2,40 @@
 
 use App\Modules\Pages\Support\PagePath;
 
-test('a request path is normalised to one stored path', function (string $raw) {
+test('a request path is normalised to one stored path', function (string $raw): void {
     expect(PagePath::parse($raw, 10)?->value)->toBe('services/web');
 })->with(['services/web', '/services/web', '/Services//Web/', '  services/web/  ']);
 
-test('an empty request path is the homepage', function (string $raw) {
+test('an empty request path is the homepage', function (string $raw): void {
     expect(PagePath::parse($raw, 10)?->value)->toBe('/');
 })->with(['', '/', '//']);
 
-test('invalid segments are rejected', function (string $raw) {
+test('invalid segments are rejected', function (string $raw): void {
     expect(PagePath::parse($raw, 10))->toBeNull();
 })->with(['bad_slug', 'a/../b', 'a/.', 'has space', '-leading', 'trailing-', 'double--hyphen']);
 
-test('a path deeper than the limit is rejected', function () {
+test('a path deeper than the limit is rejected', function (): void {
     expect(PagePath::parse('a/b/c', 2))->toBeNull()
         ->and(PagePath::parse('a/b', 2)?->value)->toBe('a/b');
 });
 
-test('a child of the homepage keeps only its own slug', function () {
+test('a child of the homepage keeps only its own slug', function (): void {
     $child = PagePath::homepage()->child('about', 10);
 
     expect($child?->value)->toBe('about');
 });
 
-test('a child of a nested page appends its slug', function () {
+test('a child of a nested page appends its slug', function (): void {
     $parent = PagePath::parse('services', 10);
 
     expect($parent?->child('web', 10)?->value)->toBe('services/web');
 });
 
-test('a child with an invalid slug is rejected', function () {
+test('a child with an invalid slug is rejected', function (): void {
     expect(PagePath::homepage()->child('Not Valid', 10))->toBeNull();
 });
 
-test('ancestors are listed from the top level down', function () {
+test('ancestors are listed from the top level down', function (): void {
     $path = PagePath::parse('a/b/c', 10);
 
     expect($path?->ancestors())->toBe(['a', 'a/b'])
@@ -43,7 +43,7 @@ test('ancestors are listed from the top level down', function () {
         ->and(PagePath::homepage()->ancestors())->toBe([]);
 });
 
-test('only the first segment is reported as the first segment', function () {
+test('only the first segment is reported as the first segment', function (): void {
     expect(PagePath::parse('admin/users', 10)?->firstSegment())->toBe('admin')
         ->and(PagePath::homepage()->firstSegment())->toBeNull();
 });

@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Tests\Feature\Crud\Fixtures\CrudParentRequest;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Route::get('/crud-test/parser', function (CrudParentRequest $request) {
         $parser = $request->parser();
 
@@ -17,7 +17,7 @@ beforeEach(function () {
     });
 });
 
-it('builds filters, sorting, expand and paging from the request', function () {
+it('builds filters, sorting, expand and paging from the request', function (): void {
     $response = $this->getJson('/crud-test/parser?name=Al&sort=name&direction=desc&expand=children&per-page=5');
 
     $response->assertOk();
@@ -30,19 +30,19 @@ it('builds filters, sorting, expand and paging from the request', function () {
     ]);
 });
 
-it('falls back to the default sorting for an unknown sort key', function () {
+it('falls back to the default sorting for an unknown sort key', function (): void {
     $response = $this->getJson('/crud-test/parser?sort=unknown');
 
     expect($response->json('sorting'))->toBe('-id');
 });
 
-it('falls back to the default page size when per-page is too large', function () {
+it('falls back to the default page size when per-page is too large', function (): void {
     $response = $this->getJson('/crud-test/parser?per-page=500');
 
     expect($response->json('perPage'))->toBe(20);
 });
 
-it('routes a custom sort key to customSorting', function () {
+it('routes a custom sort key to customSorting', function (): void {
     $response = $this->getJson('/crud-test/parser?sort=recent&direction=desc');
 
     expect($response->json('customSorting'))->toBe('-recent')

@@ -138,12 +138,12 @@ class PageController extends Controller
             $translation = $page?->translationFor($locale);
 
             $translations[$locale] = [
-                'title' => $translation?->title ?? '',
-                'subtitle' => $translation?->subtitle ?? '',
-                'slug' => $translation?->slug ?? '',
-                'seo_title' => $translation?->seo_title ?? '',
-                'seo_description' => $translation?->seo_description ?? '',
-                'content' => $translation?->content ?? PageContentDocument::empty(),
+                'title' => $translation->title ?? '',
+                'subtitle' => $translation->subtitle ?? '',
+                'slug' => $translation->slug ?? '',
+                'seo_title' => $translation->seo_title ?? '',
+                'seo_description' => $translation->seo_description ?? '',
+                'content' => $translation->content ?? PageContentDocument::empty(),
             ];
         }
 
@@ -152,7 +152,7 @@ class PageController extends Controller
             'parent_id' => $page?->parent_id,
             'status' => $page?->status->value ?? 'draft',
             'published_at' => $page?->published_at?->format('Y-m-d\TH:i'),
-            'layout' => $page?->layout ?? '',
+            'layout' => $page->layout ?? '',
             'translations' => $translations,
         ];
     }
@@ -160,12 +160,12 @@ class PageController extends Controller
     /**
      * What the section editor needs: layouts, element types with their fields, and whether the editor may write raw HTML.
      *
-     * @return array{layouts: list<array{key: string, label: string}>, elementTypes: list<array<string, mixed>>, canUseHtml: bool}
+     * @return array{layouts: array<int, array{key: string, label: string}>, elementTypes: array<int, array<string, mixed>>, canUseHtml: bool}
      */
     private function editorProps(): array
     {
         return [
-            'layouts' => collect(config('modules.pages.layouts', []))
+            'layouts' => collect((array) config('modules.pages.layouts', []))
                 ->map(fn (string $label, string $key): array => ['key' => $key, 'label' => $label])
                 ->values()
                 ->all(),
@@ -183,7 +183,7 @@ class PageController extends Controller
     }
 
     /**
-     * @return list<array{code: string, name: string, country: string|null}>
+     * @return array<int, array{code: string, name: string, country: string|null}>
      */
     private function localeOptions(): array
     {
@@ -200,7 +200,7 @@ class PageController extends Controller
     /**
      * Pages that can be chosen as a parent, named by their default-locale title. A page never lists itself.
      *
-     * @return list<array{id: int, title: string, path: string}>
+     * @return array<int, array{id: int, title: string, path: string}>
      */
     private function parentOptions(?Page $page): array
     {
@@ -208,12 +208,12 @@ class PageController extends Controller
 
         return Page::query()
             ->with('translations')
-            ->when($page !== null, fn ($query) => $query->whereKeyNot($page->id))
+            ->when($page, fn ($query, Page $current) => $query->whereKeyNot($current->id))
             ->get()
             ->map(fn (Page $candidate): array => [
                 'id' => $candidate->id,
-                'title' => $candidate->translationFor($defaultLocale)?->title ?? '#'.$candidate->id,
-                'path' => $candidate->translationFor($defaultLocale)?->path ?? '',
+                'title' => $candidate->translationFor($defaultLocale)->title ?? '#'.$candidate->id,
+                'path' => $candidate->translationFor($defaultLocale)->path ?? '',
             ])
             ->values()
             ->all();

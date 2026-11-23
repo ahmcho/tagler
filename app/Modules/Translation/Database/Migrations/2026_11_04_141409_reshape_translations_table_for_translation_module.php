@@ -86,7 +86,7 @@ return new class extends Migration
             ->where('group', 'translations')
             ->where('key', 'like', '%.%')
             ->pluck('key')
-            ->map(fn (string $key): string => strstr($key, '.', true))
+            ->map(fn (string $key): string => explode('.', $key)[0])
             ->unique();
 
         foreach ($prefixes as $prefix) {

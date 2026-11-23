@@ -9,6 +9,7 @@ interface ActivityLogServiceContract
 {
     /**
      * @param  array<string, mixed>  $filters
+     * @return LengthAwarePaginator<int, ActivityLog>
      */
     public function getAllPaginated(array $filters, int $perPage): LengthAwarePaginator;
 

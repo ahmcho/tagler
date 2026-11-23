@@ -1,0 +1,26 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - bootstrap/app.php
+        - config/
+        - database/
+        - routes/
+
+    level: 8
+
+    ignoreErrors:
+        -
+            identifier: larastan.noEnvCallsOutsideOfConfig
+            paths:
+                - app/Modules/*/config/*.php
+            # Module configs are merged with mergeConfigFrom(), which skips the
+            # merge when config is cached. env() therefore runs only when the
+            # values are read fresh, where env() returns the real value.
+        -
+            message: '#is used zero times and is not analysed\.$#'
+            path: app/Modules/Translation/Concerns/HasTranslations.php
+            # Used only by tests/Feature/ModelTranslationTest.php, and tests are not analysed.

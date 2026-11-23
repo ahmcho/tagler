@@ -10,12 +10,12 @@ use Illuminate\Database\Eloquent\Model;
 interface PageServiceContract extends BaseCrudServiceContract
 {
     /**
-     * @param  array{status: string, parent_id?: int|null, published_at?: string|null, layout?: string|null, translations: array<string, array<string, mixed>>}  $payload
+     * @param  array<string, mixed>  $payload  Validated input: status, parent, publish time, layout and translations per locale
      */
     public function create(array $payload): Model;
 
     /**
-     * @param  array{status: string, parent_id?: int|null, published_at?: string|null, layout?: string|null, translations: array<string, array<string, mixed>>}  $payload
+     * @param  array<string, mixed>  $payload  Validated input: status, parent, publish time, layout and translations per locale
      */
     public function update(int|Model $modelOrModelId, array $payload): Model;
 

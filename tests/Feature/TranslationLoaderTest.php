@@ -5,7 +5,7 @@ use Illuminate\Contracts\Translation\Loader;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Support\Facades\Log;
 
-test('a failed translations read is logged to the translations channel and falls back to file translations', function () {
+test('a failed translations read is logged to the translations channel and falls back to file translations', function (): void {
     $fileLoader = Mockery::mock(Loader::class);
     $fileLoader->shouldReceive('load')->with('en', 'common', null)->andReturn(['greeting' => 'Hello']);
 
@@ -26,7 +26,7 @@ test('a failed translations read is logged to the translations channel and falls
     expect($loader->load('en', 'common'))->toBe(['greeting' => 'Hello']);
 });
 
-test('package namespaces are loaded from files only', function () {
+test('package namespaces are loaded from files only', function (): void {
     $fileLoader = Mockery::mock(Loader::class);
     $fileLoader->shouldReceive('load')->with('en', 'auth', 'fortify')->andReturn(['failed' => 'File value']);
 
@@ -38,7 +38,7 @@ test('package namespaces are loaded from files only', function () {
     expect($loader->load('en', 'auth', 'fortify'))->toBe(['failed' => 'File value']);
 });
 
-test('the translations log channel keeps 14 daily files', function () {
+test('the translations log channel keeps 14 daily files', function (): void {
     expect(config('logging.channels.translations'))
         ->toMatchArray([
             'driver' => 'daily',

@@ -8,13 +8,13 @@ use Tests\Feature\Crud\Fixtures\CrudParent;
 use Tests\Feature\Crud\Fixtures\CrudParentRepository;
 use Tests\Feature\Crud\Fixtures\CrudParentService;
 
-beforeEach(function () {
+beforeEach(function (): void {
     CrudFixtures::up();
 
     $this->service = new CrudParentService(app(CrudParentRepository::class));
 });
 
-it('merges request parser filters with explicit conditions', function () {
+it('merges request parser filters with explicit conditions', function (): void {
     CrudParent::create(['name' => 'Alpha']);
     CrudParent::create(['name' => 'Alphabet']);
     CrudParent::create(['name' => 'Beta']);
@@ -30,7 +30,7 @@ it('merges request parser filters with explicit conditions', function () {
         ->and($page->items()[0]->name)->toBe('Alpha');
 });
 
-it('loads expandable relations from the request parser on findById', function () {
+it('loads expandable relations from the request parser on findById', function (): void {
     $parent = CrudParent::create(['name' => 'Alpha']);
     CrudChild::create(['crud_parent_id' => $parent->id, 'name' => 'Child']);
 
@@ -40,6 +40,6 @@ it('loads expandable relations from the request parser on findById', function ()
         ->and($model->children)->toHaveCount(1);
 });
 
-it('is a BaseCrudService', function () {
+it('is a BaseCrudService', function (): void {
     expect($this->service)->toBeInstanceOf(BaseCrudService::class);
 });

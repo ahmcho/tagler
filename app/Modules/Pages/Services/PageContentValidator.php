@@ -18,8 +18,9 @@ class PageContentValidator
     public function __construct(private readonly ContentElementRegistry $registry) {}
 
     /**
+     * @param  array<string, mixed>  $document
      * @param  Closure(string): bool  $can  Tells whether the editor holds a permission.
-     * @return array{document: array<string, mixed>, errors: array<string, string>}
+     * @return array{document: array<string, mixed>, errors: array<string, array<array-key, mixed>|string>}
      */
     public function validate(array $document, Closure $can): array
     {
@@ -71,7 +72,7 @@ class PageContentValidator
     /**
      * @param  array<string, mixed>  $section
      * @param  array<string, true>  $seenIds
-     * @param  array<string, string>  $errors
+     * @param  array<string, array<array-key, mixed>|string>  $errors
      * @return array<string, mixed>
      */
     private function validateSection(array $section, string $path, Closure $can, array &$seenIds, array &$errors): array
@@ -118,7 +119,7 @@ class PageContentValidator
 
     /**
      * @param  array<string, mixed>  $element
-     * @param  array<string, string>  $errors
+     * @param  array<string, array<array-key, mixed>|string>  $errors
      * @return array<string, mixed>
      */
     private function validateElement(array $element, string $path, Closure $can, array &$errors): array
@@ -155,7 +156,7 @@ class PageContentValidator
      * Keeps a given UUID or creates one. Duplicate and malformed ids are errors.
      *
      * @param  array<string, true>  $seenIds
-     * @param  array<string, string>  $errors
+     * @param  array<string, array<array-key, mixed>|string>  $errors
      */
     private function identifier(mixed $value, string $path, array &$seenIds, array &$errors): string
     {

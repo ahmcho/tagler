@@ -9,19 +9,19 @@ use Tests\Feature\Crud\Fixtures\CrudParentService;
 use Tests\Feature\Crud\Fixtures\CrudParentServiceContract;
 use Tests\Feature\Crud\Fixtures\MismatchedModuleProvider;
 
-beforeEach(function () {
+beforeEach(function (): void {
     CrudFixtures::up();
 
     app()->register(CrudParentModuleProvider::class);
 });
 
-it('binds the repository and service pairs of a module', function () {
+it('binds the repository and service pairs of a module', function (): void {
     expect(app(CrudParentRepositoryContract::class))->toBeInstanceOf(CrudParentRepository::class)
         ->and(app(CrudParentServiceContract::class))->toBeInstanceOf(CrudParentService::class)
         ->and(app(CrudParentServiceContract::class))->toBeInstanceOf(BaseCrudService::class);
 });
 
-it('rejects a pair whose implementation does not implement its contract', function () {
+it('rejects a pair whose implementation does not implement its contract', function (): void {
     $provider = new MismatchedModuleProvider(app());
 
     expect(fn () => $provider->register())

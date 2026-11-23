@@ -9,6 +9,7 @@ interface ActivityLogRepositoryContract
 {
     /**
      * @param  array<string, mixed>  $filters  Keys: event, subject_type, subject_id, causer_id, sort, direction
+     * @return LengthAwarePaginator<int, ActivityLog>
      */
     public function getAllPaginated(array $filters, int $perPage): LengthAwarePaginator;
 
