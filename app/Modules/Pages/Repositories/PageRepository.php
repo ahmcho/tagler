@@ -11,6 +11,7 @@ use Carbon\CarbonInterface;
 use Crud\Repositories\EloquentRepository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 
 class PageRepository extends EloquentRepository implements PageRepositoryContract
 {
@@ -84,6 +85,140 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
         $query->where(fn (Builder $live) => $live
             ->whereNull('publish_date')
             ->orWhereRaw("(publish_date + COALESCE(publish_time, time '00:00')) <= ?", [$now->format('Y-m-d H:i:s')]));
+    }
+
+    /**
+     * @param  Builder<Page>  $query
+     */
+    protected function addStatusCondition(Builder $query, mixed $status): void
+    {
+        if (! filled($status)) {
+            return;
+        }
+
+        $query->where('pages.status', $status);
+    }
+
+    /**
+     * Live means the same as `Page::isLive()`: a published or scheduled page whose publish time has passed.
+     *
+     * @param  Builder<Page>  $query
+     */
+    protected function addLiveCondition(Builder $query, mixed $live): void
+    {
+        if (! in_array($live, ['1', '0'], true)) {
+            return;
+        }
+
+        $now = Carbon::now();
+        $isLive = fn (Builder $pages) => $this->whereStatusIsLive($pages, $now);
+
+        if ($live === '1') {
+            $query->where($isLive);
+
+            return;
+        }
+
+        $query->whereNot($isLive);
+    }
+
+    /**
+     * @param  Builder<Page>  $query
+     */
+    private function whereStatusIsLive(Builder $query, CarbonInterface $now): void
+    {
+        $query->whereIn('pages.status', [PageStatus::Published, PageStatus::Scheduled])
+            ->tap(fn (Builder $live) => $this->whereLiveAt($live, $now));
+    }
+
+    /**
+     * @param  Builder<Page>  $query
+     */
+    protected function addHomepageCondition(Builder $query, mixed $homepage): void
+    {
+        if (! in_array($homepage, ['1', '0'], true)) {
+            return;
+        }
+
+        $query->where('pages.is_homepage', $homepage === '1');
+    }
+
+    /**
+     * Pages without a publish date have no date to match, so they drop out when either bound is set.
+     *
+     * @param  Builder<Page>  $query
+     */
+    protected function addPublishFromCondition(Builder $query, mixed $date): void
+    {
+        if (! filled($date)) {
+            return;
+        }
+
+        $query->whereDate('pages.publish_date', '>=', $date);
+    }
+
+    /**
+     * @param  Builder<Page>  $query
+     */
+    protected function addPublishToCondition(Builder $query, mixed $date): void
+    {
+        if (! filled($date)) {
+            return;
+        }
+
+        $query->whereDate('pages.publish_date', '<=', $date);
+    }
+
+    /**
+     * @param  Builder<Page>  $query
+     */
+    protected function addTitleCondition(Builder $query, mixed $title): void
+    {
+        $this->whereDefaultLocaleTranslationLike($query, 'title', $title);
+    }
+
+    /**
+     * @param  Builder<Page>  $query
+     */
+    protected function addSubtitleCondition(Builder $query, mixed $subtitle): void
+    {
+        $this->whereDefaultLocaleTranslationLike($query, 'subtitle', $subtitle);
+    }
+
+    /**
+     * @param  Builder<Page>  $query
+     */
+    protected function addSlugCondition(Builder $query, mixed $slug): void
+    {
+        $this->whereDefaultLocaleTranslationLike($query, 'slug', $slug);
+    }
+
+    /**
+     * Stored paths have no leading slash, so `/about` and `about` match the same page.
+     *
+     * @param  Builder<Page>  $query
+     */
+    protected function addPathCondition(Builder $query, mixed $path): void
+    {
+        $this->whereDefaultLocaleTranslationLike($query, 'path', ltrim(trim((string) $path), '/'));
+    }
+
+    /**
+     * Matches the default locale only, the locale the list shows. Case-insensitive.
+     *
+     * @param  Builder<Page>  $query
+     */
+    private function whereDefaultLocaleTranslationLike(Builder $query, string $column, mixed $term): void
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return;
+        }
+
+        $query->whereHas('translations', fn (Builder $translations) => $translations
+            ->where('locale', LocaleEnum::default())
+            ->whereLike($column, "%{$term}%"));
     }
 
     /**

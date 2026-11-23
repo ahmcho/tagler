@@ -2,6 +2,7 @@
 
 namespace App\Modules\Pages\Requests;
 
+use App\Modules\Pages\Concerns\FiltersQuery;
 use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Enums\PageStatus;
 use App\Modules\Pages\Models\Page;
@@ -14,7 +15,19 @@ use Illuminate\Validation\Rule;
 
 class PageRequest extends AppFormRequest
 {
+    use FiltersQuery;
+
     protected ?string $sortBy = 'updated_at';
+
+    /**
+     * Every list filter runs through the repository (`add{Name}Condition`), because the
+     * text filters read the translations and the live check needs the publish time.
+     *
+     * @var array<int, string>
+     */
+    protected array $customFilters = [
+        'status', 'live', 'homepage', 'publish_from', 'publish_to', 'title', 'subtitle', 'slug', 'path',
+    ];
 
     /**
      * The cleaned content document of each locale, set while the rules run.
@@ -39,7 +52,17 @@ class PageRequest extends AppFormRequest
                 'translations' => ['required', 'array'],
                 ...$this->translationRules(),
             ],
-            default => [],
+            default => [
+                'status' => ['nullable', Rule::enum(PageStatus::class)],
+                'live' => ['nullable', Rule::in(['1', '0'])],
+                'homepage' => ['nullable', Rule::in(['1', '0'])],
+                'publish_from' => ['nullable', 'date_format:Y-m-d'],
+                'publish_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:publish_from'],
+                'title' => ['nullable', 'string', 'max:255'],
+                'subtitle' => ['nullable', 'string', 'max:255'],
+                'slug' => ['nullable', 'string', 'max:255'],
+                'path' => ['nullable', 'string', 'max:255'],
+            ],
         };
     }
 

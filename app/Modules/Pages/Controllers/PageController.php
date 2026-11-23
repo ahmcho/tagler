@@ -62,7 +62,7 @@ class PageController extends Controller
                 'last_page' => $paginator->lastPage(),
                 'total' => $paginator->total(),
             ],
-            'filters' => (object) $request->only(['sort', 'direction']),
+            'filters' => (object) [...$request->filters(), ...$request->only(['sort', 'direction'])],
             'locales' => $this->localeOptions(),
             'defaultLocale' => LocaleEnum::default(),
             'status' => session('status'),
