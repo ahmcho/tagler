@@ -11,6 +11,7 @@ enum SettingKeyEnum: string
     case Favicon = 'favicon';
     case DateFormat = 'date_format';
     case DateTimeFormat = 'datetime_format';
+    case TimeFormat = 'time_format';
 
     /**
      * How this setting's stored value should be cast and validated.
@@ -20,7 +21,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => InputValueTypeEnum::String,
             self::Favicon => InputValueTypeEnum::File,
-            self::DateFormat, self::DateTimeFormat => InputValueTypeEnum::String,
+            self::DateFormat, self::DateTimeFormat, self::TimeFormat => InputValueTypeEnum::String,
         };
     }
 
@@ -32,7 +33,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => SettingInputEnum::Text,
             self::Favicon => SettingInputEnum::File,
-            self::DateFormat, self::DateTimeFormat => SettingInputEnum::Select,
+            self::DateFormat, self::DateTimeFormat, self::TimeFormat => SettingInputEnum::Select,
         };
     }
 
@@ -44,7 +45,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => 'general',
             self::Favicon => 'general',
-            self::DateFormat, self::DateTimeFormat => 'general',
+            self::DateFormat, self::DateTimeFormat, self::TimeFormat => 'general',
         };
     }
 
@@ -56,7 +57,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => 'settings',
             self::Favicon => 'settings',
-            self::DateFormat, self::DateTimeFormat => 'settings',
+            self::DateFormat, self::DateTimeFormat, self::TimeFormat => 'settings',
         };
     }
 
@@ -70,6 +71,7 @@ enum SettingKeyEnum: string
             self::Favicon => '/favicon.ico',
             self::DateFormat => DateFormatVariantEnum::DayMonthYearDot->value,
             self::DateTimeFormat => DateTimeFormatVariantEnum::DayMonthYearDotTimeWithSeconds->value,
+            self::TimeFormat => TimeFormatVariantEnum::TwelveHour->value,
         };
     }
 
@@ -83,6 +85,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::DateFormat => $this->optionsFrom(DateFormatVariantEnum::cases()),
             self::DateTimeFormat => $this->optionsFrom(DateTimeFormatVariantEnum::cases()),
+            self::TimeFormat => $this->optionsFrom(TimeFormatVariantEnum::cases()),
             default => [],
         };
     }
@@ -127,13 +130,13 @@ enum SettingKeyEnum: string
     }
 
     /**
-     * @param  array<int, DateFormatVariantEnum|DateTimeFormatVariantEnum>  $cases
+     * @param  array<int, DateFormatVariantEnum|DateTimeFormatVariantEnum|TimeFormatVariantEnum>  $cases
      * @return array<int, array{value: string, label: string}>
      */
     private function optionsFrom(array $cases): array
     {
         return array_map(
-            fn (DateFormatVariantEnum|DateTimeFormatVariantEnum $case): array => [
+            fn (DateFormatVariantEnum|DateTimeFormatVariantEnum|TimeFormatVariantEnum $case): array => [
                 'value' => $case->value,
                 'label' => $case->label(),
             ],

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Modules\Auth\Support\AbilityRegistry;
 use App\Modules\Settings\Enums\SettingKeyEnum;
+use App\Modules\Settings\Enums\TimeFormatVariantEnum;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,6 +42,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => setting(SettingKeyEnum::AppName),
             'favicon' => setting(SettingKeyEnum::Favicon),
+            'timeHourCycle' => TimeFormatVariantEnum::tryFrom(setting()->string(SettingKeyEnum::TimeFormat))?->hourCycle() ?? 12,
             'auth' => [
                 'user' => $request->user(),
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->sort()->values()->all() ?? [],

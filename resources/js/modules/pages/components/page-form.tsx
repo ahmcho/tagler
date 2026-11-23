@@ -1,4 +1,5 @@
 import type { InertiaFormProps } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import type { CalendarDate } from '@internationalized/date';
 import { parseDate, today } from '@internationalized/date';
 import {
@@ -44,6 +45,7 @@ import {
 } from '@/components/tailgrids/core/select';
 import { TextField } from '@/components/tailgrids/core/text-field';
 import {
+    formatTime,
     TimePicker,
     TimePickerTrigger,
 } from '@/components/tailgrids/core/time-picker';
@@ -178,6 +180,7 @@ export function PageFields({
     editor,
 }: Props) {
     const [activeLocale, setActiveLocale] = useState(defaultLocale);
+    const { timeHourCycle } = usePage().props;
 
     const scheduleIssue = scheduleError(
         form.data.status,
@@ -314,6 +317,7 @@ export function PageFields({
                 <div className="flex w-full flex-col gap-1.5">
                     <FieldLabel>Publish time</FieldLabel>
                     <TimePicker
+                        hourCycle={timeHourCycle}
                         value={form.data.publish_time}
                         onChange={(next) => {
                             form.setData('publish_time', next);
@@ -327,7 +331,10 @@ export function PageFields({
                                     'border-input-error-focus-border',
                             )}
                         >
-                            {form.data.publish_time || 'Select time'}
+                            {formatTime(
+                                form.data.publish_time,
+                                timeHourCycle,
+                            ) || 'Select time'}
                         </TimePickerTrigger>
                     </TimePicker>
                     <ErrorMessage message={publishTimeError} />

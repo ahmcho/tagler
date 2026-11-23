@@ -282,6 +282,8 @@ return [
         'date_format_description' => 'Tətbiqdə tarixlərin göstərilmə formatı. Saxlanılan tarixlər dəyişmir.',
         'datetime_format' => 'Tarix və saat formatı',
         'datetime_format_description' => 'Tətbiqdə vaxtı olan tarixlərin göstərilmə formatı. Saxlanılan dəyərlər dəyişmir.',
+        'time_format' => 'Vaxt formatı',
+        'time_format_description' => 'Admin paneldə vaxtın necə seçilməsi, məsələn səhifənin planlaşdırılmasında. Saxlanılan dəyərlər dəyişmir.',
         'typed_delete_confirmation_feature' => 'Silməni adın yazılması ilə təsdiqlə',
         'typed_delete_confirmation_feature_description' => 'Silməni təsdiqləmək üçün istifadəçidən qeydin adını yazmağı tələb edir.',
         'name' => 'Ad Soyad',

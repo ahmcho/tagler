@@ -6,6 +6,7 @@ use App\Modules\Auth\Models\Role;
 use App\Modules\Settings\Enums\DateFormatVariantEnum;
 use App\Modules\Settings\Enums\DateTimeFormatVariantEnum;
 use App\Modules\Settings\Enums\SettingKeyEnum;
+use App\Modules\Settings\Enums\TimeFormatVariantEnum;
 use App\Modules\Settings\Services\Contracts\SettingServiceContract;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,7 @@ test('an Admin can save a date and datetime format from the list', function (): 
                 'app_name' => 'Tagler',
                 'date_format' => DateFormatVariantEnum::YearMonthDayDash->value,
                 'datetime_format' => DateTimeFormatVariantEnum::DayMonthYearSlashTime->value,
+                'time_format' => TimeFormatVariantEnum::TwelveHour->value,
             ],
         ])
         ->assertSessionHasNoErrors();
@@ -57,6 +59,7 @@ test('a format outside the enum list is rejected', function (string $key): void 
                 'app_name' => 'Tagler',
                 'date_format' => 'd.m.Y',
                 'datetime_format' => 'd.m.Y H:i:s',
+                'time_format' => 'h:i A',
                 $key => 'Y.m.d',
             ],
         ])

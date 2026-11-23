@@ -26,6 +26,11 @@ export enum InputValueTypeEnum {
     Json = 3,
     File = 4,
 }
+export enum LocaleEnum {
+    Az = 'az',
+    En = 'en',
+    Ru = 'ru',
+}
 export enum ModelStatusEnum {
     Inactive = 0,
     Active = 1,
@@ -45,6 +50,11 @@ export enum SettingKeyEnum {
     Favicon = 'favicon',
     DateFormat = 'date_format',
     DateTimeFormat = 'datetime_format',
+    TimeFormat = 'time_format',
+}
+export enum TimeFormatVariantEnum {
+    TwelveHour = 'h:i A',
+    TwentyFourHour = 'H:i',
 }
 export enum TranslationGroupEnum {
     Auth = 'auth',

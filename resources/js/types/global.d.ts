@@ -5,6 +5,7 @@ declare module '@inertiajs/core' {
         sharedPageProps: {
             name: string;
             favicon: string;
+            timeHourCycle: 12 | 24;
             auth: Auth;
             can: Record<string, boolean>;
             [key: string]: unknown;

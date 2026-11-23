@@ -282,6 +282,8 @@ return [
         'date_format_description' => 'How dates are shown in the application. Stored dates do not change.',
         'datetime_format' => 'DateTime Format',
         'datetime_format_description' => 'How dates with a time are shown in the application. Stored values do not change.',
+        'time_format' => 'Time Format',
+        'time_format_description' => 'How times are chosen in the admin, for example when scheduling a page. Stored values do not change.',
         'typed_delete_confirmation_feature' => 'Type name to confirm deletion',
         'typed_delete_confirmation_feature_description' => 'Require the user to type the record name before a delete is confirmed.',
         'name' => 'Full Name',

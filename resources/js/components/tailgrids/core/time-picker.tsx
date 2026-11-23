@@ -5,7 +5,7 @@ import { Dialog, DialogTrigger, Popover } from 'react-aria-components';
 import { Button } from '@/components/tailgrids/core/button';
 import { cn } from '@/utils/cn';
 
-const HOURS = [
+const HOURS_12 = [
     '01',
     '02',
     '03',
@@ -19,6 +19,9 @@ const HOURS = [
     '11',
     '12',
 ];
+const HOURS_24 = Array.from({ length: 24 }, (_, index) =>
+    String(index).padStart(2, '0'),
+);
 const MINUTES = Array.from({ length: 60 }, (_, index) =>
     String(index).padStart(2, '0'),
 );
@@ -26,14 +29,29 @@ const PERIODS = ['AM', 'PM'] as const;
 
 type Period = (typeof PERIODS)[number];
 
-type Columns = { hour: string; minute: string; period: Period };
+/** `12` shows AM/PM. `24` shows hours 00 to 23 and no AM/PM column. */
+export type TimeHourCycle = 12 | 24;
 
-/** Splits `HH:mm` (24-hour) into the 12-hour parts the columns show. */
-function toColumns(value: string): Columns | null {
+/** Column values. `period` is set only for the 12-hour cycle. */
+export type TimeColumns = {
+    hour: string;
+    minute: string;
+    period?: Period;
+};
+
+/** Splits `HH:mm` (24-hour) into the parts the columns show for `hourCycle`. */
+export function toColumns(
+    value: string,
+    hourCycle: TimeHourCycle,
+): TimeColumns | null {
     const match = /^(\d{2}):(\d{2})$/.exec(value);
 
     if (match === null) {
         return null;
+    }
+
+    if (hourCycle === 24) {
+        return { hour: match[1], minute: match[2] };
     }
 
     const hour24 = Number(match[1]);
@@ -45,11 +63,33 @@ function toColumns(value: string): Columns | null {
     };
 }
 
-/** Joins the 12-hour column values into `HH:mm` (24-hour). */
-function toValue({ hour, minute, period }: Columns): string {
+/** Joins the column values into `HH:mm` (24-hour) for `hourCycle`. */
+export function toValue(
+    { hour, minute, period }: TimeColumns,
+    hourCycle: TimeHourCycle,
+): string {
+    if (hourCycle === 24) {
+        return `${hour}:${minute}`;
+    }
+
     const hour24 = (Number(hour) % 12) + (period === 'PM' ? 12 : 0);
 
     return `${String(hour24).padStart(2, '0')}:${minute}`;
+}
+
+/** Shows `HH:mm` (24-hour) in the cycle's text, such as `01:45 PM`. An empty string gives `''`. */
+export function formatTime(value: string, hourCycle: TimeHourCycle): string {
+    const columns = toColumns(value, hourCycle);
+
+    if (columns === null) {
+        return '';
+    }
+
+    if (hourCycle === 24) {
+        return `${columns.hour}:${columns.minute}`;
+    }
+
+    return `${columns.hour}:${columns.minute} ${columns.period}`;
 }
 
 export interface TimePickerProps {
@@ -57,28 +97,36 @@ export interface TimePickerProps {
     /** Selected time as `HH:mm` (24-hour). An empty string means none is selected. */
     value?: string;
     onChange?: (value: string) => void;
+    /** `12` (default) shows AM/PM. `24` shows hours 00 to 23. */
+    hourCycle?: TimeHourCycle;
 }
 
 /**
- * Popover with hour, minute and AM/PM columns. Controlled through `value` and
- * `onChange`, which use `HH:mm` text. The popover stays open while the user
- * picks values. It closes on an outside press or Escape, as in the docs.
+ * Popover with hour and minute columns, plus an AM/PM column when `hourCycle`
+ * is 12. Controlled through `value` and `onChange`, which use `HH:mm` text. The
+ * popover stays open while the user picks values. It closes on an outside press
+ * or Escape, as in the docs.
  */
 export function TimePicker({
     children,
     value = '',
     onChange,
+    hourCycle = 12,
 }: TimePickerProps) {
-    const selected = toColumns(value);
+    const selected = toColumns(value, hourCycle);
+    const is12Hour = hourCycle === 12;
 
-    const pick = (next: Partial<Columns>) => {
+    const pick = (next: Partial<TimeColumns>) => {
         onChange?.(
-            toValue({
-                hour: selected?.hour ?? '12',
-                minute: selected?.minute ?? '00',
-                period: selected?.period ?? 'AM',
-                ...next,
-            }),
+            toValue(
+                {
+                    hour: selected?.hour ?? '12',
+                    minute: selected?.minute ?? '00',
+                    period: selected?.period ?? 'AM',
+                    ...next,
+                },
+                hourCycle,
+            ),
         );
     };
 
@@ -87,9 +135,14 @@ export function TimePicker({
             {children}
             <Popover className="rounded-xl border border-base-100 bg-background-50 p-2 shadow-lg outline-none">
                 <Dialog aria-label="Time options" className="outline-none">
-                    <div className="grid max-w-fit min-w-40 grid-cols-3 gap-1.5 divide-x divide-base-100">
+                    <div
+                        className={cn(
+                            'grid max-w-fit gap-1.5 divide-x divide-base-100',
+                            is12Hour ? 'min-w-40 grid-cols-3' : 'grid-cols-2',
+                        )}
+                    >
                         <TimeColumn
-                            values={HOURS}
+                            values={is12Hour ? HOURS_12 : HOURS_24}
                             selected={selected?.hour}
                             onSelect={(hour) => pick({ hour })}
                         />
@@ -98,13 +151,15 @@ export function TimePicker({
                             selected={selected?.minute}
                             onSelect={(minute) => pick({ minute })}
                         />
-                        <TimeColumn
-                            values={[...PERIODS]}
-                            selected={selected?.period}
-                            onSelect={(period) =>
-                                pick({ period: period as Period })
-                            }
-                        />
+                        {is12Hour && (
+                            <TimeColumn
+                                values={[...PERIODS]}
+                                selected={selected?.period}
+                                onSelect={(period) =>
+                                    pick({ period: period as Period })
+                                }
+                            />
+                        )}
                     </div>
                 </Dialog>
             </Popover>
