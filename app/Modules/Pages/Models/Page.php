@@ -12,11 +12,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * Locale-independent page data. Titles, slugs, paths and content live in
@@ -28,14 +30,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $is_homepage
  * @property string|null $layout
  * @property bool $theme_layout Whether the active theme's template shows this page
- * @property CarbonInterface|null $published_at
+ * @property CarbonInterface|null $publish_date
+ * @property string|null $publish_time Time of day as `HH:MM`
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
  * @property-read Collection<int, PageTranslation> $translations
  */
 #[Table(name: 'pages')]
 #[UseFactory(PageFactory::class)]
-#[Fillable(['parent_id', 'status', 'layout', 'theme_layout', 'published_at'])]
+#[Fillable(['parent_id', 'status', 'layout', 'theme_layout', 'publish_date', 'publish_time'])]
 #[ObservedBy([PageObserver::class])]
 class Page extends Model
 {
@@ -51,8 +54,33 @@ class Page extends Model
             'status' => PageStatus::class,
             'is_homepage' => 'boolean',
             'theme_layout' => 'boolean',
-            'published_at' => 'datetime',
+            'publish_date' => 'date',
         ];
+    }
+
+    /**
+     * The time is stored as `HH:MM:SS`. The form and the snapshots use `HH:MM`.
+     *
+     * @return Attribute<string|null, string|null>
+     */
+    protected function publishTime(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value): ?string => $value === null ? null : substr($value, 0, 5),
+        );
+    }
+
+    /**
+     * The moment the page goes live, from its date and time. Null when the page
+     * has no publish date, which means it is live as soon as its status allows.
+     */
+    public function publishAt(): ?CarbonInterface
+    {
+        if ($this->publish_date === null) {
+            return null;
+        }
+
+        return Carbon::parse($this->publish_date->toDateString().' '.($this->publish_time ?? '00:00'));
     }
 
     /**
@@ -65,7 +93,9 @@ class Page extends Model
             return false;
         }
 
-        return $this->published_at === null || $this->published_at->lessThanOrEqualTo($now);
+        $publishAt = $this->publishAt();
+
+        return $publishAt === null || $publishAt->lessThanOrEqualTo($now);
     }
 
     /**

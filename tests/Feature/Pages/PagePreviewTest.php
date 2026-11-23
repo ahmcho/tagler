@@ -39,7 +39,7 @@ function signedPreviewUrl(Page $page, string $locale, ?Carbon $expires = null): 
 }
 
 test('a draft page shows in preview with a valid signed link', function (): void {
-    $page = PageFixtures::create(['status' => 'draft', 'published_at' => null], ['locale' => config('app.locale'), 'title' => 'Draft preview', 'slug' => 'draft-preview', 'path' => 'draft-preview']);
+    $page = PageFixtures::create(['status' => 'draft', 'publish_date' => null, 'publish_time' => null], ['locale' => config('app.locale'), 'title' => 'Draft preview', 'slug' => 'draft-preview', 'path' => 'draft-preview']);
 
     $this->get(signedPreviewUrl($page, config('app.locale')))
         ->assertOk()
@@ -49,7 +49,7 @@ test('a draft page shows in preview with a valid signed link', function (): void
 });
 
 test('a preview response is never indexed and never cached', function (): void {
-    $page = PageFixtures::create(['status' => 'draft', 'published_at' => null], ['locale' => config('app.locale'), 'title' => 'Headers', 'slug' => 'headers-preview', 'path' => 'headers-preview']);
+    $page = PageFixtures::create(['status' => 'draft', 'publish_date' => null, 'publish_time' => null], ['locale' => config('app.locale'), 'title' => 'Headers', 'slug' => 'headers-preview', 'path' => 'headers-preview']);
 
     $response = $this->get(signedPreviewUrl($page, config('app.locale')))->assertOk();
 
@@ -58,7 +58,7 @@ test('a preview response is never indexed and never cached', function (): void {
 });
 
 test('a link whose signature was changed is forbidden', function (): void {
-    $page = PageFixtures::create(['status' => 'draft', 'published_at' => null], ['locale' => config('app.locale'), 'title' => 'Tamper', 'slug' => 'tamper-preview', 'path' => 'tamper-preview']);
+    $page = PageFixtures::create(['status' => 'draft', 'publish_date' => null, 'publish_time' => null], ['locale' => config('app.locale'), 'title' => 'Tamper', 'slug' => 'tamper-preview', 'path' => 'tamper-preview']);
 
     $url = signedPreviewUrl($page, config('app.locale'));
     $tampered = substr($url, 0, -1).(substr($url, -1) === '0' ? '1' : '0');
@@ -67,7 +67,7 @@ test('a link whose signature was changed is forbidden', function (): void {
 });
 
 test('an expired link is forbidden', function (): void {
-    $page = PageFixtures::create(['status' => 'draft', 'published_at' => null], ['locale' => config('app.locale'), 'title' => 'Expired', 'slug' => 'expired-preview', 'path' => 'expired-preview']);
+    $page = PageFixtures::create(['status' => 'draft', 'publish_date' => null, 'publish_time' => null], ['locale' => config('app.locale'), 'title' => 'Expired', 'slug' => 'expired-preview', 'path' => 'expired-preview']);
 
     $url = signedPreviewUrl($page, config('app.locale'));
 
@@ -77,13 +77,13 @@ test('an expired link is forbidden', function (): void {
 });
 
 test('a locale the page has no translation in gives a 404', function (): void {
-    $page = PageFixtures::create(['status' => 'draft', 'published_at' => null], ['locale' => config('app.locale'), 'title' => 'Only default', 'slug' => 'only-default-preview', 'path' => 'only-default-preview']);
+    $page = PageFixtures::create(['status' => 'draft', 'publish_date' => null, 'publish_time' => null], ['locale' => config('app.locale'), 'title' => 'Only default', 'slug' => 'only-default-preview', 'path' => 'only-default-preview']);
 
     $this->get(signedPreviewUrl($page, 'az'))->assertNotFound();
 });
 
 test('the admin preview link redirects to a signed preview of that locale', function (): void {
-    $page = PageFixtures::create(['status' => 'draft', 'published_at' => null], ['locale' => config('app.locale'), 'title' => 'Via admin', 'slug' => 'via-admin-preview', 'path' => 'via-admin-preview']);
+    $page = PageFixtures::create(['status' => 'draft', 'publish_date' => null, 'publish_time' => null], ['locale' => config('app.locale'), 'title' => 'Via admin', 'slug' => 'via-admin-preview', 'path' => 'via-admin-preview']);
 
     $response = $this->actingAs(previewEditor(['pages.update']))
         ->get(route('pages.preview', [$page, config('app.locale')]))
@@ -97,7 +97,7 @@ test('the admin preview link redirects to a signed preview of that locale', func
 });
 
 test('a user without update permission cannot get a preview link', function (): void {
-    $page = PageFixtures::create(['status' => 'draft', 'published_at' => null], ['locale' => config('app.locale'), 'title' => 'Denied', 'slug' => 'denied-preview', 'path' => 'denied-preview']);
+    $page = PageFixtures::create(['status' => 'draft', 'publish_date' => null, 'publish_time' => null], ['locale' => config('app.locale'), 'title' => 'Denied', 'slug' => 'denied-preview', 'path' => 'denied-preview']);
 
     $this->actingAs(previewEditor(['pages.index']))
         ->get(route('pages.preview', [$page, config('app.locale')]))

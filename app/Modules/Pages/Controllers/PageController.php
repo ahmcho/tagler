@@ -197,14 +197,15 @@ class PageController extends Controller
     /**
      * The form values of a saved page.
      *
-     * @return array{parent_id: int|null, status: string, published_at: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}
+     * @return array{parent_id: int|null, status: string, publish_date: string|null, publish_time: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}
      */
     private function pageValues(?Page $page): array
     {
         return [
             'parent_id' => $page?->parent_id,
             'status' => $page?->status->value ?? 'draft',
-            'published_at' => $page?->published_at?->format('Y-m-d\TH:i'),
+            'publish_date' => $page?->publish_date?->format('Y-m-d'),
+            'publish_time' => $page?->publish_time,
             'layout' => $page->layout ?? '',
             'theme_layout' => $page === null || $page->theme_layout,
             'translations' => collect(LocaleEnum::codes())
@@ -217,14 +218,17 @@ class PageController extends Controller
      * The form values stored in a revision, in the same shape as `pageValues()`.
      *
      * @param  array<string, mixed>  $snapshot
-     * @return array{parent_id: int|null, status: string, published_at: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}
+     * @return array{parent_id: int|null, status: string, publish_date: string|null, publish_time: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}
      */
     private function snapshotValues(array $snapshot): array
     {
+        [$publishDate, $publishTime] = $this->publishPartsOf($snapshot);
+
         return [
             'parent_id' => $snapshot['parent_id'] ?? null,
             'status' => (string) ($snapshot['status'] ?? 'draft'),
-            'published_at' => isset($snapshot['published_at']) ? Carbon::parse($snapshot['published_at'])->format('Y-m-d\TH:i') : null,
+            'publish_date' => $publishDate,
+            'publish_time' => $publishTime,
             'layout' => (string) ($snapshot['layout'] ?? ''),
             'theme_layout' => (bool) ($snapshot['theme_layout'] ?? true),
             'translations' => $snapshot['translations'] ?? [],
@@ -232,9 +236,30 @@ class PageController extends Controller
     }
 
     /**
+     * Revisions saved before the date and time split hold `published_at` instead.
+     *
+     * @param  array<string, mixed>  $snapshot
+     * @return array{0: string|null, 1: string|null}
+     */
+    private function publishPartsOf(array $snapshot): array
+    {
+        if (array_key_exists('publish_date', $snapshot)) {
+            return [$snapshot['publish_date'], $snapshot['publish_time'] ?? null];
+        }
+
+        if (! isset($snapshot['published_at'])) {
+            return [null, null];
+        }
+
+        $publishAt = Carbon::parse($snapshot['published_at']);
+
+        return [$publishAt->toDateString(), $publishAt->format('H:i')];
+    }
+
+    /**
      * The form model. Every supported locale gets an entry, blank when the page has no translation there.
      *
-     * @param  array{parent_id: int|null, status: string, published_at: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}  $values
+     * @param  array{parent_id: int|null, status: string, publish_date: string|null, publish_time: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}  $values
      * @return array<string, mixed>
      */
     private function formModel(?Page $page, array $values): array
@@ -258,7 +283,8 @@ class PageController extends Controller
             'id' => $page?->id,
             'parent_id' => $values['parent_id'],
             'status' => $values['status'],
-            'published_at' => $values['published_at'],
+            'publish_date' => $values['publish_date'],
+            'publish_time' => $values['publish_time'],
             'layout' => $values['layout'],
             'theme_layout' => $values['theme_layout'],
             'translations' => $translations,

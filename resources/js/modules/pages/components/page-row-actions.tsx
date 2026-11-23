@@ -23,7 +23,8 @@ export type PageRecord = {
     status: 'draft' | 'published' | 'scheduled';
     is_homepage: boolean;
     is_live: boolean;
-    published_at: string | null;
+    publish_date: string | null;
+    publish_time: string | null;
     updated_at: string | null;
     can: {
         update: boolean;

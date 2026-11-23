@@ -22,7 +22,8 @@ class PageRevisionFactory extends Factory
             'snapshot' => [
                 'status' => 'published',
                 'parent_id' => null,
-                'published_at' => null,
+                'publish_date' => null,
+                'publish_time' => null,
                 'layout' => null,
                 'translations' => [
                     config('app.locale') => [

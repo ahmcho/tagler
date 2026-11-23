@@ -23,18 +23,23 @@ class PageFactory extends Factory
             'status' => PageStatus::Published,
             'is_homepage' => false,
             'layout' => null,
-            'published_at' => now()->subDay(),
+            'publish_date' => now()->subDay()->toDateString(),
+            'publish_time' => now()->subDay()->format('H:i'),
         ];
     }
 
     public function draft(): static
     {
-        return $this->state(fn (): array => ['status' => PageStatus::Draft, 'published_at' => null]);
+        return $this->state(fn (): array => ['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null]);
     }
 
     public function scheduled(): static
     {
-        return $this->state(fn (): array => ['status' => PageStatus::Scheduled, 'published_at' => now()->addDay()]);
+        return $this->state(fn (): array => [
+            'status' => PageStatus::Scheduled,
+            'publish_date' => now()->addDay()->toDateString(),
+            'publish_time' => now()->addDay()->format('H:i'),
+        ]);
     }
 
     public function homepage(): static

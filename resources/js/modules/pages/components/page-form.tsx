@@ -1,12 +1,19 @@
 import type { InertiaFormProps } from '@inertiajs/react';
-import type { CalendarDateTime } from '@internationalized/date';
-import { parseDateTime } from '@internationalized/date';
+import type { CalendarDate } from '@internationalized/date';
+import { parseDate, today } from '@internationalized/date';
 import {
     Calendar as CalendarIcon,
     ChevronLeft,
     ChevronRight,
+    Info,
 } from 'lucide-react';
 import { useState } from 'react';
+import {
+    Button as AriaButton,
+    Dialog,
+    DialogTrigger,
+    Popover,
+} from 'react-aria-components';
 import {
     Calendar,
     CalendarCell,
@@ -36,6 +43,10 @@ import {
     SelectValue,
 } from '@/components/tailgrids/core/select';
 import { TextField } from '@/components/tailgrids/core/text-field';
+import {
+    TimePicker,
+    TimePickerTrigger,
+} from '@/components/tailgrids/core/time-picker';
 import { Toggle } from '@/components/tailgrids/core/toggle';
 import type {
     ContentDocument,
@@ -68,17 +79,60 @@ const STATUS_LABELS: Record<PageStatus, string> = {
     scheduled: 'Scheduled',
 };
 
-/** Converts the stored `YYYY-MM-DDTHH:mm` text into a calendar value, or null when empty or invalid. */
-function toDateTime(value: string): CalendarDateTime | null {
+/** Converts the stored `YYYY-MM-DD` text into a calendar value, or null when empty or invalid. */
+function toCalendarDate(value: string): CalendarDate | null {
     if (value === '') {
         return null;
     }
 
     try {
-        return parseDateTime(value);
+        return parseDate(value);
     } catch {
         return null;
     }
+}
+
+/** The backend compares publish dates and times in UTC, so the form uses UTC too. */
+const SERVER_TIME_ZONE = 'UTC';
+
+const PAST_DATE_MESSAGE = 'Choose a date that is not in the past.';
+const PAST_TIME_MESSAGE = 'Choose a time later than the current time (UTC).';
+
+/** The current date and time in UTC, as `YYYY-MM-DD` and `HH:mm`. */
+function utcNow(): { date: string; time: string } {
+    const iso = new Date().toISOString();
+
+    return { date: iso.slice(0, 10), time: iso.slice(11, 16) };
+}
+
+/**
+ * Early feedback for a scheduled page. The server repeats the check, so this
+ * only shows the message sooner. Returns null when the values are fine.
+ */
+function scheduleError(
+    status: PageStatus,
+    publishDate: string,
+    publishTime: string,
+): { field: 'publish_date' | 'publish_time'; message: string } | null {
+    if (status !== 'scheduled' || publishDate === '') {
+        return null;
+    }
+
+    const now = utcNow();
+
+    if (publishDate < now.date) {
+        return { field: 'publish_date', message: PAST_DATE_MESSAGE };
+    }
+
+    if (
+        publishDate === now.date &&
+        publishTime !== '' &&
+        publishTime <= now.time
+    ) {
+        return { field: 'publish_time', message: PAST_TIME_MESSAGE };
+    }
+
+    return null;
 }
 
 export type PageTranslationFormData = {
@@ -94,7 +148,10 @@ export type PageTranslationFormData = {
 export type PageFormData = {
     parent_id: number | null;
     status: PageStatus;
-    published_at: string;
+    /** Publish date as `YYYY-MM-DD`, or empty. */
+    publish_date: string;
+    /** Publish time as `HH:mm` (24-hour), or empty. */
+    publish_time: string;
     layout: string;
     /** Whether the active theme's template shows this page. Off means the plain view. */
     theme_layout: boolean;
@@ -121,6 +178,23 @@ export function PageFields({
     editor,
 }: Props) {
     const [activeLocale, setActiveLocale] = useState(defaultLocale);
+
+    const scheduleIssue = scheduleError(
+        form.data.status,
+        form.data.publish_date,
+        form.data.publish_time,
+    );
+    const publishDateError =
+        form.errors.publish_date ??
+        (scheduleIssue?.field === 'publish_date'
+            ? scheduleIssue.message
+            : undefined);
+    const publishTimeError =
+        form.errors.publish_time ??
+        (scheduleIssue?.field === 'publish_time'
+            ? scheduleIssue.message
+            : undefined);
+    const isScheduled = form.data.status === 'scheduled';
 
     return (
         <>
@@ -164,44 +238,49 @@ export function PageFields({
                     <ErrorMessage message={form.errors.parent_id} />
                 </div>
 
-                <Select
-                    value={form.data.status}
-                    onChange={(key) =>
-                        form.setData('status', String(key) as PageStatus)
-                    }
-                    isInvalid={Boolean(form.errors.status)}
-                >
-                    <SelectLabel>Status</SelectLabel>
-                    <SelectTrigger>
-                        <SelectValue />
-                        <SelectIndicator />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {(Object.keys(STATUS_LABELS) as PageStatus[]).map(
-                            (status) => (
-                                <SelectItem key={status} id={status}>
-                                    {STATUS_LABELS[status]}
-                                </SelectItem>
-                            ),
-                        )}
-                    </SelectContent>
-                </Select>
+                <div className="relative">
+                    <Select
+                        value={form.data.status}
+                        onChange={(key) => {
+                            form.setData('status', String(key) as PageStatus);
+                            form.clearErrors('publish_date', 'publish_time');
+                        }}
+                        isInvalid={Boolean(form.errors.status)}
+                    >
+                        <SelectLabel>Status</SelectLabel>
+                        <SelectTrigger>
+                            <SelectValue />
+                            <SelectIndicator />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {(Object.keys(STATUS_LABELS) as PageStatus[]).map(
+                                (status) => (
+                                    <SelectItem key={status} id={status}>
+                                        {STATUS_LABELS[status]}
+                                    </SelectItem>
+                                ),
+                            )}
+                        </SelectContent>
+                    </Select>
+                    <StatusHelp />
+                </div>
                 <ErrorMessage message={form.errors.status} />
 
                 <DatePicker
-                    value={toDateTime(form.data.published_at)}
-                    onChange={(next) =>
+                    value={toCalendarDate(form.data.publish_date)}
+                    onChange={(next: CalendarDate | null) => {
                         form.setData(
-                            'published_at',
-                            next ? next.toString().slice(0, 16) : '',
-                        )
-                    }
-                    granularity="minute"
-                    hourCycle={24}
-                    invalid={Boolean(form.errors.published_at)}
+                            'publish_date',
+                            next ? next.toString() : '',
+                        );
+                        form.clearErrors('publish_date');
+                    }}
+                    minValue={isScheduled ? today(SERVER_TIME_ZONE) : undefined}
+                    granularity="day"
+                    invalid={Boolean(publishDateError)}
                     className="flex w-full flex-col gap-1.5"
                 >
-                    <FieldLabel>Publish date and time</FieldLabel>
+                    <FieldLabel>Publish date</FieldLabel>
                     <DatePickerGroup>
                         <DateInput>
                             {(segment) => <DateSegment segment={segment} />}
@@ -229,8 +308,30 @@ export function PageFields({
                             </CalendarGrid>
                         </Calendar>
                     </DatePickerPopover>
-                    <FieldError>{form.errors.published_at}</FieldError>
+                    <FieldError>{publishDateError}</FieldError>
                 </DatePicker>
+
+                <div className="flex w-full flex-col gap-1.5">
+                    <FieldLabel>Publish time</FieldLabel>
+                    <TimePicker
+                        value={form.data.publish_time}
+                        onChange={(next) => {
+                            form.setData('publish_time', next);
+                            form.clearErrors('publish_time');
+                        }}
+                    >
+                        <TimePickerTrigger
+                            className={cn(
+                                'min-w-37.5 justify-start',
+                                publishTimeError &&
+                                    'border-input-error-focus-border',
+                            )}
+                        >
+                            {form.data.publish_time || 'Select time'}
+                        </TimePickerTrigger>
+                    </TimePicker>
+                    <ErrorMessage message={publishTimeError} />
+                </div>
 
                 <TextField
                     value={form.data.layout}
@@ -311,6 +412,31 @@ export function PageFields({
                     ))}
             </div>
         </>
+    );
+}
+
+/** Small info button by the status field. Its popover explains scheduling. */
+function StatusHelp() {
+    return (
+        <DialogTrigger>
+            <AriaButton
+                aria-label="About scheduling"
+                className="absolute top-0 right-0 inline-flex size-6 items-center justify-center rounded-full text-title-50 outline-none hover:bg-button-outline-hover-background data-focus-visible:ring-2 data-focus-visible:ring-button-primary-focus-ring"
+            >
+                <Info className="size-4" aria-hidden="true" />
+            </AriaButton>
+            <Popover
+                placement="bottom end"
+                className="max-w-72 rounded-xl border border-base-100 bg-background-50 p-3 text-sm text-title-50 shadow-lg outline-none"
+            >
+                <Dialog aria-label="About scheduling" className="outline-none">
+                    <p>
+                        A scheduled page goes live on its publish date and time.
+                        Both must be later than now. Times use UTC.
+                    </p>
+                </Dialog>
+            </Popover>
+        </DialogTrigger>
     );
 }
 

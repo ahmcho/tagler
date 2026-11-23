@@ -36,10 +36,10 @@ test('the root path is a 404 when no homepage is assigned', function (): void {
 test('an unpublished homepage gives a 404 and returns when published again', function (): void {
     $home = PageFixtures::create(['is_homepage' => true], ['slug' => 'home', 'path' => '/']);
 
-    $home->update(['status' => PageStatus::Draft, 'published_at' => null]);
+    $home->update(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null]);
     $this->get('/')->assertNotFound();
 
-    $home->update(['status' => PageStatus::Published, 'published_at' => now()->subDay()]);
+    $home->update(['status' => PageStatus::Published, 'publish_date' => now()->subDay()->toDateString(), 'publish_time' => now()->subDay()->format('H:i')]);
     $this->get('/')->assertOk();
 });
 
@@ -53,7 +53,7 @@ test('a nested page is served at its full path in its locale', function (): void
 });
 
 test('a nested page is a 404 while its parent is not live', function (): void {
-    $parent = PageFixtures::create(['status' => PageStatus::Draft, 'published_at' => null], ['slug' => 'services', 'path' => 'services']);
+    $parent = PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'services', 'path' => 'services']);
     PageFixtures::create(['parent_id' => $parent->id], ['slug' => 'web', 'path' => 'services/web']);
 
     $this->get("/{$this->locale}/services/web")->assertNotFound();
@@ -85,17 +85,17 @@ test('a child is served in a locale only when its parent is live in that locale'
 });
 
 test('a draft page is never served', function (): void {
-    PageFixtures::create(['status' => PageStatus::Draft, 'published_at' => null], ['slug' => 'secret', 'path' => 'secret']);
+    PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'secret', 'path' => 'secret']);
 
     $this->get("/{$this->locale}/secret")->assertNotFound();
 });
 
 test('a scheduled page is a 404 until its date and served after it', function (): void {
-    $page = PageFixtures::create(['status' => PageStatus::Scheduled, 'published_at' => now()->addDay()], ['slug' => 'launch', 'path' => 'launch']);
+    $page = PageFixtures::create(['status' => PageStatus::Scheduled, 'publish_date' => now()->addDay()->toDateString(), 'publish_time' => now()->addDay()->format('H:i')], ['slug' => 'launch', 'path' => 'launch']);
 
     $this->get("/{$this->locale}/launch")->assertNotFound();
 
-    $page->update(['published_at' => now()->subMinute()]);
+    $page->update(['publish_date' => now()->subMinute()->toDateString(), 'publish_time' => now()->subMinute()->format('H:i')]);
 
     $this->get("/{$this->locale}/launch")->assertOk();
 });

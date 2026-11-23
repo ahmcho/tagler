@@ -36,7 +36,8 @@ class PageResource extends JsonResource
             'locales' => $this->translations->pluck('locale')->values(),
             'layout' => $this->layout,
             'theme_layout' => $this->theme_layout,
-            'published_at' => $this->published_at?->format('Y-m-d H:i'),
+            'publish_date' => $this->publish_date?->format('Y-m-d'),
+            'publish_time' => $this->publish_time,
             'updated_at' => $this->updated_at?->format('Y-m-d H:i'),
             'can' => [
                 'update' => $request->user()?->can('update', $this->resource) ?? false,

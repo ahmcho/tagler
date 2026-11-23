@@ -80,7 +80,7 @@ test('a homepage with the theme layout turned off uses the plain view', function
 });
 
 test('a preview of the homepage is themed too', function (): void {
-    $page = PageFixtures::create(['is_homepage' => true, 'status' => 'draft', 'published_at' => null], [
+    $page = PageFixtures::create(['is_homepage' => true, 'status' => 'draft', 'publish_date' => null, 'publish_time' => null], [
         'locale' => $this->locale,
         'title' => 'Draft home',
         'slug' => 'home',

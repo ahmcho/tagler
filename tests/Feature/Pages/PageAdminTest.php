@@ -7,6 +7,7 @@ use App\Modules\Pages\Enums\PageStatus;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Models\PageTranslation;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PageFixtures;
 
@@ -122,7 +123,64 @@ test('a slug with uppercase letters or spaces is rejected', function (string $sl
 test('a scheduled page needs a publish date', function (): void {
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), pagePayload(['status' => 'scheduled']))
-        ->assertSessionHasErrors('published_at');
+        ->assertSessionHasErrors('publish_date');
+});
+
+test('a scheduled page needs a publish time', function (): void {
+    $this->actingAs(pageAdmin())
+        ->post(route('pages.store'), pagePayload(['status' => 'scheduled', 'publish_date' => '2026-12-01']))
+        ->assertSessionHasErrors('publish_time');
+});
+
+test('a publish time must use the 24-hour HH:MM format', function (string $time): void {
+    $this->actingAs(pageAdmin())
+        ->post(route('pages.store'), pagePayload(['publish_date' => '2026-12-01', 'publish_time' => $time]))
+        ->assertSessionHasErrors('publish_time');
+})->with(['9:30 PM', '09:30:00', '25:00']);
+
+test('a scheduled page must publish in the future', function (string $date, string $time): void {
+    $this->travelTo(Carbon::parse('2026-11-23 12:00:00'));
+
+    $this->actingAs(pageAdmin())
+        ->post(route('pages.store'), pagePayload(['status' => 'scheduled', 'publish_date' => $date, 'publish_time' => $time]))
+        ->assertSessionHasErrors('publish_time');
+})->with([
+    'an earlier day' => ['2026-11-22', '23:59'],
+    'an earlier time today' => ['2026-11-23', '11:59'],
+    'the current minute' => ['2026-11-23', '12:00'],
+]);
+
+test('a scheduled page with a time later today is accepted', function (): void {
+    $this->travelTo(Carbon::parse('2026-11-23 12:00:00'));
+
+    $this->actingAs(pageAdmin())
+        ->post(route('pages.store'), pagePayload(
+            ['status' => 'scheduled', 'publish_date' => '2026-11-23', 'publish_time' => '12:01'],
+            [config('app.locale') => ['title' => 'Soon', 'slug' => 'soon']],
+        ))
+        ->assertSessionHasNoErrors();
+});
+
+test('a draft may keep a past publish date', function (): void {
+    $this->travelTo(Carbon::parse('2026-11-23 12:00:00'));
+
+    $this->actingAs(pageAdmin())
+        ->post(route('pages.store'), pagePayload(['status' => 'draft', 'publish_date' => '2026-11-01', 'publish_time' => '08:00']))
+        ->assertSessionHasNoErrors();
+});
+
+test('the publish date and time are saved in their own columns', function (): void {
+    $this->actingAs(pageAdmin())
+        ->post(route('pages.store'), pagePayload(
+            ['status' => 'scheduled', 'publish_date' => '2026-12-01', 'publish_time' => '09:30'],
+            [config('app.locale') => ['title' => 'Launch', 'slug' => 'launch']],
+        ))
+        ->assertSessionHasNoErrors();
+
+    $page = Page::query()->latest('id')->firstOrFail();
+
+    expect($page->publish_date?->toDateString())->toBe('2026-12-01')
+        ->and($page->publish_time)->toBe('09:30');
 });
 
 test('a locale with a title but no slug is rejected', function (): void {
@@ -210,7 +268,7 @@ test('a page with children cannot be deleted and the error reaches the list page
 });
 
 test('a draft page cannot become the homepage', function (): void {
-    $page = PageFixtures::create(['status' => PageStatus::Draft, 'published_at' => null], ['slug' => 'about', 'path' => 'about']);
+    $page = PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'about', 'path' => 'about']);
 
     $this->actingAs(pageAdmin())
         ->post(route('pages.homepage', $page))
@@ -248,16 +306,17 @@ test('unpublishing the homepage keeps the homepage flag', function (): void {
 });
 
 test('publishing sets the publish date when none was set', function (): void {
-    $page = PageFixtures::create(['status' => PageStatus::Draft, 'published_at' => null], ['slug' => 'news', 'path' => 'news']);
+    $page = PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'news', 'path' => 'news']);
 
     $this->actingAs(pageAdmin())->post(route('pages.publish', $page))->assertSessionHasNoErrors();
 
     expect($page->refresh()->status)->toBe(PageStatus::Published)
-        ->and($page->published_at)->not->toBeNull();
+        ->and($page->publish_date)->not->toBeNull()
+        ->and($page->publish_time)->not->toBeNull();
 });
 
 test('a user who cannot publish is forbidden from publishing', function (): void {
-    $page = PageFixtures::create(['status' => PageStatus::Draft, 'published_at' => null], ['slug' => 'news', 'path' => 'news']);
+    $page = PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'news', 'path' => 'news']);
 
     $this->actingAs(pageViewer())
         ->post(route('pages.publish', $page))

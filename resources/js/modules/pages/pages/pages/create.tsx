@@ -45,7 +45,8 @@ export default function Create({
     const form = useForm<PageFormData>({
         parent_id: model.parent_id,
         status: model.status,
-        published_at: model.published_at ?? '',
+        publish_date: model.publish_date ?? '',
+        publish_time: model.publish_time ?? '',
         layout: model.layout,
         theme_layout: model.theme_layout,
         translations: model.translations,

@@ -61,7 +61,7 @@ test('updating a page saves one more revision and records the saving user', func
 });
 
 test('publishing a page saves no revision', function (): void {
-    $page = PageFixtures::create(['status' => 'draft', 'published_at' => null], ['locale' => $this->locale, 'title' => 'Draft', 'slug' => 'draft-revision', 'path' => 'draft-revision']);
+    $page = PageFixtures::create(['status' => 'draft', 'publish_date' => null, 'publish_time' => null], ['locale' => $this->locale, 'title' => 'Draft', 'slug' => 'draft-revision', 'path' => 'draft-revision']);
 
     $this->actingAs(revisionEditor(['pages.index', 'pages.publish']))
         ->post(route('pages.publish', $page))
@@ -152,4 +152,24 @@ test('a user without update permission is forbidden from opening a revision', fu
     $this->actingAs(revisionEditor(['pages.index']))
         ->get(route('pages.edit', [$page, 'revision' => $revision->id]))
         ->assertForbidden();
+});
+
+test('a revision saved before the date and time split shows its old publish time in the form', function (): void {
+    $editor = revisionEditor(['pages.update']);
+    $page = PageFixtures::create(['status' => 'published'], ['locale' => $this->locale, 'title' => 'Start', 'slug' => 'legacy-revision', 'path' => 'legacy-revision']);
+
+    $this->actingAs($editor)->put(route('pages.update', $page), titlePayload($this->locale, 'Legacy title', 'legacy-revision'));
+
+    $revision = PageRevision::query()->where('page_id', $page->id)->firstOrFail();
+    $snapshot = $revision->snapshot;
+    unset($snapshot['publish_date'], $snapshot['publish_time']);
+    $snapshot['published_at'] = '2026-11-19T10:30:00+00:00';
+    $revision->update(['snapshot' => $snapshot]);
+
+    $this->actingAs($editor)
+        ->get(route('pages.edit', [$page, 'revision' => $revision->id]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $inertia) => $inertia
+            ->where('model.publish_date', '2026-11-19')
+            ->where('model.publish_time', '10:30'));
 });

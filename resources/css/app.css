@@ -90,6 +90,8 @@
     --color-button-outline-focus-ring: rgba(152, 162, 179, 0.14);
     --color-button-outline-text: #1f2937;
     --color-button-outline-hover-text: #111827;
+    --color-datepicker-selected-background: #3758f9;
+    --color-datepicker-selected-hover-background: #eff3ff;
     --color-button-outline-disabled-background: #ffffff;
     --color-button-outline-disabled-text: #9ca3af;
     --color-button-outline-disabled-border: #f3f4f6;
@@ -289,6 +291,8 @@
     --color-button-outline-focus-ring: rgba(152, 162, 179, 0.14);
     --color-button-outline-text: #e5e7eb;
     --color-button-outline-hover-text: #f3f4f6;
+    --color-datepicker-selected-background: #3758f9;
+    --color-datepicker-selected-hover-background: #1f2937;
     --color-button-outline-disabled-background: #1f2937;
     --color-button-outline-disabled-text: #4b5563;
     --color-button-outline-disabled-border: #1f2937;

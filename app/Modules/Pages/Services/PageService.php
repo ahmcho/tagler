@@ -123,7 +123,13 @@ class PageService extends BaseCrudService implements PageServiceContract
     public function publish(Page $page): Page
     {
         $page->status = PageStatus::Published;
-        $page->published_at ??= Carbon::now();
+
+        if ($page->publish_date === null) {
+            $now = Carbon::now();
+            $page->publish_date = $now->copy()->startOfDay();
+            $page->publish_time = $now->format('H:i');
+        }
+
         $page->save();
 
         return $page;
@@ -155,7 +161,8 @@ class PageService extends BaseCrudService implements PageServiceContract
         return [
             'status' => $page->status->value,
             'parent_id' => $page->parent_id,
-            'published_at' => $page->published_at?->toIso8601String(),
+            'publish_date' => $page->publish_date?->toDateString(),
+            'publish_time' => $page->publish_time,
             'layout' => $page->layout,
             'theme_layout' => $page->theme_layout,
             'translations' => $page->translations
@@ -269,7 +276,8 @@ class PageService extends BaseCrudService implements PageServiceContract
             'status' => $payload['status'],
             'layout' => $payload['layout'] ?? null,
             'theme_layout' => (bool) ($payload['theme_layout'] ?? true),
-            'published_at' => $payload['published_at'] ?? null,
+            'publish_date' => $payload['publish_date'] ?? null,
+            'publish_time' => $payload['publish_time'] ?? null,
         ];
     }
 

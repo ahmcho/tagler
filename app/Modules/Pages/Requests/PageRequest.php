@@ -9,6 +9,7 @@ use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use App\Modules\Pages\Services\PageContentValidator;
 use Crud\Requests\AppFormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 class PageRequest extends AppFormRequest
@@ -31,7 +32,8 @@ class PageRequest extends AppFormRequest
             self::SCENARIO_INSERT, self::SCENARIO_UPDATE => [
                 'status' => ['required', Rule::enum(PageStatus::class)],
                 'parent_id' => ['nullable', 'integer', 'exists:pages,id'],
-                'published_at' => ['nullable', 'date', 'required_if:status,'.PageStatus::Scheduled->value],
+                'publish_date' => ['nullable', 'date_format:Y-m-d', 'required_if:status,'.PageStatus::Scheduled->value],
+                'publish_time' => ['nullable', 'date_format:H:i', 'required_if:status,'.PageStatus::Scheduled->value],
                 'layout' => ['nullable', 'string', 'max:64'],
                 'theme_layout' => ['sometimes', 'boolean'],
                 'translations' => ['required', 'array'],
@@ -94,8 +96,31 @@ class PageRequest extends AppFormRequest
 
                 $this->checkUnsupportedLocales($validator);
                 $this->checkEachLocale($validator);
+                $this->checkScheduledInFuture($validator);
             },
         ];
+    }
+
+    /**
+     * A scheduled page needs its publish date and time combined into a moment
+     * after now. Both are in the app timezone. Skipped when either part is malformed,
+     * because the field rules already report that.
+     */
+    private function checkScheduledInFuture(Validator $validator): void
+    {
+        if ($this->input('status') !== PageStatus::Scheduled->value) {
+            return;
+        }
+
+        if ($validator->errors()->hasAny(['publish_date', 'publish_time'])) {
+            return;
+        }
+
+        $publishAt = Carbon::createFromFormat('!Y-m-d H:i', $this->input('publish_date').' '.$this->input('publish_time'));
+
+        if ($publishAt === null || $publishAt->lessThanOrEqualTo(Carbon::now())) {
+            $validator->errors()->add('publish_time', __('pages.errors.publish_in_past'));
+        }
     }
 
     private function checkUnsupportedLocales(Validator $validator): void

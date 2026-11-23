@@ -50,7 +50,7 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
                 ->where('locale', $locale)
                 ->whereIn('path', $paths))
             ->whereIn('status', [PageStatus::Published, PageStatus::Scheduled])
-            ->where(fn (Builder $query) => $query->whereNull('published_at')->orWhere('published_at', '<=', $now))
+            ->tap(fn (Builder $query) => $this->whereLiveAt($query, $now))
             ->count();
     }
 
@@ -69,8 +69,21 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
     {
         return $this->model->newQuery()
             ->where('status', PageStatus::Scheduled)
-            ->where(fn (Builder $query) => $query->whereNull('published_at')->orWhere('published_at', '<=', $now))
+            ->tap(fn (Builder $query) => $this->whereLiveAt($query, $now))
             ->get();
+    }
+
+    /**
+     * A page with no publish date is live at once. Otherwise its date and time
+     * (time defaults to midnight) must not be after `$now`, the same rule as `Page::publishAt()`.
+     *
+     * @param  Builder<Page>  $query
+     */
+    private function whereLiveAt(Builder $query, CarbonInterface $now): void
+    {
+        $query->where(fn (Builder $live) => $live
+            ->whereNull('publish_date')
+            ->orWhereRaw("(publish_date + COALESCE(publish_time, time '00:00')) <= ?", [$now->format('Y-m-d H:i:s')]));
     }
 
     /**
