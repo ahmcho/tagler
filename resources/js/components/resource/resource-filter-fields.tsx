@@ -1,3 +1,7 @@
+import {
+    DatePickerField,
+    toCalendarDate,
+} from '@/components/date-picker-field';
 import { SearchableList } from '@/components/searchable-list';
 import type { SelectOption } from '@/components/searchable-list';
 import { SelectField } from '@/components/select-field';
@@ -36,6 +40,22 @@ export function ResourceFilterFields({
                             }
                             options={field.options}
                             allOptionLabel={field.allLabel}
+                        />
+                    );
+                }
+
+                if (field.type === 'date') {
+                    return (
+                        <DatePickerField
+                            key={field.name}
+                            label={field.label}
+                            value={toCalendarDate(textValues[field.name] ?? '')}
+                            onChange={(next) =>
+                                onTextChange(
+                                    field.name,
+                                    next ? next.toString() : '',
+                                )
+                            }
                         />
                     );
                 }

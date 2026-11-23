@@ -10,11 +10,14 @@ import {
 
 const ALL_OPTION_KEY = '__all__';
 
+/** A plain string is both the value and the label. Use `{ value, label }` when they differ. */
+export type SelectFieldOption = string | { value: string; label: string };
+
 type SelectFieldProps = {
     label: string;
     value: string;
     onChange: (value: string) => void;
-    options: string[];
+    options: SelectFieldOption[];
     allOptionLabel?: string;
 };
 
@@ -48,11 +51,18 @@ export function SelectField({
                         {allOptionLabel}
                     </SelectItem>
                 )}
-                {options.map((option) => (
-                    <SelectItem key={option} id={option}>
-                        {option}
-                    </SelectItem>
-                ))}
+                {options.map((option) => {
+                    const { value: optionValue, label: optionLabel } =
+                        typeof option === 'string'
+                            ? { value: option, label: option }
+                            : option;
+
+                    return (
+                        <SelectItem key={optionValue} id={optionValue}>
+                            {optionLabel}
+                        </SelectItem>
+                    );
+                })}
             </SelectContent>
         </Select>
     );

@@ -1,13 +1,7 @@
 import type { InertiaFormProps } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
-import type { CalendarDate } from '@internationalized/date';
-import { parseDate, today } from '@internationalized/date';
-import {
-    Calendar as CalendarIcon,
-    ChevronLeft,
-    ChevronRight,
-    Info,
-} from 'lucide-react';
+import { today } from '@internationalized/date';
+import { Info } from 'lucide-react';
 import { useState } from 'react';
 import {
     Button as AriaButton,
@@ -16,22 +10,9 @@ import {
     Popover,
 } from 'react-aria-components';
 import {
-    Calendar,
-    CalendarCell,
-    CalendarGrid,
-    CalendarGridBody,
-    CalendarGridHeader,
-    CalendarHeader,
-    CalendarHeading,
-    NavButton,
-} from '@/components/tailgrids/core/calendar';
-import { DateInput, DateSegment } from '@/components/tailgrids/core/date-field';
-import {
-    DatePicker,
-    DatePickerGroup,
-    DatePickerPopover,
-    DatePickerTrigger,
-} from '@/components/tailgrids/core/date-picker';
+    DatePickerField,
+    toCalendarDate,
+} from '@/components/date-picker-field';
 import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
 import {
@@ -80,19 +61,6 @@ const STATUS_LABELS: Record<PageStatus, string> = {
     published: 'Published',
     scheduled: 'Scheduled',
 };
-
-/** Converts the stored `YYYY-MM-DD` text into a calendar value, or null when empty or invalid. */
-function toCalendarDate(value: string): CalendarDate | null {
-    if (value === '') {
-        return null;
-    }
-
-    try {
-        return parseDate(value);
-    } catch {
-        return null;
-    }
-}
 
 /** The backend compares publish dates and times in UTC, so the form uses UTC too. */
 const SERVER_TIME_ZONE = 'UTC';
@@ -269,9 +237,10 @@ export function PageFields({
                 </div>
                 <ErrorMessage message={form.errors.status} />
 
-                <DatePicker
+                <DatePickerField
+                    label="Publish date"
                     value={toCalendarDate(form.data.publish_date)}
-                    onChange={(next: CalendarDate | null) => {
+                    onChange={(next) => {
                         form.setData(
                             'publish_date',
                             next ? next.toString() : '',
@@ -279,40 +248,8 @@ export function PageFields({
                         form.clearErrors('publish_date');
                     }}
                     minValue={isScheduled ? today(SERVER_TIME_ZONE) : undefined}
-                    granularity="day"
-                    invalid={Boolean(publishDateError)}
-                    className="flex w-full flex-col gap-1.5"
-                >
-                    <FieldLabel>Publish date</FieldLabel>
-                    <DatePickerGroup>
-                        <DateInput>
-                            {(segment) => <DateSegment segment={segment} />}
-                        </DateInput>
-                        <DatePickerTrigger aria-label="Open calendar">
-                            <CalendarIcon className="size-5" />
-                        </DatePickerTrigger>
-                    </DatePickerGroup>
-                    <DatePickerPopover>
-                        <Calendar>
-                            <CalendarHeader>
-                                <NavButton slot="previous">
-                                    <ChevronLeft />
-                                </NavButton>
-                                <CalendarHeading />
-                                <NavButton slot="next">
-                                    <ChevronRight />
-                                </NavButton>
-                            </CalendarHeader>
-                            <CalendarGrid>
-                                <CalendarGridHeader />
-                                <CalendarGridBody>
-                                    {(date) => <CalendarCell date={date} />}
-                                </CalendarGridBody>
-                            </CalendarGrid>
-                        </Calendar>
-                    </DatePickerPopover>
-                    <FieldError>{publishDateError}</FieldError>
-                </DatePicker>
+                    error={publishDateError}
+                />
 
                 <div className="flex w-full flex-col gap-1.5">
                     <FieldLabel>Publish time</FieldLabel>

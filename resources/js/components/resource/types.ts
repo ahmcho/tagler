@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { DataTableRowId } from '@/components/data-table';
 import type { SelectOption } from '@/components/searchable-list';
+import type { SelectFieldOption } from '@/components/select-field';
 import type { SearchPage } from '@/hooks/use-search';
 
 /** Query params the server shares as `filters`: the sort plus each filter and search value. */
@@ -55,8 +56,13 @@ type ResourceFilterBase = {
 
 export type ResourceSelectFilter = ResourceFilterBase & {
     type: 'select';
-    options: string[];
+    options: SelectFieldOption[];
     allLabel?: string;
+};
+
+/** A calendar day. The value is `YYYY-MM-DD`, the same format as the server filter. */
+export type ResourceDateFilter = ResourceFilterBase & {
+    type: 'date';
 };
 
 export type ResourceTextFilter = ResourceFilterBase & {
@@ -75,6 +81,7 @@ export type ResourceSearchableFilter = ResourceFilterBase & {
 
 export type ResourceFilterField =
     | ResourceSelectFilter
+    | ResourceDateFilter
     | ResourceTextFilter
     | ResourceSearchableFilter;
 
