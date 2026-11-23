@@ -15,6 +15,18 @@ A module's routes go in `app/Modules/{Module}/routes/settings.php`. `bootstrap/a
 
 Use named routes and `route()`. Name new routes `{resource}.{action}`, for example `translations.index`.
 
+## Everything is under /admin
+
+The CMS admin owns every module. Each module route group starts with the prefix on the group itself:
+
+```php
+Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
+    // module routes
+});
+```
+
+Do not add the prefix in `bootstrap/app.php`. That glob loads every module file into one group, and the public page routes (Pages module) must stay at the root. Fortify uses `admin` through `config/fortify.php` (`prefix`, `home`). Only the public site stays outside `/admin`.
+
 ## Admin pages
 
 Admin pages that edit shared data use `password.confirm` in the middleware group, as in `app/Modules/Translation/routes/settings.php`.

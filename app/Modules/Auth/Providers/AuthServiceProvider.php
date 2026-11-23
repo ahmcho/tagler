@@ -30,6 +30,7 @@ use App\Modules\Auth\Services\PermissionService;
 use App\Modules\Auth\Services\RoleService;
 use App\Modules\Auth\Services\UserService;
 use App\Modules\Auth\Support\AbilityRegistry;
+use App\Modules\Auth\Support\AdminLogoutResponse;
 use App\Modules\Auth\Support\PermissionRegistry;
 use Crud\Providers\ModuleServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -40,6 +41,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 
@@ -84,6 +86,7 @@ class AuthServiceProvider extends ModuleServiceProvider
 
         $this->configureActions();
         $this->configureAuthentication();
+        $this->app->singleton(LogoutResponse::class, AdminLogoutResponse::class);
         $this->configureViews();
         $this->configureRateLimiting();
         $this->registerPolicies();

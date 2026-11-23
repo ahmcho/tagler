@@ -2,16 +2,16 @@
 
 use App\Models\User;
 
-test('guests are redirected to the login page', function () {
+test('the root path is a 404 for guests while no homepage is set', function () {
     $response = $this->get(route('home'));
 
-    $response->assertRedirect(route('login'));
+    $response->assertNotFound();
 });
 
-test('authenticated users are redirected to the dashboard', function () {
+test('the root path is a 404 for signed-in users while no homepage is set', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->get(route('home'));
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertNotFound();
 });

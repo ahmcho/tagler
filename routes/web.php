@@ -1,12 +1,7 @@
 <?php
 
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function (): RedirectResponse {
-    return redirect()->route(auth()->check() ? 'dashboard' : 'login');
-})->name('home');
-
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
