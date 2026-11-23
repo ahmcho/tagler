@@ -4,16 +4,20 @@ namespace App\Modules\Pages\Providers;
 
 use App\Modules\Auth\Support\AbilityRegistry;
 use App\Modules\Auth\Support\PermissionRegistry;
+use App\Modules\Pages\Console\Commands\PublishScheduledPages;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Policies\PagePolicy;
 use App\Modules\Pages\Repositories\Contracts\PageRepositoryContract;
+use App\Modules\Pages\Repositories\Contracts\PageRevisionRepositoryContract;
 use App\Modules\Pages\Repositories\Contracts\PageTranslationRepositoryContract;
 use App\Modules\Pages\Repositories\PageRepository;
+use App\Modules\Pages\Repositories\PageRevisionRepository;
 use App\Modules\Pages\Repositories\PageTranslationRepository;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use App\Modules\Pages\Services\PageService;
 use App\Modules\Pages\Support\ContentElementRegistry;
 use Crud\Providers\ModuleServiceProvider;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
 
 class PagesServiceProvider extends ModuleServiceProvider
@@ -24,6 +28,7 @@ class PagesServiceProvider extends ModuleServiceProvider
     protected array $repositories = [
         PageRepositoryContract::class => PageRepository::class,
         PageTranslationRepositoryContract::class => PageTranslationRepository::class,
+        PageRevisionRepositoryContract::class => PageRevisionRepository::class,
     ];
 
     /**
@@ -50,6 +55,16 @@ class PagesServiceProvider extends ModuleServiceProvider
         $this->registerPermissions();
         $this->registerAbilities();
         $this->registerContentElements();
+        $this->registerConsole();
+    }
+
+    private function registerConsole(): void
+    {
+        $this->commands([PublishScheduledPages::class]);
+
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            $schedule->command(PublishScheduledPages::class)->everyMinute()->withoutOverlapping();
+        });
     }
 
     /**

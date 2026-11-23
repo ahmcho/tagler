@@ -55,8 +55,14 @@ export type ContentLayout = {
     label: string;
 };
 
+export type ContentBackground = {
+    key: string;
+    label: string;
+};
+
 export type ContentEditorConfig = {
     layouts: ContentLayout[];
+    backgrounds: ContentBackground[];
     elementTypes: ContentElementType[];
     canUseHtml: boolean;
 };

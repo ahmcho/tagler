@@ -1,7 +1,6 @@
 import {
     closestCenter,
     DndContext,
-    KeyboardSensor,
     PointerSensor,
     useSensor,
     useSensors,
@@ -14,7 +13,6 @@ import type {
 import {
     arrayMove,
     SortableContext,
-    sortableKeyboardCoordinates,
     useSortable,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
@@ -91,11 +89,10 @@ function SectionList({ value, onChange, config, errorFor }: Props) {
     const typeByKey = new Map(
         config.elementTypes.map((type) => [type.type, type]),
     );
+    // Keyboard users move sections and elements with the up and down buttons.
+    // Keyboard drag did not move items in the browser, so the grips are pointer only.
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        }),
     );
 
     const commit = (nextSections: ContentSection[]) =>
@@ -225,7 +222,7 @@ type DragHandleProps = {
     label: string;
 };
 
-/** The grip button. Mouse, touch and keyboard all drag from here. */
+/** The grip button. Pointer and touch drag from here. It is out of the tab order. */
 function DragHandle({ attributes, listeners, label }: DragHandleProps) {
     return (
         <button
@@ -233,6 +230,7 @@ function DragHandle({ attributes, listeners, label }: DragHandleProps) {
             aria-label={label}
             className="hover:bg-base-100 cursor-grab touch-none rounded p-1 text-title-50 active:cursor-grabbing"
             {...attributes}
+            tabIndex={-1}
             {...listeners}
         >
             <GripVertical className="size-4" />
@@ -287,6 +285,10 @@ function SectionCard({
         opacity: isDragging ? 0.6 : 1,
     };
 
+    const backgroundError =
+        errorFor(`sections.${index}.settings.background`) ??
+        errorFor(`sections.${index}.settings`);
+
     const handleElementDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
@@ -319,6 +321,7 @@ function SectionCard({
                     aria-label="Drag to reorder section"
                     className="hover:bg-base-100 mb-1 cursor-grab touch-none rounded p-1 text-title-50 active:cursor-grabbing"
                     {...attributes}
+                    tabIndex={-1}
                     {...listeners}
                 >
                     <GripVertical className="size-4" />
@@ -346,6 +349,38 @@ function SectionCard({
                         </SelectContent>
                     </Select>
                     <ErrorText message={errorFor(`sections.${index}.layout`)} />
+                </div>
+
+                <div className="min-w-44 flex-1">
+                    <Select
+                        value={String(section.settings?.background ?? 'none')}
+                        onChange={(key) =>
+                            onUpdate({
+                                settings: {
+                                    ...section.settings,
+                                    background: String(key),
+                                },
+                            })
+                        }
+                        isInvalid={Boolean(backgroundError)}
+                    >
+                        <SelectLabel>Background</SelectLabel>
+                        <SelectTrigger>
+                            <SelectValue />
+                            <SelectIndicator />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {config.backgrounds.map((background) => (
+                                <SelectItem
+                                    key={background.key}
+                                    id={background.key}
+                                >
+                                    {background.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <ErrorText message={backgroundError} />
                 </div>
 
                 <Toggle

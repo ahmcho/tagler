@@ -3,8 +3,11 @@
 namespace App\Modules\Pages\Services\Contracts;
 
 use App\Modules\Pages\Models\Page;
+use App\Modules\Pages\Models\PageRevision;
 use App\Modules\Pages\Support\PagePath;
+use Carbon\CarbonInterface;
 use Crud\Services\Contracts\BaseCrudServiceContract;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 interface PageServiceContract extends BaseCrudServiceContract
@@ -25,6 +28,23 @@ interface PageServiceContract extends BaseCrudServiceContract
     public function assignHomepage(Page $page): Page;
 
     public function publish(Page $page): Page;
+
+    /**
+     * The newest revisions of the page, newest first, up to the configured number to keep.
+     *
+     * @return Collection<int, PageRevision>
+     */
+    public function revisions(Page $page): Collection;
+
+    /**
+     * The revision when it belongs to the page, otherwise null.
+     */
+    public function findRevision(Page $page, int $revisionId): ?PageRevision;
+
+    /**
+     * Publishes each scheduled page whose publish time has passed. Returns how many pages changed.
+     */
+    public function publishDueScheduled(CarbonInterface $now): int;
 
     public function unpublish(Page $page): Page;
 

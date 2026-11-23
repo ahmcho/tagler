@@ -116,6 +116,9 @@
     "include": [
         "resources/js/**/*.ts",
         "resources/js/**/*.d.ts",
-        "resources/js/**/*.tsx"
+        "resources/js/**/*.tsx",
+        "app/Modules/Theme/themes/**/*.ts",
+        "app/Modules/Theme/themes/**/*.tsx",
+        "vitest.config.ts"
     ]
 }

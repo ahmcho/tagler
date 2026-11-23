@@ -27,10 +27,6 @@ import {
 import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
 import {
-    NativeSelect,
-    NativeSelectOption,
-} from '@/components/tailgrids/core/native-select';
-import {
     Select,
     SelectContent,
     SelectIndicator,
@@ -61,6 +57,9 @@ export type PageLocaleOption = {
 };
 
 export type PageStatus = 'draft' | 'published' | 'scheduled';
+
+/** Select key for "No parent". React Aria keys cannot be null. */
+const NO_PARENT_KEY = '__none__';
 
 const STATUS_LABELS: Record<PageStatus, string> = {
     draft: 'Draft',
@@ -124,34 +123,41 @@ export function PageFields({
         <>
             <div className="grid gap-6 md:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                    <FieldLabel>Parent page</FieldLabel>
-                    <NativeSelect
+                    <Select
                         value={
                             form.data.parent_id === null
-                                ? ''
+                                ? NO_PARENT_KEY
                                 : String(form.data.parent_id)
                         }
-                        onChange={(event) =>
+                        onChange={(key) =>
                             form.setData(
                                 'parent_id',
-                                event.target.value === ''
+                                String(key) === NO_PARENT_KEY
                                     ? null
-                                    : Number(event.target.value),
+                                    : Number(key),
                             )
                         }
+                        isInvalid={Boolean(form.errors.parent_id)}
                     >
-                        <NativeSelectOption value="">
-                            No parent (top level)
-                        </NativeSelectOption>
-                        {parents.map((parent) => (
-                            <NativeSelectOption
-                                key={parent.id}
-                                value={String(parent.id)}
-                            >
-                                {parent.title} ({parent.path})
-                            </NativeSelectOption>
-                        ))}
-                    </NativeSelect>
+                        <SelectLabel>Parent page</SelectLabel>
+                        <SelectTrigger>
+                            <SelectValue />
+                            <SelectIndicator />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem id={NO_PARENT_KEY}>
+                                No parent (top level)
+                            </SelectItem>
+                            {parents.map((parent) => (
+                                <SelectItem
+                                    key={parent.id}
+                                    id={String(parent.id)}
+                                >
+                                    {parent.title} ({parent.path})
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     <ErrorMessage message={form.errors.parent_id} />
                 </div>
 

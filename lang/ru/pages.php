@@ -17,6 +17,8 @@ return [
         'content_section_invalid' => 'Раздел должен быть объектом.',
         'content_layout_unknown' => 'Этот макет раздела недоступен в текущей теме.',
         'content_flag_invalid' => 'Флаг включения должен быть true или false.',
+        'content_settings_invalid' => 'Настройки раздела должны быть объектом.',
+        'content_background_unknown' => 'Фон раздела недоступен в текущей теме.',
         'content_elements_invalid' => 'Элементы должны быть списком.',
         'content_too_many_elements' => 'В разделе слишком много элементов.',
         'content_element_invalid' => 'У каждого элемента должен быть тип.',

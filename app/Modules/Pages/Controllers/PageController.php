@@ -5,6 +5,7 @@ namespace App\Modules\Pages\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Models\Page;
+use App\Modules\Pages\Models\PageRevision;
 use App\Modules\Pages\Requests\PageRequest;
 use App\Modules\Pages\Resources\PageResource;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
@@ -12,11 +13,18 @@ use App\Modules\Pages\Support\ContentElementRegistry;
 use App\Modules\Pages\Support\ContentElements\ContentElement;
 use App\Modules\Pages\Support\PageContentDocument;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class PageController extends Controller
 {
+    /** @var list<string> */
+    private const array TRANSLATION_FIELDS = ['title', 'subtitle', 'slug', 'seo_title', 'seo_description', 'content'];
+
     public function __construct(
         private readonly PageServiceContract $service,
     ) {
@@ -35,6 +43,7 @@ class PageController extends Controller
             'publish' => 'publish',
             'unpublish' => 'publish',
             'setHomepage' => 'setHomepage',
+            'preview' => 'update',
         ]);
     }
 
@@ -63,7 +72,7 @@ class PageController extends Controller
     public function create(): Response
     {
         return Inertia::render('pages/create', [
-            'model' => $this->formModel(null),
+            'model' => $this->formModel(null, $this->pageValues(null)),
             'parents' => $this->parentOptions(null),
             'locales' => $this->localeOptions(),
             'defaultLocale' => LocaleEnum::default(),
@@ -78,15 +87,60 @@ class PageController extends Controller
         return redirect()->route('pages.index')->with('status', __('pages.messages.created'));
     }
 
-    public function edit(Page $page): Response
+    /**
+     * With `?revision=` the form opens filled from that revision. Nothing is saved until the user clicks Save,
+     * so the normal validation and the new revision apply.
+     */
+    public function edit(Request $request, Page $page): Response
     {
+        $revision = $this->requestedRevision($request, $page);
+        $page->load('translations');
+
         return Inertia::render('pages/edit', [
-            'model' => $this->formModel($page->load('translations')),
+            'model' => $this->formModel($page, $revision === null
+                ? $this->pageValues($page)
+                : $this->snapshotValues($revision->snapshot)),
             'parents' => $this->parentOptions($page),
             'locales' => $this->localeOptions(),
             'defaultLocale' => LocaleEnum::default(),
+            'revisions' => $this->revisionOptions($page),
+            'loadedRevision' => $revision === null ? null : [
+                'id' => $revision->id,
+                'created_at' => $revision->created_at->format('Y-m-d H:i'),
+            ],
             ...$this->editorProps(),
         ]);
+    }
+
+    /**
+     * The revision named in the request. It must belong to this page, or the request gets a 404.
+     */
+    private function requestedRevision(Request $request, Page $page): ?PageRevision
+    {
+        if (! $request->filled('revision')) {
+            return null;
+        }
+
+        $revision = $this->service->findRevision($page, $request->integer('revision'));
+
+        abort_if($revision === null, HttpResponse::HTTP_NOT_FOUND);
+
+        return $revision;
+    }
+
+    /**
+     * @return array<int, array{id: int, created_at: string, user: string|null}>
+     */
+    private function revisionOptions(Page $page): array
+    {
+        return $this->service->revisions($page)
+            ->map(fn (PageRevision $revision): array => [
+                'id' => $revision->id,
+                'created_at' => $revision->created_at->format('Y-m-d H:i'),
+                'user' => $revision->user?->name,
+            ])
+            ->values()
+            ->all();
     }
 
     public function update(PageRequest $request, Page $page): RedirectResponse
@@ -117,6 +171,22 @@ class PageController extends Controller
         return back()->with('status', __('pages.messages.unpublished'));
     }
 
+    /**
+     * Redirects to a fresh signed preview link for one locale. The link expires after the configured minutes.
+     */
+    public function preview(Page $page, string $locale): RedirectResponse
+    {
+        $page->load('translations');
+
+        abort_if($page->translationFor($locale) === null, HttpResponse::HTTP_NOT_FOUND);
+
+        return redirect()->to(URL::temporarySignedRoute(
+            'pages.preview.show',
+            now()->addMinutes((int) config('modules.pages.preview.minutes')),
+            ['page' => $page, 'locale' => $locale],
+        ));
+    }
+
     public function setHomepage(Page $page): RedirectResponse
     {
         $this->service->assignHomepage($page);
@@ -125,46 +195,86 @@ class PageController extends Controller
     }
 
     /**
+     * The form values of a saved page.
+     *
+     * @return array{parent_id: int|null, status: string, published_at: string|null, layout: string, translations: array<string, array<string, mixed>|null>}
+     */
+    private function pageValues(?Page $page): array
+    {
+        return [
+            'parent_id' => $page?->parent_id,
+            'status' => $page?->status->value ?? 'draft',
+            'published_at' => $page?->published_at?->format('Y-m-d\TH:i'),
+            'layout' => $page->layout ?? '',
+            'translations' => collect(LocaleEnum::codes())
+                ->mapWithKeys(fn (string $locale): array => [$locale => $page?->translationFor($locale)?->only(self::TRANSLATION_FIELDS)])
+                ->all(),
+        ];
+    }
+
+    /**
+     * The form values stored in a revision, in the same shape as `pageValues()`.
+     *
+     * @param  array<string, mixed>  $snapshot
+     * @return array{parent_id: int|null, status: string, published_at: string|null, layout: string, translations: array<string, array<string, mixed>|null>}
+     */
+    private function snapshotValues(array $snapshot): array
+    {
+        return [
+            'parent_id' => $snapshot['parent_id'] ?? null,
+            'status' => (string) ($snapshot['status'] ?? 'draft'),
+            'published_at' => isset($snapshot['published_at']) ? Carbon::parse($snapshot['published_at'])->format('Y-m-d\TH:i') : null,
+            'layout' => (string) ($snapshot['layout'] ?? ''),
+            'translations' => $snapshot['translations'] ?? [],
+        ];
+    }
+
+    /**
      * The form model. Every supported locale gets an entry, blank when the page has no translation there.
      *
+     * @param  array{parent_id: int|null, status: string, published_at: string|null, layout: string, translations: array<string, array<string, mixed>|null>}  $values
      * @return array<string, mixed>
      */
-    private function formModel(?Page $page): array
+    private function formModel(?Page $page, array $values): array
     {
         $translations = [];
 
         foreach (LocaleEnum::codes() as $locale) {
-            $translation = $page?->translationFor($locale);
+            $translation = $values['translations'][$locale] ?? null;
 
             $translations[$locale] = [
-                'title' => $translation->title ?? '',
-                'subtitle' => $translation->subtitle ?? '',
-                'slug' => $translation->slug ?? '',
-                'seo_title' => $translation->seo_title ?? '',
-                'seo_description' => $translation->seo_description ?? '',
-                'content' => $translation->content ?? PageContentDocument::empty(),
+                'title' => $translation['title'] ?? '',
+                'subtitle' => $translation['subtitle'] ?? '',
+                'slug' => $translation['slug'] ?? '',
+                'seo_title' => $translation['seo_title'] ?? '',
+                'seo_description' => $translation['seo_description'] ?? '',
+                'content' => $translation['content'] ?? PageContentDocument::empty(),
             ];
         }
 
         return [
             'id' => $page?->id,
-            'parent_id' => $page?->parent_id,
-            'status' => $page?->status->value ?? 'draft',
-            'published_at' => $page?->published_at?->format('Y-m-d\TH:i'),
-            'layout' => $page->layout ?? '',
+            'parent_id' => $values['parent_id'],
+            'status' => $values['status'],
+            'published_at' => $values['published_at'],
+            'layout' => $values['layout'],
             'translations' => $translations,
         ];
     }
 
     /**
-     * What the section editor needs: layouts, element types with their fields, and whether the editor may write raw HTML.
+     * What the section editor needs: layouts, backgrounds, element types with their fields, and whether the editor may write raw HTML.
      *
-     * @return array{layouts: array<int, array{key: string, label: string}>, elementTypes: array<int, array<string, mixed>>, canUseHtml: bool}
+     * @return array{layouts: array<int, array{key: string, label: string}>, backgrounds: array<int, array{key: string, label: string}>, elementTypes: array<int, array<string, mixed>>, canUseHtml: bool}
      */
     private function editorProps(): array
     {
         return [
             'layouts' => collect((array) config('modules.pages.layouts', []))
+                ->map(fn (string $label, string $key): array => ['key' => $key, 'label' => $label])
+                ->values()
+                ->all(),
+            'backgrounds' => collect((array) config('modules.pages.backgrounds', []))
                 ->map(fn (string $label, string $key): array => ['key' => $key, 'label' => $label])
                 ->values()
                 ->all(),

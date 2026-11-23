@@ -17,6 +17,8 @@ return [
         'content_section_invalid' => 'A section must be an object.',
         'content_layout_unknown' => 'The section layout is not available in this theme.',
         'content_flag_invalid' => 'The enabled flag must be true or false.',
+        'content_settings_invalid' => 'The section settings must be an object.',
+        'content_background_unknown' => 'The section background is not available in this theme.',
         'content_elements_invalid' => 'The elements must be a list.',
         'content_too_many_elements' => 'The section has too many elements.',
         'content_element_invalid' => 'An element must have a type.',

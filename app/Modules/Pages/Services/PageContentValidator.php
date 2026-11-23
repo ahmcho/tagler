@@ -70,6 +70,30 @@ class PageContentValidator
     }
 
     /**
+     * Settings are a JSON object. Only `background` is checked. Other keys are kept.
+     *
+     * @param  array<string, array<array-key, mixed>|string>  $errors
+     */
+    private function validateSettings(mixed $settings, string $path, array &$errors): void
+    {
+        if (! is_array($settings) || (array_is_list($settings) && $settings !== [])) {
+            $errors["{$path}.settings"] = __('pages.errors.content_settings_invalid');
+
+            return;
+        }
+
+        if (! array_key_exists('background', $settings)) {
+            return;
+        }
+
+        $background = $settings['background'];
+
+        if (! is_string($background) || ! array_key_exists($background, config('modules.pages.backgrounds'))) {
+            $errors["{$path}.settings.background"] = __('pages.errors.content_background_unknown');
+        }
+    }
+
+    /**
      * @param  array<string, mixed>  $section
      * @param  array<string, true>  $seenIds
      * @param  array<string, array<array-key, mixed>|string>  $errors
@@ -85,6 +109,10 @@ class PageContentValidator
 
         if (isset($section['enabled']) && ! is_bool($section['enabled'])) {
             $errors["{$path}.enabled"] = __('pages.errors.content_flag_invalid');
+        }
+
+        if (array_key_exists('settings', $section)) {
+            $this->validateSettings($section['settings'], $path, $errors);
         }
 
         $elements = $section['elements'] ?? [];

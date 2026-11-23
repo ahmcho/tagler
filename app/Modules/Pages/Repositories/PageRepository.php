@@ -62,6 +62,17 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
     }
 
     /**
+     * @return Collection<int, Page>
+     */
+    public function dueScheduledPages(CarbonInterface $now): Collection
+    {
+        return $this->model->newQuery()
+            ->where('status', PageStatus::Scheduled)
+            ->where(fn (Builder $query) => $query->whereNull('published_at')->orWhere('published_at', '<=', $now))
+            ->get();
+    }
+
+    /**
      * Sorts by the title in the default locale. Pages with no title in that locale sort first.
      *
      * @param  Builder<Page>  $query

@@ -30,4 +30,11 @@ interface PageRepositoryContract extends EloquentRepositoryContract
      * @return Collection<int, Page>
      */
     public function childrenOf(Page $page): Collection;
+
+    /**
+     * Scheduled pages whose publish time has passed, or that have no publish time.
+     *
+     * @return Collection<int, Page>
+     */
+    public function dueScheduledPages(CarbonInterface $now): Collection;
 }

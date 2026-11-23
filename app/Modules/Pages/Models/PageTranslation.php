@@ -4,9 +4,11 @@ namespace App\Modules\Pages\Models;
 
 use App\Modules\Auth\Concerns\HasActivityLogs;
 use App\Modules\Pages\Database\Factories\PageTranslationFactory;
+use App\Modules\Pages\Observers\PageTranslationObserver;
 use App\Modules\Settings\Concerns\HasLocalDates;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Table(name: 'page_translations')]
 #[UseFactory(PageTranslationFactory::class)]
 #[Fillable(['page_id', 'locale', 'title', 'subtitle', 'slug', 'path', 'seo_title', 'seo_description', 'content'])]
+#[ObservedBy([PageTranslationObserver::class])]
 class PageTranslation extends Model
 {
     /** @use HasFactory<PageTranslationFactory> */

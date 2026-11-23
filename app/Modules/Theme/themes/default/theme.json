@@ -1,0 +1,20 @@
+{
+    "schema_version": 1,
+    "name": "Default Theme",
+    "slug": "default",
+    "version": "1.0.0",
+    "description": "Official Tagler starter theme. It provides the homepage template only.",
+    "author": "Tagler",
+    "license": "MIT",
+    "requires": {
+        "tagler": "^1.0",
+        "php": "^8.4"
+    },
+    "frontend": {
+        "framework": "react",
+        "entry": "resources/js/index.tsx"
+    },
+    "templates": {
+        "home": "home"
+    }
+}

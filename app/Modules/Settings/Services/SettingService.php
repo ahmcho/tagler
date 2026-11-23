@@ -130,6 +130,17 @@ class SettingService implements SettingServiceContract
         $this->forgetCache();
     }
 
+    public function setString(string $key, string $value): void
+    {
+        $this->settingRepository->updateOrCreate(
+            key: $key,
+            type: InputValueTypeEnum::String,
+            value: $value,
+        );
+
+        $this->forgetCache();
+    }
+
     public function forgetCache(): void
     {
         Cache::forget(self::CACHE_KEY);

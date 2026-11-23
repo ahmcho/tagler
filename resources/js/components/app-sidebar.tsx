@@ -4,6 +4,7 @@ import {
     History,
     KeyRound,
     LayoutGrid,
+    Palette,
     ShieldCheck,
     Users,
 } from 'lucide-react';
@@ -28,6 +29,7 @@ import { index as activityLogsIndex } from '@/routes/activity-logs';
 import { index as pagesIndex } from '@/routes/pages';
 import { index as permissionsIndex } from '@/routes/permissions';
 import { index as rolesIndex } from '@/routes/roles';
+import { index as themesIndex } from '@/routes/themes';
 import { index as usersIndex } from '@/routes/users';
 
 type NavigationItem = {
@@ -61,6 +63,17 @@ const navigationGroups: NavigationGroup[] = [
                 href: pagesIndex.url(),
                 icon: <FileText />,
                 ability: 'pages.index',
+            },
+        ],
+    },
+    {
+        label: 'Appearance',
+        items: [
+            {
+                label: 'Themes',
+                href: themesIndex.url(),
+                icon: <Palette />,
+                ability: 'themes.index',
             },
         ],
     },

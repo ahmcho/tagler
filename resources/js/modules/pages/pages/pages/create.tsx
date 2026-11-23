@@ -2,6 +2,7 @@ import { useForm } from '@inertiajs/react';
 import { FileText } from 'lucide-react';
 import { ResourceCreateContent } from '@/components/resource/resource-create-content';
 import type {
+    ContentBackground,
     ContentEditorConfig,
     ContentElementType,
     ContentLayout,
@@ -19,6 +20,7 @@ type Props = {
     locales: PageLocaleOption[];
     defaultLocale: string;
     layouts: ContentLayout[];
+    backgrounds: ContentBackground[];
     elementTypes: ContentElementType[];
     canUseHtml: boolean;
     model: PageFormData & { id: null };
@@ -30,10 +32,16 @@ export default function Create({
     locales,
     defaultLocale,
     layouts,
+    backgrounds,
     elementTypes,
     canUseHtml,
 }: Props) {
-    const editor: ContentEditorConfig = { layouts, elementTypes, canUseHtml };
+    const editor: ContentEditorConfig = {
+        layouts,
+        backgrounds,
+        elementTypes,
+        canUseHtml,
+    };
     const form = useForm<PageFormData>({
         parent_id: model.parent_id,
         status: model.status,

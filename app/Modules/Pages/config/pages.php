@@ -32,6 +32,17 @@ return [
     ],
 
     /*
+     * Section background keys. The theme maps each key to colours. A section
+     * without a background uses `none`.
+     */
+    'backgrounds' => [
+        'none' => 'None',
+        'light' => 'Light',
+        'dark' => 'Dark',
+        'primary' => 'Primary',
+    ],
+
+    /*
      * Flag country code for each locale, shown next to the language in the admin.
      */
     'locale_countries' => [
@@ -52,6 +63,27 @@ return [
         SpacerElement::class,
         DividerElement::class,
         QuoteElement::class,
+    ],
+
+    /*
+     * Revisions kept for each page. Each explicit save adds one. The oldest are deleted first.
+     */
+    'revisions' => [
+        'keep' => (int) env('PAGES_REVISIONS_KEEP', 50),
+    ],
+
+    /*
+     * Public page cache. Entries are removed when a page changes, so the TTL is only a safety net.
+     */
+    'cache' => [
+        'ttl' => (int) env('PAGES_CACHE_TTL', 3600),
+    ],
+
+    /*
+     * Preview links. Each one works for the given number of minutes.
+     */
+    'preview' => [
+        'minutes' => (int) env('PAGES_PREVIEW_MINUTES', 30),
     ],
 
     /*

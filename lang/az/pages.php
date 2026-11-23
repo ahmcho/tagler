@@ -17,6 +17,8 @@ return [
         'content_section_invalid' => 'Bölmə obyekt olmalıdır.',
         'content_layout_unknown' => 'Bu bölmə planı bu mövzuda mövcud deyil.',
         'content_flag_invalid' => 'Aktiv bayrağı doğru və ya yanlış olmalıdır.',
+        'content_settings_invalid' => 'Bölmə parametrləri obyekt olmalıdır.',
+        'content_background_unknown' => 'Bölmənin fonu bu mövzuda mövcud deyil.',
         'content_elements_invalid' => 'Elementlər siyahı şəklində olmalıdır.',
         'content_too_many_elements' => 'Bölmədə elementlər çox saydadır.',
         'content_element_invalid' => 'Hər elementin növü olmalıdır.',

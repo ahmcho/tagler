@@ -184,3 +184,60 @@ test('a heading level outside the range gets a readable message', function (): v
             'translations.'.$this->locale.'.content.sections.0.elements.0.data.level' => 'The heading level must be from 1 to 6.',
         ]);
 });
+
+test('a section with a configured background is saved with its settings', function (): void {
+    $this->actingAs(editor())
+        ->post(route('pages.store'), contentPayload(document([
+            section([], ['settings' => ['background' => 'dark']]),
+        ])))
+        ->assertSessionHasNoErrors();
+
+    $content = PageTranslation::query()->where('locale', $this->locale)->latest('id')->first()->content;
+
+    expect($content['sections'][0]['settings'])->toBe(['background' => 'dark']);
+});
+
+test('a section with a background that is not configured is rejected with the field path', function (): void {
+    $this->actingAs(editor())
+        ->post(route('pages.store'), contentPayload(document([
+            section([], ['settings' => ['background' => 'neon']]),
+        ])))
+        ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections.0.settings.background');
+});
+
+test('section settings that are not an object are rejected', function (): void {
+    $this->actingAs(editor())
+        ->post(route('pages.store'), contentPayload(document([
+            section([], ['settings' => 'dark']),
+        ])))
+        ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections.0.settings');
+});
+
+test('section settings that are a non-empty list are rejected', function (): void {
+    $this->actingAs(editor())
+        ->post(route('pages.store'), contentPayload(document([
+            section([], ['settings' => ['dark', 'light']]),
+        ])))
+        ->assertSessionHasErrors('translations.'.$this->locale.'.content.sections.0.settings');
+});
+
+test('a section without settings or with empty settings is valid', function (): void {
+    $this->actingAs(editor())
+        ->post(route('pages.store'), contentPayload(document([
+            section([]),
+            section([], ['settings' => []]),
+        ])))
+        ->assertSessionHasNoErrors();
+});
+
+test('unknown section settings keys are kept', function (): void {
+    $this->actingAs(editor())
+        ->post(route('pages.store'), contentPayload(document([
+            section([], ['settings' => ['background' => 'light', 'padding' => 'lg']]),
+        ])))
+        ->assertSessionHasNoErrors();
+
+    $content = PageTranslation::query()->where('locale', $this->locale)->latest('id')->first()->content;
+
+    expect($content['sections'][0]['settings'])->toEqualCanonicalizing(['background' => 'light', 'padding' => 'lg']);
+});

@@ -42,6 +42,11 @@ interface SettingServiceContract
     public function resetFile(SettingKeyEnum $key): void;
 
     /**
+     * Stores a text value under a key that is not in SettingKeyEnum. Those values stay off the settings page.
+     */
+    public function setString(string $key, string $value): void;
+
+    /**
      * Drops the cached settings.
      */
     public function forgetCache(): void;

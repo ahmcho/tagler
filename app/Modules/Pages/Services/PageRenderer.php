@@ -3,6 +3,7 @@
 namespace App\Modules\Pages\Services;
 
 use App\Modules\Pages\Models\PageTranslation;
+use App\Modules\Pages\Resources\PublicPageResource;
 use App\Modules\Pages\Support\ContentElementRegistry;
 use App\Modules\Pages\Support\PageContentDocument;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +16,20 @@ use Illuminate\Support\Facades\Log;
 class PageRenderer
 {
     public function __construct(private readonly ContentElementRegistry $registry) {}
+
+    /**
+     * The props of the public page view: the page header data and the rendered sections.
+     * The translation's `page` relation must be loaded.
+     *
+     * @return array{page: array<string, mixed>, sections: list<array<string, mixed>>}
+     */
+    public function props(PageTranslation $translation): array
+    {
+        return [
+            'page' => PublicPageResource::make($translation)->resolve(),
+            'sections' => $this->sections($translation),
+        ];
+    }
 
     /**
      * @return list<array{id: string, layout: string, settings: array<string, mixed>, elements: list<array{id: string, type: string, data: array<string, mixed>}>}>

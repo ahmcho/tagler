@@ -3,6 +3,7 @@
 namespace App\Modules\Pages\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Pages\Services\PageComponentResolver;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +22,7 @@ class PublicNotFoundController extends Controller
     {
         Inertia::setRootView('public');
 
-        return Inertia::render('pages/public/not-found')
+        return Inertia::render(app(PageComponentResolver::class)->notFound())
             ->toResponse($request)
             ->setStatusCode(404);
     }

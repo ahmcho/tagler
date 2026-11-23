@@ -309,7 +309,9 @@ test('the edit page gets every locale, blank where the page has no translation, 
             ->where('model.translations.'.config('app.locale').'.slug', 'about')
             ->where('model.translations.az.slug', '')
             ->has('parents', 1)
-            ->where('parents.0.id', $other->id));
+            ->where('parents.0.id', $other->id)
+            ->has('backgrounds', 4)
+            ->where('backgrounds.0.key', 'none'));
 });
 
 test('the content box must hold valid JSON', function (): void {

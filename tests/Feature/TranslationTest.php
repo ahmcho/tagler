@@ -24,10 +24,10 @@ test('guests are redirected to the login page', function (): void {
     $this->get(route('translations.index'))->assertRedirect(route('login'));
 });
 
-test('a user without a confirmed password is redirected to confirm it', function (): void {
+test('a user without a confirmed password can open the translations list', function (): void {
     $this->actingAs(translationManager())
         ->get(route('translations.index'))
-        ->assertRedirect(route('password.confirm'));
+        ->assertOk();
 });
 
 test('a user without the translation permissions is forbidden', function (): void {

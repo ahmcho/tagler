@@ -4,14 +4,20 @@ namespace App\Modules\Pages\Services;
 
 use App\Modules\Pages\Enums\PageStatus;
 use App\Modules\Pages\Models\Page;
+use App\Modules\Pages\Models\PageRevision;
+use App\Modules\Pages\Models\PageTranslation;
 use App\Modules\Pages\Repositories\Contracts\PageRepositoryContract;
+use App\Modules\Pages\Repositories\Contracts\PageRevisionRepositoryContract;
 use App\Modules\Pages\Repositories\Contracts\PageTranslationRepositoryContract;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use App\Modules\Pages\Support\PageContentDocument;
 use App\Modules\Pages\Support\PagePath;
+use Carbon\CarbonInterface;
 use Crud\Services\BaseCrudService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -27,6 +33,7 @@ class PageService extends BaseCrudService implements PageServiceContract
     public function __construct(
         private readonly PageRepositoryContract $pageRepository,
         private readonly PageTranslationRepositoryContract $translationRepository,
+        private readonly PageRevisionRepositoryContract $revisionRepository,
     ) {
         parent::__construct($pageRepository);
     }
@@ -40,6 +47,7 @@ class PageService extends BaseCrudService implements PageServiceContract
             $page = $this->pageRepository->create($this->pageAttributes($payload, $parent));
 
             $this->syncTranslations($page, $parent, $payload['translations']);
+            $this->recordRevision($page);
 
             return $page;
         });
@@ -60,6 +68,7 @@ class PageService extends BaseCrudService implements PageServiceContract
 
             $this->syncTranslations($page, $parent, $payload['translations']);
             $this->refreshDescendantPaths($page);
+            $this->recordRevision($page);
 
             return $page;
         });
@@ -118,6 +127,71 @@ class PageService extends BaseCrudService implements PageServiceContract
         $page->save();
 
         return $page;
+    }
+
+    /**
+     * Saves the page as it is now, after an explicit create or update. Publish and homepage changes are not saves.
+     */
+    private function recordRevision(Page $page): void
+    {
+        $page->load('translations');
+
+        $this->revisionRepository->create([
+            'page_id' => $page->id,
+            'user_id' => Auth::id(),
+            'snapshot' => $this->snapshotOf($page),
+        ]);
+
+        $this->revisionRepository->pruneForPage($page, (int) config('modules.pages.revisions.keep'));
+    }
+
+    /**
+     * The page in the same shape as a save payload, so a revision can be loaded back into the form.
+     *
+     * @return array<string, mixed>
+     */
+    private function snapshotOf(Page $page): array
+    {
+        return [
+            'status' => $page->status->value,
+            'parent_id' => $page->parent_id,
+            'published_at' => $page->published_at?->toIso8601String(),
+            'layout' => $page->layout,
+            'translations' => $page->translations
+                ->mapWithKeys(fn (PageTranslation $translation): array => [$translation->locale => [
+                    'title' => $translation->title,
+                    'subtitle' => $translation->subtitle,
+                    'slug' => $translation->slug,
+                    'seo_title' => $translation->seo_title,
+                    'seo_description' => $translation->seo_description,
+                    'content' => $translation->content,
+                ]])
+                ->all(),
+        ];
+    }
+
+    public function revisions(Page $page): Collection
+    {
+        return $this->revisionRepository->latestForPage($page, (int) config('modules.pages.revisions.keep'));
+    }
+
+    public function findRevision(Page $page, int $revisionId): ?PageRevision
+    {
+        return $this->revisionRepository->findForPage($page, $revisionId);
+    }
+
+    /**
+     * Saves each page one by one, so model events and the activity log run for every change.
+     */
+    public function publishDueScheduled(CarbonInterface $now): int
+    {
+        $pages = $this->pageRepository->dueScheduledPages($now);
+
+        foreach ($pages as $page) {
+            $this->publish($page);
+        }
+
+        return $pages->count();
     }
 
     /**
