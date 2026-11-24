@@ -221,3 +221,11 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - Row and bulk actions take `onAction(target, { onSuccess })`. Pass `onSuccess` to the Inertia request so the confirm dialog closes only on success.
 - Create and edit pages use `ResourceCreateContent` or `ResourceEditContent` from `resources/js/components/resource/`. Both wrap the one shared `ResourceForm`. The model id decides create or update. Controllers send `model` (empty for create, route-bound for edit). Follow `.ai/rules/js.md`, section "Resource pages".
 - Show pages go in the same folder when they are built.
+
+## File ownership
+
+- The `tagler-cms-app` container runs as root and bind-mounts the project. Files it writes (Wayfinder output, `public/build`, `storage/`, `.claude/skills`, `.agents/skills`) become `root:root`, and the host user (uid 1000) then gets "Permission denied" on the next write.
+- After any command that writes into the project through the container (`docker exec tagler-cms-app ...`) or that fails with "Permission denied", run this without asking the user:
+  `docker exec tagler-cms-app sh -c 'find /var/www/app \( -path /var/www/app/vendor -o -path /var/www/app/node_modules -o -path /var/www/app/.git \) -prune -o ! -user 1000 -print0 | xargs -0 -r chown -h 1000:1000'`
+- Then check with `find . \( -path ./node_modules -o -path ./vendor -o -path ./.git \) -prune -o ! -user $(id -un) -print | wc -l`. The result must be `0`.
+- Do not use `sudo` for this. Do not run `chmod -R 777`.
