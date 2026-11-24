@@ -125,7 +125,7 @@ export type DataTableProps<Row> = {
     pagination?: DataTablePagination;
 };
 
-type DataTableMenuItem = Pick<
+export type DataTableMenuItem = Pick<
     DataTableRowAction,
     'key' | 'label' | 'icon' | 'isDisabled' | 'tone'
 > & {
@@ -152,10 +152,10 @@ const menuItemToneClasses = {
     danger: 'text-error-500',
 };
 
-const menuContentClassName =
+export const menuContentClassName =
     'min-w-46 p-1 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08),0px_4px_6px_-2px_rgba(16,24,40,0.03)]';
 
-function DataTableMenuItems({ items }: { items: DataTableMenuItem[] }) {
+export function DataTableMenuItems({ items }: { items: DataTableMenuItem[] }) {
     return (
         <>
             {items.map((item) => (

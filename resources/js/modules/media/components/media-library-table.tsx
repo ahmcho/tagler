@@ -1,9 +1,20 @@
-import { Folder, MoreHorizontal } from 'lucide-react';
+import {
+    Eye,
+    Folder,
+    FolderOpen,
+    MoreHorizontal,
+    Pencil,
+    Trash2,
+} from 'lucide-react';
+import {
+    DataTableMenuItems,
+    menuContentClassName,
+} from '@/components/data-table';
+import type { DataTableMenuItem } from '@/components/data-table';
+import { Button } from '@/components/tailgrids/core/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
 } from '@/components/tailgrids/core/dropdown';
 import {
     TableBody,
@@ -21,6 +32,29 @@ function FileIcon({ category }: { category: keyof typeof CATEGORY_ICONS }) {
     const Icon = CATEGORY_ICONS[category];
 
     return <Icon className="size-5 text-text-100" />;
+}
+
+/** Row menu in the same design as the index pages: a ghost icon button and a toned menu. */
+function RowActions({
+    label,
+    items,
+}: {
+    label: string;
+    items: DataTableMenuItem[];
+}) {
+    return (
+        <DropdownMenu>
+            <Button aria-label={label} variant="ghost" iconOnly>
+                <MoreHorizontal className="size-5" />
+            </Button>
+            <DropdownMenuContent
+                placement="bottom end"
+                className={menuContentClassName}
+            >
+                <DataTableMenuItems items={items} />
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
 }
 
 type Props = {
@@ -61,8 +95,8 @@ export function MediaLibraryTable({
                     <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
                         Date Modified
                     </TableHead>
-                    <TableHead className="h-11 px-4 py-3 text-center text-text-100 last:pr-6">
-                        Action
+                    <TableHead className="h-11 px-4 py-3 text-right text-text-100 last:pr-6">
+                        Actions
                     </TableHead>
                 </TableRow>
             </TableHeader>
@@ -93,40 +127,43 @@ export function MediaLibraryTable({
                         <TableCell className="px-4 py-3 text-sm text-text-50">
                             {formatDate(folder.created_at)}
                         </TableCell>
-                        <TableCell className="py-3 pr-6 text-center">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger
-                                    aria-label={`Actions for ${folder.name}`}
-                                    className="mx-auto flex size-10 items-center justify-center rounded-[10px] text-text-100 hover:bg-background-soft-50"
-                                >
-                                    <MoreHorizontal className="size-5" />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem
-                                        onAction={() => onOpenFolder(folder)}
-                                    >
-                                        Open
-                                    </DropdownMenuItem>
-                                    {canManageFolders && (
-                                        <DropdownMenuItem
-                                            onAction={() =>
-                                                onRenameFolder(folder)
-                                            }
-                                        >
-                                            Rename
-                                        </DropdownMenuItem>
-                                    )}
-                                    {canManageFolders && (
-                                        <DropdownMenuItem
-                                            onAction={() =>
-                                                onDeleteFolder(folder)
-                                            }
-                                        >
-                                            Delete
-                                        </DropdownMenuItem>
-                                    )}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                        <TableCell className="py-3 pr-6 text-right">
+                            <RowActions
+                                label={`Actions for ${folder.name}`}
+                                items={[
+                                    {
+                                        key: 'open',
+                                        label: 'Open',
+                                        icon: <FolderOpen className="size-4" />,
+                                        tone: 'primary',
+                                        onAction: () => onOpenFolder(folder),
+                                    },
+                                    ...(canManageFolders
+                                        ? [
+                                              {
+                                                  key: 'rename',
+                                                  label: 'Rename',
+                                                  icon: (
+                                                      <Pencil className="size-4" />
+                                                  ),
+                                                  tone: 'success' as const,
+                                                  onAction: () =>
+                                                      onRenameFolder(folder),
+                                              },
+                                              {
+                                                  key: 'delete',
+                                                  label: 'Delete',
+                                                  icon: (
+                                                      <Trash2 className="size-4" />
+                                                  ),
+                                                  tone: 'danger' as const,
+                                                  onAction: () =>
+                                                      onDeleteFolder(folder),
+                                              },
+                                          ]
+                                        : []),
+                                ]}
+                            />
                         </TableCell>
                     </TableRow>
                 ))}
@@ -166,14 +203,19 @@ export function MediaLibraryTable({
                         <TableCell className="px-4 py-3 text-sm text-text-50">
                             {formatDate(file.created_at)}
                         </TableCell>
-                        <TableCell className="py-3 pr-6 text-center">
-                            <button
-                                type="button"
-                                onClick={() => onOpenFile(file)}
-                                className="mx-auto text-sm font-medium text-primary-500 hover:underline"
-                            >
-                                Details
-                            </button>
+                        <TableCell className="py-3 pr-6 text-right">
+                            <RowActions
+                                label={`Actions for ${file.name}`}
+                                items={[
+                                    {
+                                        key: 'details',
+                                        label: 'Details',
+                                        icon: <Eye className="size-4" />,
+                                        tone: 'primary',
+                                        onAction: () => onOpenFile(file),
+                                    },
+                                ]}
+                            />
                         </TableCell>
                     </TableRow>
                 ))}
