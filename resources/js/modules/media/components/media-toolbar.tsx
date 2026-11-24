@@ -1,8 +1,7 @@
-import { FolderPlus, Trash2 } from 'lucide-react';
+import { FolderPlus, Search, Trash2 } from 'lucide-react';
 import { SelectField } from '@/components/select-field';
 import { Button } from '@/components/tailgrids/core/button';
-import type { MediaSort } from '../types';
-import type { MediaUploadLimits, MediaFolderFilter } from '../types';
+import type { MediaFolderFilter, MediaSort, MediaUploadLimits } from '../types';
 import { MediaTextField } from './media-text-field';
 import { MediaUploadButton } from './media-upload-button';
 
@@ -15,82 +14,93 @@ export const SORT_OPTIONS: { value: MediaSort; label: string }[] = [
     { value: 'size_asc', label: 'Smallest first' },
 ];
 
-type Props = {
+type HeaderProps = {
     search: string;
-    sort: MediaSort;
-    trashed: boolean;
     folder: MediaFolderFilter;
     limits: MediaUploadLimits;
     canUpload: boolean;
-    canCreateFolder: boolean;
     onSearch: (search: string) => void;
-    onSort: (sort: MediaSort) => void;
-    onToggleTrash: () => void;
-    onNewFolder: () => void;
     onUploaded: () => void;
 };
 
-export function MediaToolbar({
+/** Search and upload, in the header of the All Media card. */
+export function MediaHeaderActions({
     search,
-    sort,
-    trashed,
     folder,
     limits,
     canUpload,
-    canCreateFolder,
     onSearch,
+    onUploaded,
+}: HeaderProps) {
+    return (
+        <div className="flex flex-wrap items-center gap-3">
+            <div className="w-full sm:w-72">
+                <MediaTextField
+                    ariaLabel="Search media"
+                    placeholder="Search..."
+                    value={search}
+                    onChange={onSearch}
+                    startIcon={<Search className="size-4 text-text-100" />}
+                />
+            </div>
+            {canUpload && (
+                <MediaUploadButton
+                    limits={limits}
+                    folder={folder}
+                    onUploaded={onUploaded}
+                />
+            )}
+        </div>
+    );
+}
+
+type FileToolsProps = {
+    sort: MediaSort;
+    trashed: boolean;
+    canCreateFolder: boolean;
+    onSort: (sort: MediaSort) => void;
+    onToggleTrash: () => void;
+    onNewFolder: () => void;
+};
+
+/** Sort, trash and new folder, in the Files card header. */
+export function MediaFileTools({
+    sort,
+    trashed,
+    canCreateFolder,
     onSort,
     onToggleTrash,
     onNewFolder,
-    onUploaded,
-}: Props) {
+}: FileToolsProps) {
     return (
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
-                <MediaTextField
-                    ariaLabel="Search media"
-                    placeholder="Search by name or title"
-                    value={search}
-                    onChange={onSearch}
-                />
+        <div className="flex flex-wrap items-center gap-3">
+            <div className="w-56">
                 <SelectField
-                    label="Sort"
+                    label="Sort by"
                     value={sort}
                     onChange={(value) => onSort(value as MediaSort)}
                     options={SORT_OPTIONS}
                 />
             </div>
-
-            <div className="flex flex-wrap items-center gap-2">
+            <Button
+                variant="primary"
+                appearance={trashed ? 'fill' : 'outline'}
+                onPress={onToggleTrash}
+                aria-pressed={trashed}
+            >
+                <Trash2 className="size-4" />
+                {trashed ? 'Back to library' : 'Trash'}
+            </Button>
+            {canCreateFolder && !trashed && (
                 <Button
                     variant="primary"
-                    appearance={trashed ? 'fill' : 'outline'}
-                    onPress={onToggleTrash}
-                    aria-pressed={trashed}
+                    appearance="outline"
+                    onPress={onNewFolder}
                 >
-                    <Trash2 className="size-4" />
-                    {trashed ? 'Back to library' : 'Trash'}
+                    <FolderPlus className="size-4" />
+                    New folder
                 </Button>
-
-                {canCreateFolder && !trashed && (
-                    <Button
-                        variant="primary"
-                        appearance="outline"
-                        onPress={onNewFolder}
-                    >
-                        <FolderPlus className="size-4" />
-                        New folder
-                    </Button>
-                )}
-
-                {canUpload && !trashed && (
-                    <MediaUploadButton
-                        limits={limits}
-                        folder={folder}
-                        onUploaded={onUploaded}
-                    />
-                )}
-            </div>
+            )}
         </div>
     );
 }

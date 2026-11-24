@@ -20,6 +20,8 @@ class MediaFolderResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'parent_id' => $this->parent_id,
+            'files_count' => (int) ($this->files_count ?? 0),
+            'bytes' => (int) ($this->files_sum_size ?? 0),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

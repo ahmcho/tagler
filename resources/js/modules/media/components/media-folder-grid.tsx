@@ -1,11 +1,11 @@
-import { Folder, MoreHorizontal } from 'lucide-react';
-import { Card } from '@/components/tailgrids/core/card';
+import { Folder, MoreVertical } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/tailgrids/core/dropdown';
+import { formatBytes } from '../lib/format';
 import type { MediaFolder } from '../types';
 
 type Props = {
@@ -24,56 +24,66 @@ export function MediaFolderGrid({
     onDelete,
 }: Props) {
     if (folders.length === 0) {
-        return null;
+        return <p className="text-sm text-text-100">No folders here yet.</p>;
     }
 
     return (
-        <section aria-label="Folders" className="space-y-3">
-            <h2 className="text-sm font-medium text-text-50">Folders</h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {folders.map((folder) => (
-                    <Card key={folder.id} className="flex items-center gap-3">
-                        <button
-                            type="button"
-                            onClick={() => onOpen(folder)}
-                            className="flex min-w-0 flex-1 items-center gap-3 py-4 pl-4 text-left"
-                        >
-                            <Folder className="size-6 shrink-0 text-primary-500" />
-                            <span className="truncate text-sm font-medium text-text-50">
-                                {folder.name}
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {folders.map((folder) => (
+                <li
+                    key={folder.id}
+                    className="relative rounded-xl border border-base-200 p-4 transition-colors hover:bg-background-soft-50"
+                >
+                    <button
+                        type="button"
+                        onClick={() => onOpen(folder)}
+                        className="block w-full rounded-lg text-left focus-visible:outline-2 focus-visible:outline-primary-500"
+                    >
+                        <Folder
+                            className="size-9 fill-amber-400 text-amber-500"
+                            aria-hidden
+                        />
+                        <span className="mt-6 block truncate text-sm font-medium text-title-50">
+                            {folder.name}
+                        </span>
+                        <span className="mt-1 flex items-center justify-between text-xs text-text-100">
+                            <span>
+                                {folder.files_count}{' '}
+                                {folder.files_count === 1 ? 'File' : 'Files'}
                             </span>
-                        </button>
+                            <span>{formatBytes(folder.bytes)}</span>
+                        </span>
+                    </button>
 
-                        {canManage && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger
-                                    aria-label={`Actions for ${folder.name}`}
-                                    className="mr-3 flex size-10 shrink-0 items-center justify-center rounded-lg text-text-100 hover:bg-background-soft-50"
+                    {canManage && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger
+                                aria-label={`Actions for ${folder.name}`}
+                                className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-lg text-text-100 hover:bg-background-soft-50"
+                            >
+                                <MoreVertical className="size-4" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem
+                                    onAction={() => onOpen(folder)}
                                 >
-                                    <MoreHorizontal className="size-4" />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem
-                                        onAction={() => onOpen(folder)}
-                                    >
-                                        Open
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onAction={() => onRename(folder)}
-                                    >
-                                        Rename
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onAction={() => onDelete(folder)}
-                                    >
-                                        Delete
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
-                    </Card>
-                ))}
-            </div>
-        </section>
+                                    Open
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onAction={() => onRename(folder)}
+                                >
+                                    Rename
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onAction={() => onDelete(folder)}
+                                >
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </li>
+            ))}
+        </ul>
     );
 }

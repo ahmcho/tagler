@@ -3,10 +3,38 @@ import type { MediaFolder } from '../types';
 import { childFolders, folderPath, formatBytes, quotaPercent } from './format';
 
 const folders: MediaFolder[] = [
-    { id: 1, name: 'Products', parent_id: null, created_at: null },
-    { id: 2, name: 'Shoes', parent_id: 1, created_at: null },
-    { id: 3, name: 'Blog', parent_id: null, created_at: null },
-    { id: 4, name: 'Summer', parent_id: 2, created_at: null },
+    {
+        id: 1,
+        name: 'Products',
+        parent_id: null,
+        created_at: null,
+        files_count: 0,
+        bytes: 0,
+    },
+    {
+        id: 2,
+        name: 'Shoes',
+        parent_id: 1,
+        created_at: null,
+        files_count: 0,
+        bytes: 0,
+    },
+    {
+        id: 3,
+        name: 'Blog',
+        parent_id: null,
+        created_at: null,
+        files_count: 0,
+        bytes: 0,
+    },
+    {
+        id: 4,
+        name: 'Summer',
+        parent_id: 2,
+        created_at: null,
+        files_count: 0,
+        bytes: 0,
+    },
 ];
 
 describe('formatBytes', () => {

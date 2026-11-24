@@ -16,7 +16,7 @@ class MediaFolderRepository extends EloquentRepository implements MediaFolderRep
 
     public function allFolders(): Collection
     {
-        return $this->model->newQuery()->orderBy('name')->get();
+        return $this->model->newQuery()->withCount('files')->withSum('files', 'size')->orderBy('name')->get();
     }
 
     public function nameExistsUnderParent(string $name, ?int $parentId, ?int $ignoreId = null): bool

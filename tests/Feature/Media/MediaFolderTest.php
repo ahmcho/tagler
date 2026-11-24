@@ -110,11 +110,16 @@ test('an empty folder is deleted', function (): void {
     expect(MediaFolder::query()->whereKey($folder->id)->exists())->toBeFalse();
 });
 
-test('the folder list returns every folder in one response', function (): void {
-    MediaFolder::factory()->count(3)->create();
+test('the folder list returns every folder with its file count and size in one response', function (): void {
+    $folder = MediaFolder::factory()->create(['name' => 'Heroes']);
+    MediaFolder::factory()->count(2)->create();
+    Media::factory()->count(2)->create(['folder_id' => $folder->id, 'size' => 100]);
+    Media::factory()->create(['folder_id' => $folder->id, 'size' => 50])->delete();
 
     $this->actingAs($this->admin)->getJson(route('media.folders.index'))
-        ->assertOk()->assertJsonCount(3, 'data');
+        ->assertOk()
+        ->assertJsonCount(3, 'data')
+        ->assertJsonFragment(['id' => $folder->id, 'files_count' => 2, 'bytes' => 200]);
 });
 
 test('a user without the folder permission cannot create a folder', function (): void {

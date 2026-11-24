@@ -89,3 +89,44 @@ export function quotaPercent(
 
     return Math.min(100, Math.round((usedBytes / quotaBytes) * 100));
 }
+
+/** Tint and chart colour for each category. The hex value is used by the SVG chart. */
+export const CATEGORY_TONE: Record<
+    MediaCategory,
+    { chip: string; text: string; hex: string }
+> = {
+    pictures: {
+        chip: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
+        text: 'text-emerald-600 dark:text-emerald-400',
+        hex: '#12b76a',
+    },
+    videos: {
+        chip: 'bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400',
+        text: 'text-sky-600 dark:text-sky-400',
+        hex: '#0ba5ec',
+    },
+    audio: {
+        chip: 'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400',
+        text: 'text-blue-600 dark:text-blue-400',
+        hex: '#2e90fa',
+    },
+    documents: {
+        chip: 'bg-orange-50 text-orange-600 dark:bg-orange-500/15 dark:text-orange-400',
+        text: 'text-orange-600 dark:text-orange-400',
+        hex: '#fb6514',
+    },
+    other: {
+        chip: 'bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400',
+        text: 'text-violet-600 dark:text-violet-400',
+        hex: '#7a5af8',
+    },
+};
+
+/** Whole percentage of `part` in `whole`. Zero when the whole is zero. */
+export function percentOf(part: number, whole: number): number {
+    if (whole <= 0) {
+        return 0;
+    }
+
+    return Math.round((part / whole) * 100);
+}

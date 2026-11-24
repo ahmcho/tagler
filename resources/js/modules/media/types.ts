@@ -42,6 +42,8 @@ export type MediaFolder = {
     name: string;
     parent_id: number | null;
     created_at: string | null;
+    files_count: number;
+    bytes: number;
 };
 
 export type MediaUsage = {
