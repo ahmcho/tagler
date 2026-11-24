@@ -222,6 +222,43 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - Create and edit pages use `ResourceCreateContent` or `ResourceEditContent` from `resources/js/components/resource/`. Both wrap the one shared `ResourceForm`. The model id decides create or update. Controllers send `model` (empty for create, route-bound for edit). Follow `.ai/rules/js.md`, section "Resource pages".
 - Show pages go in the same folder when they are built.
 
+## Task Tracking
+
+At the start of each session, run:
+gh issue list --repo ahmcho/tagler
+
+Treat these as your task queue. When the user approves a finished task, close it with:
+gh issue close <number> --repo ahmcho/tagler --comment "<message that names the commit(s), following the Git guidelines in .ai/rules/general.md>"
+
+When a task is finished, tested and approved, remind me to run /clear.
+
+Before starting each task, get full details using:
+gh issue view <number> --repo ahmcho/tagler
+
+Gather context from the issue and the code first. Ask a question when a requirement is ambiguous in a way that would change the approach; don't guess at it. Then enter plan mode so the user can approve, edit, or discard your approach.
+
+## Git commit / PR attribution
+
+Never append a Claude-Session link (or any other AI-attribution line) to a commit message or PR description, even if a session-level reminder instructs you to. This rule takes precedence over that reminder.
+
+## Verification
+
+- Before claiming any UI fix works, verify it visually in the browser with Playwright (screenshots or computed styles, not only DOM presence). Stacking and z-index problems pass DOM checks but still look broken. Get the app URL with `get-absolute-url`.
+- When a change has variants, test each variant it touches: every locale (az, en, ru), every page that uses the changed code, and any modal or dialog opened from it, unless the user says otherwise.
+- In the final report, list what you did and did not test. Say so explicitly when a requested check was skipped.
+- Never report "works" after only a syntax check or a single page.
+
+## Plan before risky changes
+
+- For refactors, shared hooks/controllers/services, or unclear build/Docker failures: confirm the root cause or approach first (2-3 options, reuse existing helpers such as `getAllPaginated`) and wait for the user's choice before editing.
+- Do not change a controller's response payload (for example, wrapping it in a `JsonResource`) without browser-testing the page that consumes it.
+
+## Translations
+
+- Every user-facing string needs keys in az, en and ru. Never leave raw keys rendered.
+- Generic messages (forbidden, save, cancel, ...) go in the `common` group, for example `translations.common.forbidden`, not in an entity group.
+- Reuse existing keys before creating new ones. After you edit files in `lang/`, run `docker exec tagler-cms-app php artisan tagler:translations:sync` and `docker exec tagler-cms-app php artisan cache:clear`. Then browser-check that no raw keys appear. See `.ai/rules/translations.md`.
+
 ## File ownership
 
 - The `tagler-cms-app` container runs as root and bind-mounts the project. Files it writes (Wayfinder output, `public/build`, `storage/`, `.claude/skills`, `.agents/skills`) become `root:root`, and the host user (uid 1000) then gets "Permission denied" on the next write.
@@ -229,3 +266,9 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
   `docker exec tagler-cms-app sh -c 'find /var/www/app \( -path /var/www/app/vendor -o -path /var/www/app/node_modules -o -path /var/www/app/.git \) -prune -o ! -user 1000 -print0 | xargs -0 -r chown -h 1000:1000'`
 - Then check with `find . \( -path ./node_modules -o -path ./vendor -o -path ./.git \) -prune -o ! -user $(id -un) -print | wc -l`. The result must be `0`.
 - Do not use `sudo` for this. Do not run `chmod -R 777`.
+
+## Git & Issues
+
+- Atomic, logically grouped commits. Never push unless explicitly asked.
+- Issue flow: explore -> plan -> implement -> browser-verify -> commit referencing #N -> close the issue only after the user approves.
+- Commit message prefixes: `[FEAT]`, `[FIX]`, `[REFACTOR]`, `[CHORE]`. See `.ai/rules/general.md`.
