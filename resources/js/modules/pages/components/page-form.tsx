@@ -4,7 +4,7 @@ import { today } from '@internationalized/date';
 import { Info } from 'lucide-react';
 import { useState } from 'react';
 import {
-    Button as AriaButton,
+    ButtonContext,
     Dialog,
     DialogTrigger,
     Popover,
@@ -15,6 +15,11 @@ import {
 } from '@/components/date-picker-field';
 import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+} from '@/components/tailgrids/core/input-group';
 import {
     Select,
     SelectContent,
@@ -209,7 +214,7 @@ export function PageFields({
                     <ErrorMessage message={form.errors.parent_id} />
                 </div>
 
-                <div className="relative">
+                <div className="flex flex-col gap-1.5">
                     <Select
                         value={form.data.status}
                         onChange={(key) => {
@@ -219,10 +224,20 @@ export function PageFields({
                         isInvalid={Boolean(form.errors.status)}
                     >
                         <SelectLabel>Status</SelectLabel>
-                        <SelectTrigger>
-                            <SelectValue />
-                            <SelectIndicator />
-                        </SelectTrigger>
+                        <InputGroup
+                            className={cn(
+                                form.errors.status &&
+                                    'border-input-error-focus-border',
+                            )}
+                        >
+                            <SelectTrigger className="flex-1 rounded-none border-none bg-transparent shadow-none focus:border-none focus:ring-0">
+                                <SelectValue />
+                                <SelectIndicator />
+                            </SelectTrigger>
+                            <InputGroupAddon align="inline-end">
+                                <StatusHelp />
+                            </InputGroupAddon>
+                        </InputGroup>
                         <SelectContent>
                             {(Object.keys(STATUS_LABELS) as PageStatus[]).map(
                                 (status) => (
@@ -233,9 +248,8 @@ export function PageFields({
                             )}
                         </SelectContent>
                     </Select>
-                    <StatusHelp />
+                    <ErrorMessage message={form.errors.status} />
                 </div>
-                <ErrorMessage message={form.errors.status} />
 
                 <DatePickerField
                     label="Publish date"
@@ -362,25 +376,27 @@ export function PageFields({
 /** Small info button by the status field. Its popover explains scheduling. */
 function StatusHelp() {
     return (
-        <DialogTrigger>
-            <AriaButton
-                aria-label="About scheduling"
-                className="absolute top-0 right-0 inline-flex size-6 items-center justify-center rounded-full text-title-50 outline-none hover:bg-button-outline-hover-background data-focus-visible:ring-2 data-focus-visible:ring-button-primary-focus-ring"
-            >
-                <Info className="size-4" aria-hidden="true" />
-            </AriaButton>
-            <Popover
-                placement="bottom end"
-                className="max-w-72 rounded-xl border border-base-100 bg-background-50 p-3 text-sm text-title-50 shadow-lg outline-none"
-            >
-                <Dialog aria-label="About scheduling" className="outline-none">
-                    <p>
-                        A scheduled page goes live on its publish date and time.
-                        Both must be later than now. Times use UTC.
-                    </p>
-                </Dialog>
-            </Popover>
-        </DialogTrigger>
+        <ButtonContext.Provider value={null}>
+            <DialogTrigger>
+                <InputGroupButton aria-label="About scheduling">
+                    <Info aria-hidden="true" />
+                </InputGroupButton>
+                <Popover
+                    placement="bottom end"
+                    className="max-w-72 rounded-xl bg-dropdown-background p-3 text-sm text-title-50 shadow-md outline-hidden"
+                >
+                    <Dialog
+                        aria-label="About scheduling"
+                        className="outline-none"
+                    >
+                        <p>
+                            A scheduled page goes live on its publish date and
+                            time. Both must be later than now. Times use UTC.
+                        </p>
+                    </Dialog>
+                </Popover>
+            </DialogTrigger>
+        </ButtonContext.Provider>
     );
 }
 
