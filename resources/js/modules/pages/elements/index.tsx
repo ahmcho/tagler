@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { ButtonElement } from './button';
+import { ChildPagesElement } from './child-pages';
 import { DividerElement } from './divider';
 import { HeadingElement } from './heading';
 import { HtmlElement } from './html';
@@ -27,6 +28,7 @@ const components: Record<string, (props: { data: never }) => ReactNode> = {
     spacer: SpacerElement,
     divider: DividerElement,
     quote: QuoteElement,
+    'child-pages': ChildPagesElement,
 };
 
 export function renderElement(element: PageElement): ReactNode {
