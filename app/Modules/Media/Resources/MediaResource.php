@@ -38,6 +38,7 @@ class MediaResource extends JsonResource
                 fn (): array => ['width' => $this->metadata['width'], 'height' => $this->metadata['height']],
             ),
             'url' => app(MediaUrlService::class)->publicUrl($this->resource),
+            'thumbnail_url' => app(MediaUrlService::class)->conversionUrl($this->resource, 'thumbnail'),
             'uploaded_by' => $this->whenLoaded('uploader', fn (): ?array => $this->uploader
                 ? ['id' => $this->uploader->id, 'name' => $this->uploader->name]
                 : null),

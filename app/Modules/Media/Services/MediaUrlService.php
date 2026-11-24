@@ -26,6 +26,26 @@ class MediaUrlService
     }
 
     /**
+     * URL of a generated conversion (for example `thumbnail`). Public files use the
+     * permanent URL. Private files use the authorized route, which the browser can load
+     * with the session cookie.
+     */
+    public function conversionUrl(Media $media, string $conversion): ?string
+    {
+        $path = $media->metadata['conversions'][$conversion]['path'] ?? null;
+
+        if ($path === null) {
+            return null;
+        }
+
+        if ($media->visibility === MediaVisibility::Public) {
+            return Storage::disk($media->disk)->url($path);
+        }
+
+        return route('media.files.conversion', ['file' => $media->uuid, 'conversion' => $conversion]);
+    }
+
+    /**
      * A URL that works for a limited time. Public files return their permanent URL.
      * Private files use the storage driver's temporary URL when it has one, and a
      * signed route to the authorized download action otherwise.

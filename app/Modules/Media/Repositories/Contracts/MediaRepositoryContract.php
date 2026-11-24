@@ -42,4 +42,13 @@ interface MediaRepositoryContract extends EloquentRepositoryContract
      * @param  array<string, mixed>  $attributes
      */
     public function relocate(Media $media, array $attributes): Media;
+
+    /**
+     * Updates processing state and metadata. Only the processing service calls this.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function updateSystemFields(Media $media, array $attributes): Media;
+
+    public function findIncludingTrashed(int $id): ?Media;
 }

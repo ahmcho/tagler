@@ -29,6 +29,9 @@ Route::prefix('admin/media')->middleware(['auth', 'verified'])->group(function (
         ->withTrashed()
         ->name('media.files.purge');
     Route::get('files/{file}/url', [MediaController::class, 'url'])->name('media.files.url');
+    Route::get('files/{file}/conversions/{conversion}', [MediaController::class, 'conversion'])
+        ->where('conversion', 'thumbnail|medium|large')
+        ->name('media.files.conversion');
     Route::get('files/{file}/download', [MediaController::class, 'download'])->name('media.files.download');
     Route::get('files/{file}/temporary', [MediaController::class, 'download'])
         ->middleware('signed')

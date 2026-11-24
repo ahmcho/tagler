@@ -43,6 +43,7 @@ class MediaController extends Controller
             'download' => 'view',
             'url' => 'view',
             'references' => 'view',
+            'conversion' => 'view',
         ]);
     }
 
@@ -134,6 +135,24 @@ class MediaController extends Controller
             'X-Content-Type-Options' => 'nosniff',
             'Content-Security-Policy' => "default-src 'none'; sandbox",
         ], $disposition);
+    }
+
+    /**
+     * Streams a generated image size. The file is never linked directly when it is private.
+     */
+    public function conversion(Media $file, string $conversion): HttpResponse
+    {
+        $data = $file->metadata['conversions'][$conversion] ?? null;
+
+        abort_if($data === null, 404);
+
+        $cacheControl = $file->visibility === MediaVisibility::Public ? 'public, max-age=3600' : 'private, max-age=300';
+
+        return Storage::disk($file->disk)->response($data['path'], null, [
+            'Content-Type' => $data['mime_type'],
+            'Cache-Control' => $cacheControl,
+            'X-Content-Type-Options' => 'nosniff',
+        ], 'inline');
     }
 
     public function url(Media $file): JsonResponse

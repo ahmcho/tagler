@@ -1,5 +1,8 @@
 <?php
 
+use App\Modules\Media\Support\Processing\FallbackProcessor;
+use App\Modules\Media\Support\Processing\ImageProcessor;
+
 return [
 
     /*
@@ -54,6 +57,15 @@ return [
         'application/vnd.ms-excel' => 'xls',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
         'text/plain' => 'txt',
+    ],
+
+    /*
+    | Processors run in this order. The first one that supports the file handles it.
+    | Files no processor supports stay ready with no metadata.
+    */
+    'processors' => [
+        ImageProcessor::class,
+        FallbackProcessor::class,
     ],
 
     /*

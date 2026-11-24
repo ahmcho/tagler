@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Modules\Media\Enums\MediaProcessingStatus;
 use App\Modules\Media\Enums\MediaVisibility;
 use App\Modules\Media\Exceptions\MediaInUseException;
+use App\Modules\Media\Jobs\ProcessMedia;
 use App\Modules\Media\Models\Media;
 use App\Modules\Media\Repositories\Contracts\MediaRepositoryContract;
 use App\Modules\Media\Services\Contracts\MediaServiceContract;
@@ -39,7 +40,7 @@ class MediaService implements MediaServiceContract
         $stored = $this->storage->store($file, $visibility, $uuid, $extension);
 
         try {
-            return DB::transaction(fn (): Media => $this->repository->createFromUpload([
+            $media = DB::transaction(fn (): Media => $this->repository->createFromUpload([
                 'uuid' => $uuid,
                 'disk' => $stored['disk'],
                 'path' => $stored['path'],
@@ -62,6 +63,10 @@ class MediaService implements MediaServiceContract
 
             throw $exception;
         }
+
+        ProcessMedia::dispatch($media->getKey());
+
+        return $media;
     }
 
     public function update(Media $media, array $payload): Media

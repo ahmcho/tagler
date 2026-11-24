@@ -82,6 +82,18 @@ class MediaRepository extends EloquentRepository implements MediaRepositoryContr
         return $media->refresh();
     }
 
+    public function updateSystemFields(Media $media, array $attributes): Media
+    {
+        $media->forceFill($attributes)->save();
+
+        return $media->refresh();
+    }
+
+    public function findIncludingTrashed(int $id): ?Media
+    {
+        return $this->model->newQuery()->withTrashed()->whereKey($id)->first();
+    }
+
     /**
      * @param  array<string, mixed>  $filters
      */
