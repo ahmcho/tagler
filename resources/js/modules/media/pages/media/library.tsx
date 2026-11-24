@@ -49,8 +49,7 @@ type Props = {
 };
 
 type FolderDialog =
-    | { mode: 'create' }
-    | { mode: 'rename'; folder: MediaFolder };
+    { mode: 'create' } | { mode: 'rename'; folder: MediaFolder };
 
 /** Reads the starting folder and search from the URL, for links from the dashboard. */
 function initialQueryFromUrl(): Partial<MediaLibraryQuery> {
@@ -148,7 +147,7 @@ export default function MediaLibrary({ upload }: Props) {
                 )}
 
                 <Card className="gap-0 rounded-2xl border border-base-200 bg-card-background-50">
-                    <CardHeader className="flex flex-col gap-3 border-b border-base-100/60 p-6 sm:flex-row sm:items-center sm:justify-between">
+                    <CardHeader className="flex flex-col gap-3 border-b border-base-100/60 p-6">
                         <nav
                             aria-label="Folder path"
                             className="flex flex-wrap items-center gap-1 text-sm text-text-100"
@@ -182,7 +181,7 @@ export default function MediaLibrary({ upload }: Props) {
                                 </span>
                             ))}
                         </nav>
-                        <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex flex-wrap items-end gap-3">
                             <MediaSearchField
                                 search={query.search}
                                 onSearch={(search) =>
@@ -197,29 +196,28 @@ export default function MediaLibrary({ upload }: Props) {
                                 }
                                 onUploaded={() => library.refresh()}
                             />
+                            <MediaLibraryTools
+                                sort={query.sort}
+                                category={query.category}
+                                trashed={query.trashed}
+                                canCreateFolder={canManageFolders}
+                                onSort={(sort: MediaSort) =>
+                                    library.update({ sort })
+                                }
+                                onCategory={(category: MediaCategory | null) =>
+                                    library.update({ category })
+                                }
+                                onToggleTrash={() =>
+                                    library.update({ trashed: !query.trashed })
+                                }
+                                onNewFolder={() =>
+                                    setFolderDialog({ mode: 'create' })
+                                }
+                            />
                         </div>
                     </CardHeader>
 
                     <CardContent className="space-y-6 p-6">
-                        <MediaLibraryTools
-                            sort={query.sort}
-                            category={query.category}
-                            trashed={query.trashed}
-                            canCreateFolder={canManageFolders}
-                            onSort={(sort: MediaSort) =>
-                                library.update({ sort })
-                            }
-                            onCategory={(category: MediaCategory | null) =>
-                                library.update({ category })
-                            }
-                            onToggleTrash={() =>
-                                library.update({ trashed: !query.trashed })
-                            }
-                            onNewFolder={() =>
-                                setFolderDialog({ mode: 'create' })
-                            }
-                        />
-
                         {files &&
                         (files.data.length > 0 || folderRows.length > 0) ? (
                             <div className="overflow-x-auto rounded-2xl border border-base-200">

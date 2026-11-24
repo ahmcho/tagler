@@ -1,6 +1,12 @@
-import { FolderPlus, Search, Trash2 } from 'lucide-react';
+import { ArrowDownUp, FolderPlus, Search, Shapes, Trash2 } from 'lucide-react';
 import { SelectField } from '@/components/select-field';
 import { Button } from '@/components/tailgrids/core/button';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
+} from '@/components/tailgrids/core/input-group';
+import { TextField } from '@/components/tailgrids/core/text-field';
 import { MEDIA_CATEGORIES } from '../lib/format';
 import type {
     MediaCategory,
@@ -8,7 +14,6 @@ import type {
     MediaSort,
     MediaUploadLimits,
 } from '../types';
-import { MediaTextField } from './media-text-field';
 import { MediaUploadButton } from './media-upload-button';
 
 export const SORT_OPTIONS: { value: MediaSort; label: string }[] = [
@@ -26,19 +31,32 @@ type SearchProps = {
     onSubmit?: () => void;
 };
 
-/** Search field, 44px high and 300px wide, as in the design. */
+/** Search field in an input group, 44px high and 300px wide, as in the design. */
 export function MediaSearchField({ search, onSearch, onSubmit }: SearchProps) {
     return (
         <div className="w-full sm:w-[300px]">
-            <MediaTextField
-                ariaLabel="Search"
-                placeholder="Search..."
+            <TextField
+                aria-label="Search"
                 value={search}
                 onChange={onSearch}
-                onSubmit={onSubmit}
-                startIcon={<Search className="size-5 text-text-100" />}
-                inputClassName="h-11"
-            />
+                className="w-full"
+            >
+                <InputGroup className="h-11">
+                    <InputGroupAddon>
+                        <Search className="size-5 text-text-100" />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                        placeholder="Search..."
+                        className="h-11"
+                        onKeyDown={(event) => {
+                            if (event.key === 'Enter' && onSubmit) {
+                                event.preventDefault();
+                                onSubmit();
+                            }
+                        }}
+                    />
+                </InputGroup>
+            </TextField>
         </div>
     );
 }
@@ -81,7 +99,7 @@ type ToolsProps = {
     onNewFolder: () => void;
 };
 
-/** Category, sort, trash and new folder for the library listing. */
+/** Category, sort, trash and new folder for the library listing. Renders inline in the header row. */
 export function MediaLibraryTools({
     sort,
     category,
@@ -93,10 +111,12 @@ export function MediaLibraryTools({
     onNewFolder,
 }: ToolsProps) {
     return (
-        <div className="flex flex-wrap items-center gap-3">
+        <>
             <div className="w-44">
                 <SelectField
                     label="Type"
+                    hideLabel
+                    startIcon={<Shapes className="size-5 text-text-100" />}
                     value={category ?? ''}
                     onChange={(value) =>
                         onCategory(
@@ -110,6 +130,8 @@ export function MediaLibraryTools({
             <div className="w-52">
                 <SelectField
                     label="Sort by"
+                    hideLabel
+                    startIcon={<ArrowDownUp className="size-5 text-text-100" />}
                     value={sort}
                     onChange={(value) => onSort(value as MediaSort)}
                     options={SORT_OPTIONS}
@@ -136,6 +158,6 @@ export function MediaLibraryTools({
                     New folder
                 </Button>
             )}
-        </div>
+        </>
     );
 }
