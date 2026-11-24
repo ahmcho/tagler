@@ -26,7 +26,7 @@ class PageRequest extends AppFormRequest
      * @var array<int, string>
      */
     protected array $customFilters = [
-        'status', 'live', 'homepage', 'publish_from', 'publish_to', 'title', 'subtitle', 'slug', 'path',
+        'status', 'live', 'homepage', 'publish_date', 'title', 'subtitle', 'slug', 'path',
     ];
 
     /**
@@ -56,14 +56,41 @@ class PageRequest extends AppFormRequest
                 'status' => ['nullable', Rule::enum(PageStatus::class)],
                 'live' => ['nullable', Rule::in(['1', '0'])],
                 'homepage' => ['nullable', Rule::in(['1', '0'])],
-                'publish_from' => ['nullable', 'date_format:Y-m-d'],
-                'publish_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:publish_from'],
+                'publish_date' => ['nullable', 'string', function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! $this->isValidPublishDateRange((string) $value)) {
+                        $fail(__('pages.errors.invalid_publish_range'));
+                    }
+                }],
                 'title' => ['nullable', 'string', 'max:255'],
                 'subtitle' => ['nullable', 'string', 'max:255'],
                 'slug' => ['nullable', 'string', 'max:255'],
                 'path' => ['nullable', 'string', 'max:255'],
             ],
         };
+    }
+
+    /**
+     * A `from,to` pair of real `YYYY-MM-DD` dates, with `from` not after `to`.
+     */
+    private function isValidPublishDateRange(string $range): bool
+    {
+        if (preg_match('/^(\d{4}-\d{2}-\d{2}),(\d{4}-\d{2}-\d{2})$/', $range, $bounds) !== 1) {
+            return false;
+        }
+
+        [, $from, $to] = $bounds;
+
+        return $this->isRealDate($from) && $this->isRealDate($to) && $from <= $to;
+    }
+
+    /**
+     * Carbon rolls over impossible dates such as `2026-02-30`, so the value is compared with its own re-format.
+     */
+    private function isRealDate(string $date): bool
+    {
+        $parsed = Carbon::createFromFormat('!Y-m-d', $date);
+
+        return $parsed !== false && $parsed->format('Y-m-d') === $date;
     }
 
     /**

@@ -8,6 +8,7 @@ return [
     'errors' => [
         'homepage_requires_live_page' => 'Only a live page can be the homepage. Publish the page first.',
         'publish_in_past' => 'Scheduled pages need a publish date and time in the future.',
+        'invalid_publish_range' => 'The publish date range is not valid.',
         'parent_is_descendant' => 'A page cannot be placed under itself or one of its children.',
         'content_not_json' => 'The content must be a valid JSON document.',
         'locale_needs_title_and_slug' => 'The :locale version needs a title and a slug, or it must be left empty.',

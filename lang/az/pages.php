@@ -8,6 +8,7 @@ return [
     'errors' => [
         'homepage_requires_live_page' => 'Ana səhifə olmaq üçün yalnız aktiv səhifə seçilə bilər. Əvvəl səhifəni dərc edin.',
         'publish_in_past' => 'Planlaşdırılmış səhifə üçün dərc tarixi və vaxtı gələcəkdə olmalıdır.',
+        'invalid_publish_range' => 'Dərc tarixi aralığı düzgün deyil.',
         'parent_is_descendant' => 'Səhifə özünün və ya öz alt səhifələrindən birinin altına yerləşdirilə bilməz.',
         'content_not_json' => 'Məzmun düzgün JSON sənədi olmalıdır.',
         'locale_needs_title_and_slug' => ':locale versiyası üçün başlıq və slug yazılmalıdır, ya da bu sahə tam boş saxlanmalıdır.',

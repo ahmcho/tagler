@@ -144,29 +144,21 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
     }
 
     /**
-     * Pages without a publish date have no date to match, so they drop out when either bound is set.
+     * The range is `from,to` (`YYYY-MM-DD`), both inclusive. Pages without a publish date have
+     * no date to match, so they drop out.
      *
      * @param  Builder<Page>  $query
      */
-    protected function addPublishFromCondition(Builder $query, mixed $date): void
+    protected function addPublishDateCondition(Builder $query, mixed $range): void
     {
-        if (! filled($date)) {
+        if (! is_string($range) || substr_count($range, ',') !== 1) {
             return;
         }
 
-        $query->whereDate('pages.publish_date', '>=', $date);
-    }
+        [$from, $to] = explode(',', $range);
 
-    /**
-     * @param  Builder<Page>  $query
-     */
-    protected function addPublishToCondition(Builder $query, mixed $date): void
-    {
-        if (! filled($date)) {
-            return;
-        }
-
-        $query->whereDate('pages.publish_date', '<=', $date);
+        $query->whereDate('pages.publish_date', '>=', $from)
+            ->whereDate('pages.publish_date', '<=', $to);
     }
 
     /**

@@ -81,17 +81,30 @@ test('the publish date range is inclusive and drops pages without a publish date
     PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'undated', 'path' => 'undated', 'title' => 'Undated']);
 
     $this->actingAs(filterAdmin())
-        ->get(route('pages.index', ['publish_from' => '2026-01-05', 'publish_to' => '2026-01-10']))
+        ->get(route('pages.index', ['publish_date' => '2026-01-05,2026-01-10']))
         ->assertInertia(fn (Assert $page) => $page
             ->where('pages.total', 1)
             ->where('pages.data.0.title', 'Middle'));
 
     $this->actingAs(filterAdmin())
-        ->get(route('pages.index', ['publish_to' => '2026-01-01']))
+        ->get(route('pages.index', ['publish_date' => '2026-01-01,2026-01-01']))
         ->assertInertia(fn (Assert $page) => $page
             ->where('pages.total', 1)
             ->where('pages.data.0.title', 'Early'));
 });
+
+test('a publish date range with a bad format or reversed bounds is rejected', function (string $range): void {
+    PageFixtures::create(['publish_date' => '2026-01-01'], ['slug' => 'early', 'path' => 'early', 'title' => 'Early']);
+
+    $this->actingAs(filterAdmin())
+        ->get(route('pages.index', ['publish_date' => $range]))
+        ->assertSessionHasErrors('publish_date');
+})->with([
+    'single date' => ['2026-01-05'],
+    'reversed bounds' => ['2026-01-10,2026-01-05'],
+    'impossible date' => ['2026-02-30,2026-03-01'],
+    'not a date' => ['abc,def'],
+]);
 
 test('the title filter ignores case and searches the default locale only', function (): void {
     PageFixtures::create([], ['slug' => 'about', 'path' => 'about', 'title' => 'About Us']);
