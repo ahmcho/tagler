@@ -386,6 +386,28 @@
     [role='button']:not(:disabled) {
         cursor: pointer;
     }
+
+    /* TailAdmin custom-scrollbar: 6px, thumb uses the base-200 border token (gray-200 / gray-700 in dark). */
+    *::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    *::-webkit-scrollbar-track {
+        border-radius: 9999px;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        border-radius: 9999px;
+        background-color: var(--border-color-base-200);
+    }
+
+    @supports not selector(::-webkit-scrollbar) {
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color-base-200) transparent;
+        }
+    }
 }
 
 /* react-dual-listbox (components/dual-list-box.tsx). Theme tokens switch in .dark. */
