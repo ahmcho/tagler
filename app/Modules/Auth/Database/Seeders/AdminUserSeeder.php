@@ -4,12 +4,15 @@ namespace App\Modules\Auth\Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use InvalidArgumentException;
 
 class AdminUserSeeder extends Seeder
 {
     /**
      * Creates the admin account from the module config (ADMIN_EMAIL and ADMIN_PASSWORD) and assigns the
-     * Admin role. Skips with a warning when either value is missing. An existing account keeps its password.
+     * Admin role. Throws when either value is missing. An existing account keeps its password.
+     *
+     * @throws InvalidArgumentException when ADMIN_EMAIL or ADMIN_PASSWORD is empty
      */
     public function run(): void
     {
@@ -17,9 +20,7 @@ class AdminUserSeeder extends Seeder
         $password = config('modules.auth.admin_password');
 
         if (! $email || ! $password) {
-            $this->command?->warn('Set ADMIN_EMAIL and ADMIN_PASSWORD to create the admin account.');
-
-            return;
+            throw new InvalidArgumentException('Set ADMIN_EMAIL and ADMIN_PASSWORD in .env before seeding.');
         }
 
         $role = config('modules.auth.admin_role_name');

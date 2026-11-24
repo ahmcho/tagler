@@ -38,13 +38,26 @@ test('the admin seeder keeps the password of an existing admin account', functio
         ->and($existing->fresh()->password)->toBe($originalPassword);
 });
 
-test('the admin seeder creates nothing when the email is missing', function (): void {
+test('the admin seeder throws and creates nothing when the email is missing', function (): void {
     config([
         'modules.auth.admin_email' => null,
         'modules.auth.admin_password' => 'secret-pass',
     ]);
 
-    $this->seed(AdminUserSeeder::class);
+    expect(fn () => $this->seed(AdminUserSeeder::class))
+        ->toThrow(InvalidArgumentException::class, 'ADMIN_EMAIL');
+
+    expect(User::query()->count())->toBe(0);
+});
+
+test('the admin seeder throws and creates nothing when the password is missing', function (): void {
+    config([
+        'modules.auth.admin_email' => 'owner@example.test',
+        'modules.auth.admin_password' => '',
+    ]);
+
+    expect(fn () => $this->seed(AdminUserSeeder::class))
+        ->toThrow(InvalidArgumentException::class, 'ADMIN_PASSWORD');
 
     expect(User::query()->count())->toBe(0);
 });
