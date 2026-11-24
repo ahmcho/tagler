@@ -1,10 +1,22 @@
+import { Close } from '@tailgrids/icons';
 import { useEffect, useRef, useState } from 'react';
-import Select from 'react-select';
-import type { InputActionMeta } from 'react-select';
+import type { UIEvent } from 'react';
+import {
+    Button as AriaButton,
+    ComboBox,
+    Input as AriaInput,
+    ListBox,
+    Popover,
+} from 'react-aria-components';
+import {
+    SelectIndicator,
+    SelectItem,
+} from '@/components/tailgrids/core/select';
 import type { SearchPage } from '@/hooks/use-search';
 import { cn } from '@/utils/cn';
 
 const DEBOUNCE_MS = 500;
+const LOAD_MORE_THRESHOLD_PX = 40;
 
 export type SelectOption = {
     value: number | string;
@@ -13,38 +25,34 @@ export type SelectOption = {
 
 type SearchableListProps = {
     inputId: string;
-    instanceId: string;
     placeholder: string;
     loadingMessage: string;
     noOptionsMessage: string;
     loadOptions: (inputValue: string, page: number) => Promise<SearchPage>;
     value: SelectOption | null;
     onChange: (option: SelectOption | null) => void;
-    isClearable?: boolean;
     isDisabled?: boolean;
     hasError?: boolean;
 };
 
 /**
- * Debounced, paged async select built on react-select. The menu loads the first page
+ * Debounced, paged async combo box built on react-aria. The menu loads the first page
  * when it opens or when the query changes, and the next page when it is scrolled to the bottom.
- * Styles use the TailGrids look, so this component matches the rest of the UI.
+ * The menu is a react-aria popover, so it renders correctly inside dialogs.
  */
 export function SearchableList({
     inputId,
-    instanceId,
     placeholder,
     loadingMessage,
     noOptionsMessage,
     loadOptions,
     value,
     onChange,
-    isClearable = true,
     isDisabled,
     hasError,
 }: SearchableListProps) {
     const [options, setOptions] = useState<SelectOption[]>([]);
-    const [inputValue, setInputValue] = useState('');
+    const [inputValue, setInputValue] = useState(value?.label ?? '');
     const [hasMore, setHasMore] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -93,13 +101,8 @@ export function SearchableList({
         }
     }
 
-    function handleInputChange(query: string, meta: InputActionMeta) {
+    function handleInputChange(query: string) {
         setInputValue(query);
-
-        if (meta.action !== 'input-change') {
-            return;
-        }
-
         queryRef.current = query;
         setHasMore(false);
         clearTimeout(debounceRef.current);
@@ -114,62 +117,94 @@ export function SearchableList({
         }
     }
 
-    function handleMenuScrollToBottom() {
-        if (hasMore && !isLoading) {
+    function handleMenuScroll(event: UIEvent<HTMLDivElement>) {
+        const list = event.target as HTMLElement;
+        const distanceToBottom =
+            list.scrollHeight - list.scrollTop - list.clientHeight;
+
+        if (
+            distanceToBottom < LOAD_MORE_THRESHOLD_PX &&
+            hasMore &&
+            !isLoading
+        ) {
             loadPage(queryRef.current, lastPageRef.current + 1);
         }
     }
 
+    // The selected option stays in the list, so its label shows even when it is not in the results.
+    const items =
+        value && !options.some((option) => option.value === value.value)
+            ? [value, ...options]
+            : options;
+
     return (
-        <Select<SelectOption>
-            inputId={inputId}
-            instanceId={instanceId}
-            unstyled
-            isClearable={isClearable}
-            isDisabled={isDisabled}
-            isLoading={isLoading}
-            placeholder={placeholder}
-            loadingMessage={() => loadingMessage}
-            noOptionsMessage={() => noOptionsMessage}
-            options={options}
-            filterOption={null}
+        <ComboBox<SelectOption>
+            items={items}
+            selectedKey={value?.value ?? null}
+            onSelectionChange={(key) => {
+                const option = items.find((item) => item.value === key) ?? null;
+
+                setInputValue(option?.label ?? '');
+                onChange(option);
+            }}
             inputValue={inputValue}
             onInputChange={handleInputChange}
-            onMenuOpen={handleMenuOpen}
-            onMenuScrollToBottom={handleMenuScrollToBottom}
-            value={value}
-            onChange={(option) => onChange(option)}
-            classNames={{
-                control: (state) =>
-                    cn(
-                        'flex min-h-11 w-full items-center rounded-lg border bg-white px-3 text-sm shadow-xs dark:bg-gray-900',
-                        hasError
-                            ? 'border-red-500'
-                            : 'border-gray-300 dark:border-gray-700',
-                        state.isFocused && 'ring-2 ring-primary-300/50',
-                        state.isDisabled && 'opacity-60',
-                    ),
-                valueContainer: () => 'flex flex-1 items-center gap-2',
-                input: () => 'text-gray-800 dark:text-white/90',
-                placeholder: () => 'text-gray-400 dark:text-gray-500',
-                singleValue: () => 'text-gray-800 dark:text-white/90',
-                indicatorsContainer: () => 'flex items-center gap-1',
-                clearIndicator: () =>
-                    'cursor-pointer px-1 text-gray-400 hover:text-gray-600',
-                dropdownIndicator: () => 'hidden',
-                loadingIndicator: () => 'px-1 text-gray-400',
-                menu: () =>
-                    'mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 text-sm shadow-lg dark:border-gray-700 dark:bg-gray-900',
-                menuList: () => 'max-h-60 overflow-y-auto',
-                option: (state) =>
-                    cn(
-                        'cursor-pointer px-3 py-2 text-gray-800 dark:text-white/90',
-                        state.isFocused && 'bg-gray-100 dark:bg-gray-800',
-                        state.isSelected && 'font-medium',
-                    ),
-                noOptionsMessage: () => 'px-3 py-2 text-gray-500',
-                loadingMessage: () => 'px-3 py-2 text-gray-500',
-            }}
-        />
+            onOpenChange={(isOpen) => isOpen && handleMenuOpen()}
+            menuTrigger="focus"
+            defaultFilter={() => true}
+            allowsEmptyCollection
+            isDisabled={isDisabled}
+            isInvalid={hasError}
+            aria-label={placeholder}
+            className="flex w-full flex-col gap-1.5"
+        >
+            <div
+                className={cn(
+                    'flex min-h-11 w-full items-center gap-2 rounded-lg border border-base-300 bg-input-background px-4 py-2.5 text-title-50 focus-within:border-input-primary-focus-border focus-within:ring-4 focus-within:ring-input-primary-focus-border/20',
+                    hasError &&
+                        'border-input-error-focus-border focus-within:ring-input-error-focus-border/20',
+                    isDisabled && 'opacity-60',
+                )}
+            >
+                <AriaInput
+                    id={inputId}
+                    placeholder={placeholder}
+                    className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-text-100"
+                />
+                {value && !isDisabled && (
+                    <AriaButton
+                        slot={null}
+                        aria-label="Clear"
+                        onPress={() => {
+                            setInputValue('');
+                            onChange(null);
+                        }}
+                        className="flex size-6 shrink-0 items-center justify-center rounded-md text-text-100 outline-none hover:text-title-50 focus-visible:ring-2 focus-visible:ring-primary-500 [&>svg]:size-4"
+                    >
+                        <Close />
+                    </AriaButton>
+                )}
+                <SelectIndicator />
+            </div>
+            <Popover
+                className="w-(--trigger-width) overflow-auto rounded-xl bg-dropdown-background shadow-md outline-hidden"
+                onScrollCapture={handleMenuScroll}
+            >
+                <ListBox
+                    className="max-h-72 overflow-auto p-1 outline-hidden"
+                    renderEmptyState={() => (
+                        <div className="px-3 py-2 text-sm text-text-100">
+                            {isLoading ? loadingMessage : noOptionsMessage}
+                        </div>
+                    )}
+                >
+                    {(option: SelectOption) => (
+                        <SelectItem id={option.value} textValue={option.label}>
+                            {option.label}
+                        </SelectItem>
+                    )}
+                </ListBox>
+            </Popover>
+        </ComboBox>
     );
 }

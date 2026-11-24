@@ -106,7 +106,6 @@ export function ResourceFilterFields({
                     <SearchableList
                         key={field.name}
                         inputId={`${field.name}-filter`}
-                        instanceId={`${field.name}-filter`}
                         placeholder={field.placeholder}
                         loadingMessage={field.loadingMessage}
                         noOptionsMessage={field.noOptionsMessage}
