@@ -4,12 +4,30 @@ use App\Models\User;
 use App\Modules\Auth\Database\Seeders\RolesAndPermissionsSeeder;
 use App\Modules\Auth\Models\Permission;
 use App\Modules\Auth\Models\Role;
+use App\Modules\Auth\Support\PermissionFileLoader;
 use App\Modules\Auth\Support\PermissionRegistry;
 
-test('the seeder creates the Admin and User roles and every registered permission', function (): void {
+/**
+ * Every permission the seeder creates: the file permissions and the registered permissions.
+ *
+ * @return array<int, string>
+ */
+function seededPermissionNames(): array
+{
+    $loader = app(PermissionFileLoader::class);
+
+    return collect([...$loader->load($loader->defaultDirectories()), ...app(PermissionRegistry::class)->all()])
+        ->pluck('name')
+        ->unique()
+        ->sort()
+        ->values()
+        ->all();
+}
+
+test('the seeder creates the Admin and User roles and every registered and file permission', function (): void {
     $this->seed(RolesAndPermissionsSeeder::class);
 
-    $registeredNames = collect(app(PermissionRegistry::class)->all())->pluck('name')->sort()->values()->all();
+    $registeredNames = seededPermissionNames();
 
     expect(Role::query()->pluck('name')->sort()->values()->all())->toBe(['Admin', 'User'])
         ->and(Permission::query()->pluck('name')->sort()->values()->all())->toBe($registeredNames)
@@ -28,7 +46,7 @@ test('running the seeder twice does not duplicate roles or permissions', functio
     $this->seed(RolesAndPermissionsSeeder::class);
 
     expect(Role::query()->count())->toBe(2)
-        ->and(Permission::query()->count())->toBe(count(app(PermissionRegistry::class)->all()));
+        ->and(Permission::query()->count())->toBe(count(seededPermissionNames()));
 });
 
 test('an Admin role holder can use the translation permissions', function (): void {
