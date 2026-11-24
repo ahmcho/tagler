@@ -13,7 +13,7 @@ import {
 import type { MediaUsage } from '../types';
 
 const RADIUS = 80;
-const STROKE = 26;
+const STROKE = 30;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 type Props = {
@@ -44,15 +44,15 @@ export function MediaStorageDonut({ usage }: Props) {
 
     return (
         <Card className="h-full min-w-0 border border-base-200 md:min-w-0">
-            <CardHeader>
-                <CardTitle className="text-lg">Storage details</CardTitle>
+            <CardHeader className="border-b border-base-200 px-6 py-5">
+                <CardTitle className="text-xl">Storage details</CardTitle>
                 <p className="mt-1 text-sm text-text-100">
                     {quota
                         ? `${formatBytes(Math.max(quota - used, 0))} free space left`
                         : 'No storage quota set'}
                 </p>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 p-6">
                 <div className="relative mx-auto aspect-square w-full max-w-[260px]">
                     <svg
                         viewBox="0 0 200 200"

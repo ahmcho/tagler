@@ -32,7 +32,7 @@ export function MediaFolderGrid({
             {folders.map((folder) => (
                 <li
                     key={folder.id}
-                    className="relative rounded-xl border border-base-200 p-4 transition-colors hover:bg-background-soft-50"
+                    className="relative rounded-2xl bg-background-soft-50 p-5 transition-colors hover:bg-background-soft-100"
                 >
                     <button
                         type="button"

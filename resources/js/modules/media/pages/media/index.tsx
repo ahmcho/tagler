@@ -128,9 +128,9 @@ export default function MediaIndex({ upload }: Props) {
 
     return (
         <ResourcePage title="Media">
-            <div className="space-y-5">
+            <div className="space-y-6">
                 <h1 className="text-2xl font-semibold text-title-50">
-                    Media library
+                    File Manager
                 </h1>
 
                 {library.error && (
@@ -143,8 +143,8 @@ export default function MediaIndex({ upload }: Props) {
                 )}
 
                 <Card className="border border-base-200">
-                    <CardHeader className="flex flex-wrap items-center justify-between gap-4 pb-5">
-                        <CardTitle className="text-lg">All media</CardTitle>
+                    <CardHeader className="flex flex-wrap items-center justify-between gap-4 border-b border-base-200 px-6 py-5">
+                        <CardTitle className="text-xl">All media</CardTitle>
                         <MediaHeaderActions
                             search={query.search}
                             folder={query.folder}
@@ -154,7 +154,7 @@ export default function MediaIndex({ upload }: Props) {
                             onUploaded={() => library.refresh()}
                         />
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-6">
                         <MediaStatTiles
                             usage={usage}
                             active={query.category}
@@ -165,9 +165,9 @@ export default function MediaIndex({ upload }: Props) {
                     </CardContent>
                 </Card>
 
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                     <Card className="min-w-0 border border-base-200 md:min-w-0 xl:col-span-2">
-                        <CardHeader className="flex flex-wrap items-center justify-between gap-3 pb-5">
+                        <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-base-200 px-6 py-5">
                             <div>
                                 <CardTitle className="text-lg">
                                     All folders
@@ -219,7 +219,7 @@ export default function MediaIndex({ upload }: Props) {
                                 </Button>
                             )}
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-6">
                             <MediaFolderGrid
                                 folders={currentFolders}
                                 canManage={canManageFolders}
@@ -241,7 +241,7 @@ export default function MediaIndex({ upload }: Props) {
                 </div>
 
                 <Card className="border border-base-200">
-                    <CardHeader className="flex flex-wrap items-center justify-between gap-4 pb-5">
+                    <CardHeader className="flex flex-wrap items-center justify-between gap-4 border-b border-base-200 px-6 py-5">
                         <CardTitle className="text-lg">
                             {query.trashed ? 'Trash' : 'Recent files'}
                         </CardTitle>
@@ -258,7 +258,7 @@ export default function MediaIndex({ upload }: Props) {
                             }
                         />
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 p-6">
                         {files && files.data.length > 0 ? (
                             <div className="overflow-x-auto">
                                 <MediaFileTable

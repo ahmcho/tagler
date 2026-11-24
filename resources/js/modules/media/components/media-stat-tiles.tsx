@@ -96,14 +96,14 @@ function StatTile({
             aria-pressed={selected}
             onClick={onSelect}
             className={cn(
-                'flex w-full items-center justify-between gap-4 rounded-xl border border-base-200 p-4 text-left transition-colors hover:bg-background-soft-50 focus-visible:outline-2 focus-visible:outline-primary-500',
+                'flex w-full items-center justify-between gap-4 rounded-2xl border border-base-200 p-5 text-left transition-colors hover:bg-background-soft-50 focus-visible:outline-2 focus-visible:outline-primary-500',
                 selected && 'border-primary-500 bg-background-soft-50',
             )}
         >
             <span className="flex min-w-0 items-center gap-4">
                 <span
                     className={cn(
-                        'flex size-12 shrink-0 items-center justify-center rounded-xl',
+                        'flex size-12 shrink-0 items-center justify-center rounded-lg',
                         chipClass,
                     )}
                 >
