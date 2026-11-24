@@ -141,6 +141,26 @@ test('changing visibility moves the file to the disk for the new visibility', fu
     Storage::disk('local')->assertMissing($oldPath);
 });
 
+test('changing visibility moves the generated conversions with the original', function (): void {
+    $this->actingAs($this->admin)->postJson(route('media.files.store'), [
+        'file' => UploadedFile::fake()->image('hero.jpg', 900, 600),
+        'visibility' => 'private',
+    ])->assertCreated();
+
+    $media = Media::query()->firstOrFail();
+    $thumbnail = $media->metadata['conversions']['thumbnail']['path'];
+
+    Storage::disk('local')->assertExists($thumbnail);
+
+    $this->actingAs($this->admin)
+        ->postJson(route('media.files.visibility', $media), ['visibility' => 'public'])
+        ->assertOk();
+
+    Storage::disk('public')->assertExists($thumbnail);
+    Storage::disk('local')->assertMissing($thumbnail);
+    Storage::disk('local')->assertMissing($media->path);
+});
+
 test('private files get a signed temporary URL and public files get a permanent one', function (): void {
     $private = Media::factory()->create(['disk' => 'local', 'path' => 'media/p.jpg']);
     $public = Media::factory()->public()->create(['disk' => 'public', 'path' => 'media/q.jpg']);

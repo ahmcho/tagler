@@ -2,7 +2,13 @@
 
 use App\Modules\Media\Controllers\MediaController;
 use App\Modules\Media\Controllers\MediaFolderController;
+use App\Modules\Media\Controllers\MediaLibraryController;
+use App\Modules\Media\Models\Media;
 use Illuminate\Support\Facades\Route;
+
+Route::get('admin/media', MediaLibraryController::class)
+    ->middleware(['auth', 'verified', 'can:viewAny,'.Media::class])
+    ->name('media.index');
 
 Route::prefix('admin/media')->middleware(['auth', 'verified'])->group(function (): void {
     Route::get('stats', [MediaController::class, 'stats'])->name('media.stats');

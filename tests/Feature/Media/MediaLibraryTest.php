@@ -86,6 +86,7 @@ test('the list never exposes the disk, path or checksum', function (): void {
 
     $this->actingAs($this->admin)->getJson(route('media.files.index'))
         ->assertOk()
+        ->assertJsonPath('data.0.download_url', fn (string $url): bool => str_ends_with($url, '/download'))
         ->assertJsonMissingPath('data.0.path')
         ->assertJsonMissingPath('data.0.disk')
         ->assertJsonMissingPath('data.0.checksum');
@@ -127,6 +128,22 @@ test('a trashed file can be restored and then purged with its physical file', fu
 
     expect(Media::withTrashed()->whereKey($media->id)->exists())->toBeFalse();
     Storage::disk('local')->assertMissing('media/gone.pdf');
+});
+
+test('purging an image also removes its generated conversions', function (): void {
+    Storage::disk('local')->put('media/img/a.jpg', 'original');
+    Storage::disk('local')->put('media/img/a-thumbnail.jpg', 'thumb');
+    $media = Media::factory()->create([
+        'disk' => 'local',
+        'path' => 'media/img/a.jpg',
+        'metadata' => ['conversions' => ['thumbnail' => ['path' => 'media/img/a-thumbnail.jpg', 'mime_type' => 'image/jpeg', 'width' => 1, 'height' => 1]]],
+    ]);
+
+    $this->actingAs($this->admin)->deleteJson(route('media.files.destroy', $media))->assertNoContent();
+    $this->actingAs($this->admin)->postJson(route('media.files.purge', $media))->assertNoContent();
+
+    Storage::disk('local')->assertMissing('media/img/a.jpg');
+    Storage::disk('local')->assertMissing('media/img/a-thumbnail.jpg');
 });
 
 test('moving a file changes only its logical folder and keeps the stored path', function (): void {

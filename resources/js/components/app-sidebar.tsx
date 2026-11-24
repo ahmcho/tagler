@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import {
     FileText,
     History,
+    Images,
     KeyRound,
     LayoutGrid,
     Palette,
@@ -26,6 +27,7 @@ import {
 import { useAbility } from '@/hooks/use-ability';
 import { dashboard } from '@/routes';
 import { index as activityLogsIndex } from '@/routes/activity-logs';
+import { index as mediaIndex } from '@/routes/media';
 import { index as pagesIndex } from '@/routes/pages';
 import { index as permissionsIndex } from '@/routes/permissions';
 import { index as rolesIndex } from '@/routes/roles';
@@ -63,6 +65,12 @@ const navigationGroups: NavigationGroup[] = [
                 href: pagesIndex.url(),
                 icon: <FileText />,
                 ability: 'pages.index',
+            },
+            {
+                label: 'Media',
+                href: mediaIndex.url(),
+                icon: <Images />,
+                ability: 'media.index',
             },
         ],
     },

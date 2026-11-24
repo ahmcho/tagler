@@ -2,9 +2,9 @@
 
 namespace App\Modules\Media\Providers;
 
+use App\Modules\Auth\Support\AbilityRegistry;
 use App\Modules\Auth\Support\PermissionRegistry;
 use App\Modules\Media\Models\Media;
-use App\Modules\Media\Models\MediaFolder;
 use App\Modules\Media\Policies\MediaFolderPolicy;
 use App\Modules\Media\Policies\MediaPolicy;
 use App\Modules\Media\Repositories\Contracts\MediaFolderRepositoryContract;
@@ -48,6 +48,16 @@ class MediaServiceProvider extends ModuleServiceProvider
 
         RateLimiter::for('media-uploads', fn ($request): Limit => Limit::perMinute(60)
             ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
+
+        app(AbilityRegistry::class)->register([
+            'media.index' => [Media::class, 'viewAny'],
+            'media.store' => [Media::class, 'create'],
+            'media.update' => 'media.update',
+            'media.visibility' => 'media.visibility',
+            'media.destroy' => 'media.destroy',
+            'media.purge' => 'media.purge',
+            'media.folders' => 'media.folders',
+        ]);
 
         app(PermissionRegistry::class)->register([
             ['name' => 'media.index', 'description' => 'View the media library'],

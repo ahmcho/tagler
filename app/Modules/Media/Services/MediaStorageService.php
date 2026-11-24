@@ -44,8 +44,20 @@ class MediaStorageService
     }
 
     /**
-     * Copies the file to the disk for the target visibility. The caller updates the
-     * database, then calls deleteAfterCommit() for the old copy. The file keeps its path.
+     * The original and every generated conversion. They all move together on a visibility change.
+     *
+     * @return list<string>
+     */
+    public function pathsFor(Media $media): array
+    {
+        $conversionPaths = array_column($media->metadata['conversions'] ?? [], 'path');
+
+        return [$media->path, ...array_values($conversionPaths)];
+    }
+
+    /**
+     * Copies the original and its conversions to the disk for the target visibility. The paths do not
+     * change. The caller updates the database, then deletes the old copies.
      *
      * @return array{disk: string, path: string}
      */
@@ -57,19 +69,31 @@ class MediaStorageService
             return ['disk' => $media->disk, 'path' => $media->path];
         }
 
-        $stream = Storage::disk($media->disk)->readStream($media->path);
+        foreach ($this->pathsFor($media) as $path) {
+            $stream = Storage::disk($media->disk)->readStream($path);
 
-        try {
-            if (! Storage::disk($targetDisk)->writeStream($media->path, $stream)) {
-                throw new RuntimeException("Could not copy [{$media->path}] to disk [{$targetDisk}].");
-            }
-        } finally {
-            if (is_resource($stream)) {
-                fclose($stream);
+            try {
+                if (! Storage::disk($targetDisk)->writeStream($path, $stream)) {
+                    throw new RuntimeException("Could not copy [{$path}] to disk [{$targetDisk}].");
+                }
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
             }
         }
 
         return ['disk' => $targetDisk, 'path' => $media->path];
+    }
+
+    /**
+     * @param  list<string>  $paths
+     */
+    public function deleteAll(string $disk, array $paths): void
+    {
+        foreach ($paths as $path) {
+            Storage::disk($disk)->delete($path);
+        }
     }
 
     public function delete(string $disk, string $path): void

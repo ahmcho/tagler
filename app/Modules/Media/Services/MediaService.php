@@ -85,7 +85,8 @@ class MediaService implements MediaServiceContract
             return $media;
         }
 
-        $previous = ['disk' => $media->disk, 'path' => $media->path];
+        $previousDisk = $media->disk;
+        $paths = $this->storage->pathsFor($media);
         $target = $this->storage->copyForVisibility($media, $visibility);
 
         try {
@@ -95,15 +96,15 @@ class MediaService implements MediaServiceContract
                 'path' => $target['path'],
             ]);
         } catch (Throwable $exception) {
-            if ($target !== $previous) {
-                $this->storage->delete($target['disk'], $target['path']);
+            if ($target['disk'] !== $previousDisk) {
+                $this->storage->deleteAll($target['disk'], $paths);
             }
 
             throw $exception;
         }
 
-        if ($target !== $previous) {
-            $this->storage->delete($previous['disk'], $previous['path']);
+        if ($target['disk'] !== $previousDisk) {
+            $this->storage->deleteAll($previousDisk, $paths);
         }
 
         return $updated;
@@ -128,11 +129,11 @@ class MediaService implements MediaServiceContract
         $this->guardReferences($media, $force);
 
         $disk = $media->disk;
-        $path = $media->path;
+        $paths = $this->storage->pathsFor($media);
 
         DB::transaction(fn () => $this->repository->permanentlyDeleteById($media->getKey()));
 
-        $this->storage->delete($disk, $path);
+        $this->storage->deleteAll($disk, $paths);
     }
 
     public function attachments(Media $media): Collection
