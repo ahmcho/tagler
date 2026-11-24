@@ -31,6 +31,23 @@ export enum LocaleEnum {
     En = 'en',
     Ru = 'ru',
 }
+export enum MediaCategory {
+    Pictures = 'pictures',
+    Videos = 'videos',
+    Audio = 'audio',
+    Documents = 'documents',
+    Other = 'other',
+}
+export enum MediaProcessingStatus {
+    Pending = 'pending',
+    Processing = 'processing',
+    Ready = 'ready',
+    Failed = 'failed',
+}
+export enum MediaVisibility {
+    Public = 'public',
+    Private = 'private',
+}
 export enum ModelStatusEnum {
     Inactive = 0,
     Active = 1,
