@@ -1,3 +1,8 @@
+import type { ReactNode } from 'react';
+import {
+    InputGroup,
+    InputGroupAddon,
+} from '@/components/tailgrids/core/input-group';
 import {
     Select,
     SelectContent,
@@ -19,6 +24,10 @@ type SelectFieldProps = {
     onChange: (value: string) => void;
     options: SelectFieldOption[];
     allOptionLabel?: string;
+    /** Icon shown at the start of the field, inside an input group. */
+    startIcon?: ReactNode;
+    /** Hides the visible label. It stays for screen readers. */
+    hideLabel?: boolean;
 };
 
 export function SelectField({
@@ -27,9 +36,24 @@ export function SelectField({
     onChange,
     options,
     allOptionLabel,
+    startIcon,
+    hideLabel,
 }: SelectFieldProps) {
     const selectedKey =
         value !== '' ? value : allOptionLabel ? ALL_OPTION_KEY : null;
+
+    const trigger = (
+        <SelectTrigger
+            className={
+                startIcon
+                    ? 'min-w-0 flex-1 rounded-none border-0 bg-transparent py-0 pr-3 pl-0 focus:border-0 focus:ring-0'
+                    : undefined
+            }
+        >
+            <SelectValue />
+            <SelectIndicator />
+        </SelectTrigger>
+    );
 
     return (
         <Select
@@ -40,11 +64,17 @@ export function SelectField({
                 )
             }
         >
-            <SelectLabel>{label}</SelectLabel>
-            <SelectTrigger>
-                <SelectValue />
-                <SelectIndicator />
-            </SelectTrigger>
+            <SelectLabel className={hideLabel ? 'sr-only' : undefined}>
+                {label}
+            </SelectLabel>
+            {startIcon ? (
+                <InputGroup className="h-11">
+                    <InputGroupAddon>{startIcon}</InputGroupAddon>
+                    {trigger}
+                </InputGroup>
+            ) : (
+                trigger
+            )}
             <SelectContent>
                 {allOptionLabel && (
                     <SelectItem id={ALL_OPTION_KEY}>
