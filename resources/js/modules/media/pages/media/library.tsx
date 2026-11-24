@@ -266,7 +266,6 @@ export default function MediaLibrary({ upload }: Props) {
                 </Card>
 
                 <MediaDetailsSheet
-                    key={selected?.id ?? 'none'}
                     file={selected}
                     folders={folders}
                     abilities={abilities}

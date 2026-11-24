@@ -161,7 +161,6 @@ export default function MediaIndex({ upload }: Props) {
                 </Card>
 
                 <MediaDetailsSheet
-                    key={selected?.id ?? 'none'}
                     file={selected}
                     folders={folders}
                     abilities={abilities}
