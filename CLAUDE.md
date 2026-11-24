@@ -271,4 +271,4 @@ Never append a Claude-Session link (or any other AI-attribution line) to a commi
 
 - Atomic, logically grouped commits. Never push unless explicitly asked.
 - Issue flow: explore -> plan -> implement -> browser-verify -> commit referencing #N -> close the issue only after the user approves.
-- Commit message prefixes: `[FEAT]`, `[FIX]`, `[REFACTOR]`, `[CHORE]`. See `.ai/rules/general.md`.
+- Commit message prefixes: `[FEATURE]`, `[FIX]`, `[REFACTOR]`, `[CHORE]`. See `.ai/rules/general.md`.
