@@ -17,3 +17,9 @@ Do not add, remove or upgrade a package without the user's approval.
 ## npm
 
 Use the existing `package-lock.json`. Do not run `npm install <pkg>` without approval.
+
+## Never `git checkout` the composer files to undo a dry run
+
+`composer require <pkg> --dry-run` reverts `composer.json` and `composer.lock` only when it fails. After a successful dry run, the files stay changed. Then `git checkout -- composer.json composer.lock` also discards your earlier, uncommitted `composer require` changes.
+
+Run `git diff composer.json` first, or copy both files before a speculative run.

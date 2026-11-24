@@ -44,6 +44,7 @@ Each model has a policy in `app/Modules/Auth/Policies`. The provider registers i
 - A denial returns the translated `translations.common.forbidden` message (`HasTranslatedDenialResponse`).
 - Controllers call `Gate::authorize('viewAny', Role::class)` or `Gate::authorize('update', $role)`.
 - The Translation module still uses `Gate::define` per permission, as its provider defines it. Do not change that unless the user asks.
+- 
 
 ## The `can` prop
 

@@ -76,3 +76,13 @@ Run `npx tsc --noEmit`, `npx eslint <paths>` and `npx prettier --check <paths>` 
 ## Types
 
 Type-only imports use `import type`.
+
+## Use DatePickerField for dates, not `<input type="date">`
+
+Use `DatePickerField` from `resources/js/components/date-picker-field.tsx` for every date input. Read its props in that file before you use it. Do not add a native `type="date"` input.
+
+## Enums come from `@/types/generated`
+
+`resources/js/types/generated/index.ts` is generated from the PHP enums by `spatie/laravel-typescript-transformer`. After you change an enum, run `composer types:generate` and commit the result. Do not edit the generated file by hand.
+
+Import with `import { X } from '@/types/generated'`. Compare enum values by member (`Status.Active`), not by raw value (`'active'`).

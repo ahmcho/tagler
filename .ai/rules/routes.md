@@ -34,3 +34,7 @@ Admin pages that edit shared data use `password.confirm` in the middleware group
 ## Check the routes
 
 `php artisan route:list --name=<prefix>` on the host is safe. It does not touch the database.
+
+## The HTTP verb must match what the frontend sends
+
+An Inertia `router.put()` needs a `Route::put()`. A `Route::patch()` answers 405 Method Not Allowed. Nothing checks the verb at build time, so open the page in the browser after you add the route.

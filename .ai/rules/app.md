@@ -25,6 +25,12 @@ Modules that need paged CRUD extend `Crud\Services\BaseCrudService` and `Crud\Re
 
 Return a `Response::deny(...)` or call `Gate::authorize(...)`. Do not return a generic 500 for a permission failure.
 
+## Blocked deletes throw ModelHasRelationsException
+
+A model that other records depend on cannot be deleted. Its delete guard throws `Crud\Exceptions\ModelHasRelationsException`, an `HttpException` with a translated message. `EloquentRepository::deleteById()` throws the same exception on a foreign-key violation. Do not throw a bare `RuntimeException` or call `abort()` in a repository for this.
+
+In a controller's `destroy()`, catch `ModelHasRelationsException` before a generic `Exception`. Otherwise every failure is reported as "has relations".
+
 ## Use ConditionallyLoadsAttributes for array builders
 
 Use `Illuminate\Http\Resources\ConditionallyLoadsAttributes` in array-building classes instead of hand-written conditionals. Pass a closure to `when()` for expensive values.
