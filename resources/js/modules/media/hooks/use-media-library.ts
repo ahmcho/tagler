@@ -15,6 +15,7 @@ export const DEFAULT_QUERY: MediaLibraryQuery = {
     sort: 'created_desc',
     trashed: false,
     page: 1,
+    perPage: 40,
 };
 
 type FileState = { key: string; page: PaginatedMedia };
@@ -24,8 +25,11 @@ type FileState = { key: string; page: PaginatedMedia };
  * props, so a filter change does not reload the page. Each request result is tied to the query
  * it answers, so a slow older response never replaces a newer one.
  */
-export function useMediaLibrary() {
-    const [query, setQuery] = useState<MediaLibraryQuery>(DEFAULT_QUERY);
+export function useMediaLibrary(initial: Partial<MediaLibraryQuery> = {}) {
+    const [query, setQuery] = useState<MediaLibraryQuery>(() => ({
+        ...DEFAULT_QUERY,
+        ...initial,
+    }));
     const [fileState, setFileState] = useState<FileState | null>(null);
     const [folders, setFolders] = useState<MediaFolder[]>([]);
     const [usage, setUsage] = useState<MediaUsage | null>(null);

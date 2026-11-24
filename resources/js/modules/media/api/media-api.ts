@@ -1,5 +1,6 @@
 import * as mediaFiles from '@/actions/App/Modules/Media/Controllers/MediaController';
 import * as mediaFolders from '@/actions/App/Modules/Media/Controllers/MediaFolderController';
+import { library as mediaLibrary } from '@/routes/media';
 import type {
     MediaFolder,
     MediaLibraryQuery,
@@ -100,11 +101,21 @@ export function libraryUrl(query: MediaLibraryQuery): string {
     return withQuery(mediaFiles.index.url(), {
         category: query.category,
         search: query.search.trim(),
-        folder: query.folder,
+        folder: query.folder === 'all' ? null : query.folder,
         sort: query.sort,
         trashed: query.trashed,
         page: query.page,
-        per_page: 40,
+        per_page: query.perPage,
+    });
+}
+
+/** The full library page, opened in a new tab from the dashboard. */
+export function libraryPageUrl(
+    params: { folder?: number; search?: string } = {},
+): string {
+    return withQuery(mediaLibrary.url(), {
+        folder: params.folder ?? null,
+        search: params.search?.trim() ?? null,
     });
 }
 

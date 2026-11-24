@@ -44,7 +44,7 @@ export function folderPath(
     folders: MediaFolder[],
     folderId: MediaFolderFilter,
 ): MediaFolder[] {
-    if (folderId === 'root') {
+    if (folderId === 'root' || folderId === 'all') {
         return [];
     }
 

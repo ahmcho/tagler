@@ -69,7 +69,10 @@ export function MediaUploadButton({ limits, folder, onUploaded }: Props) {
                 await mediaApi.uploadFile(
                     file,
                     {
-                        folder_id: folder === 'root' ? null : folder,
+                        folder_id:
+                            folder === 'root' || folder === 'all'
+                                ? null
+                                : folder,
                         visibility: 'private',
                     },
                     (percent) => patch(item.key, { progress: percent }),
@@ -111,6 +114,7 @@ export function MediaUploadButton({ limits, folder, onUploaded }: Props) {
                 variant="primary"
                 onPress={() => input.current?.click()}
                 disabled={busy}
+                className="h-11 gap-2 bg-[#465fff] px-4 hover:bg-[#3641f5]"
             >
                 <Upload className="size-4" />
                 {busy ? 'Uploading…' : 'Upload files'}

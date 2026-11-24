@@ -60,8 +60,8 @@ export type PaginatedMedia = {
     meta: { current_page: number; last_page: number; total: number };
 };
 
-/** `root` is the top level, where files have no folder. */
-export type MediaFolderFilter = 'root' | number;
+/** `root` is the top level, where files have no folder. `all` ignores the folder. */
+export type MediaFolderFilter = 'root' | 'all' | number;
 
 export type MediaLibraryQuery = {
     category: MediaCategory | null;
@@ -70,6 +70,7 @@ export type MediaLibraryQuery = {
     sort: MediaSort;
     trashed: boolean;
     page: number;
+    perPage: number;
 };
 
 export type MediaSort =

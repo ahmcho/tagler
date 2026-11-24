@@ -10,6 +10,10 @@ Route::get('admin/media', MediaLibraryController::class)
     ->middleware(['auth', 'verified', 'can:viewAny,'.Media::class])
     ->name('media.index');
 
+Route::get('admin/media/library', [MediaLibraryController::class, 'library'])
+    ->middleware(['auth', 'verified', 'can:viewAny,'.Media::class])
+    ->name('media.library');
+
 Route::prefix('admin/media')->middleware(['auth', 'verified'])->group(function (): void {
     Route::get('stats', [MediaController::class, 'stats'])->name('media.stats');
 

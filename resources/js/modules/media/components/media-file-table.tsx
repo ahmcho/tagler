@@ -4,7 +4,7 @@ import {
     FileImage,
     FileText,
     FileVideo,
-    MoreVertical,
+    MoreHorizontal,
 } from 'lucide-react';
 import { Badge } from '@/components/tailgrids/core/badge';
 import {
@@ -24,7 +24,7 @@ import {
 import { formatBytes, formatDate, MEDIA_CATEGORIES } from '../lib/format';
 import type { MediaCategory, MediaRecord } from '../types';
 
-const CATEGORY_ICONS: Record<MediaCategory, typeof File> = {
+export const CATEGORY_ICONS: Record<MediaCategory, typeof File> = {
     pictures: FileImage,
     videos: FileVideo,
     audio: FileAudio,
@@ -32,9 +32,9 @@ const CATEGORY_ICONS: Record<MediaCategory, typeof File> = {
     other: File,
 };
 
-const CATEGORY_LABEL = Object.fromEntries(
+export const CATEGORY_LABEL = Object.fromEntries(
     MEDIA_CATEGORIES.map((category) => [category.value, category.label]),
-);
+) as Record<MediaCategory, string>;
 
 type Props = {
     files: MediaRecord[];
@@ -42,19 +42,27 @@ type Props = {
 };
 
 /**
- * The file list in the design's "Recent Files" table. A row opens the details sheet.
+ * File rows for the dashboard's Recent Files table. A row opens the details sheet.
  */
 export function MediaFileTable({ files, onOpen }: Props) {
     return (
         <TableRoot fullBleed>
             <TableHeader>
                 <TableRow>
-                    <TableHead>File name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Size</TableHead>
-                    <TableHead>Date modified</TableHead>
-                    <TableHead className="w-12">
-                        <span className="sr-only">Actions</span>
+                    <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
+                        File Name
+                    </TableHead>
+                    <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
+                        Category
+                    </TableHead>
+                    <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
+                        Size
+                    </TableHead>
+                    <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
+                        Date Modified
+                    </TableHead>
+                    <TableHead className="h-11 px-4 py-3 text-center text-text-100 last:pr-6">
+                        Action
                     </TableHead>
                 </TableRow>
             </TableHeader>
@@ -64,13 +72,15 @@ export function MediaFileTable({ files, onOpen }: Props) {
 
                     return (
                         <TableRow key={file.id}>
-                            <TableCell>
+                            <TableCell className="py-3 pl-6">
                                 <button
                                     type="button"
                                     onClick={() => onOpen(file)}
                                     className="flex items-center gap-3 rounded-md text-left focus-visible:outline-2 focus-visible:outline-primary-500"
                                 >
-                                    <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-background-soft-50">
+                                    <span
+                                        className={`flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-lg ${file.thumbnail_url ? 'bg-background-soft-50' : ''}`}
+                                    >
                                         {file.thumbnail_url ? (
                                             <img
                                                 src={file.thumbnail_url}
@@ -82,7 +92,7 @@ export function MediaFileTable({ files, onOpen }: Props) {
                                             <Icon className="size-5 text-text-100" />
                                         )}
                                     </span>
-                                    <span className="max-w-[280px] truncate text-sm font-medium text-title-50">
+                                    <span className="max-w-[260px] truncate text-sm font-medium text-title-50">
                                         {file.name}
                                     </span>
                                     {file.processing_status !== 'ready' && (
@@ -99,22 +109,22 @@ export function MediaFileTable({ files, onOpen }: Props) {
                                     )}
                                 </button>
                             </TableCell>
-                            <TableCell className="text-sm text-text-100">
+                            <TableCell className="px-4 py-3 text-sm text-text-50">
                                 {CATEGORY_LABEL[file.category]}
                             </TableCell>
-                            <TableCell className="text-sm text-text-100">
+                            <TableCell className="px-4 py-3 text-sm text-text-50">
                                 {formatBytes(file.size)}
                             </TableCell>
-                            <TableCell className="text-sm text-text-100">
+                            <TableCell className="px-4 py-3 text-sm text-text-50">
                                 {formatDate(file.created_at)}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="py-3 pr-6 text-center">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger
                                         aria-label={`Actions for ${file.name}`}
-                                        className="flex size-8 items-center justify-center rounded-lg text-text-100 hover:bg-background-soft-50"
+                                        className="mx-auto flex size-10 items-center justify-center rounded-[10px] text-text-100 hover:bg-background-soft-50"
                                     >
-                                        <MoreVertical className="size-4" />
+                                        <MoreHorizontal className="size-5" />
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuItem

@@ -7,7 +7,6 @@ import {
     Video,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { cn } from '@/utils/cn';
 import {
     CATEGORY_TONE,
     formatBytes,
@@ -24,29 +23,28 @@ const CATEGORY_ICONS: Record<MediaCategory, LucideIcon> = {
     other: File,
 };
 
+const ALL_TONE = 'bg-brand-500/8 text-brand-500';
+
 type Props = {
     usage: MediaUsage | null;
-    active: MediaCategory | null;
-    onSelect: (category: MediaCategory | null) => void;
 };
 
 /**
- * One bordered tile per category, laid out in a grid. A tile is also the category filter.
+ * Informational tiles, one per category plus the total. They do not filter anything.
  */
-export function MediaStatTiles({ usage, active, onSelect }: Props) {
+export function MediaStatTiles({ usage }: Props) {
     const totalBytes = usage?.bytes ?? 0;
+    const totalFiles = usage?.files ?? 0;
 
     return (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             <StatTile
                 label="All media"
                 icon={LayoutGrid}
-                chipClass="bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-400"
-                files={usage?.files ?? 0}
+                chipClass={ALL_TONE}
+                files={totalFiles}
                 bytes={totalBytes}
                 percent={100}
-                selected={active === null}
-                onSelect={() => onSelect(null)}
             />
             {MEDIA_CATEGORIES.map((category) => {
                 const bytes = usage?.categories[category.value]?.bytes ?? 0;
@@ -60,8 +58,6 @@ export function MediaStatTiles({ usage, active, onSelect }: Props) {
                         files={usage?.categories[category.value]?.files ?? 0}
                         bytes={bytes}
                         percent={percentOf(bytes, totalBytes)}
-                        selected={active === category.value}
-                        onSelect={() => onSelect(category.value)}
                     />
                 );
             })}
@@ -76,8 +72,6 @@ type TileProps = {
     files: number;
     bytes: number;
     percent: number;
-    selected: boolean;
-    onSelect: () => void;
 };
 
 function StatTile({
@@ -87,45 +81,28 @@ function StatTile({
     files,
     bytes,
     percent,
-    selected,
-    onSelect,
 }: TileProps) {
     return (
-        <button
-            type="button"
-            aria-pressed={selected}
-            onClick={onSelect}
-            className={cn(
-                'flex w-full items-center justify-between gap-4 rounded-2xl border border-base-200 p-5 text-left transition-colors hover:bg-background-soft-50 focus-visible:outline-2 focus-visible:outline-primary-500',
-                selected && 'border-primary-500 bg-background-soft-50',
-            )}
-        >
-            <span className="flex min-w-0 items-center gap-4">
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-base-100/60 bg-card-background-50 p-4 pr-5">
+            <div className="flex min-w-0 items-center gap-4">
                 <span
-                    className={cn(
-                        'flex size-12 shrink-0 items-center justify-center rounded-lg',
-                        chipClass,
-                    )}
+                    className={`flex size-13 shrink-0 items-center justify-center rounded-xl ${chipClass}`}
                 >
                     <Icon className="size-6" />
                 </span>
-                <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium text-title-50">
+                <div className="min-w-0">
+                    <p className="mb-1 truncate text-sm font-medium text-title-50">
                         {label}
-                    </span>
-                    <span className="block text-sm text-text-100">
-                        {percent}% Used
-                    </span>
-                </span>
-            </span>
-            <span className="shrink-0 text-right">
-                <span className="block text-sm font-medium text-title-50">
+                    </p>
+                    <p className="text-sm text-text-100">{percent}% Used</p>
+                </div>
+            </div>
+            <div className="shrink-0 text-right">
+                <p className="text-sm font-medium text-text-50">
                     {files} {files === 1 ? 'File' : 'Files'}
-                </span>
-                <span className="block text-sm text-text-100">
-                    {formatBytes(bytes)}
-                </span>
-            </span>
-        </button>
+                </p>
+                <p className="text-sm text-text-100">{formatBytes(bytes)}</p>
+            </div>
+        </div>
     );
 }

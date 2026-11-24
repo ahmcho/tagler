@@ -1,9 +1,10 @@
+import { MoreHorizontal } from 'lucide-react';
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/tailgrids/core/card';
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/tailgrids/core/dropdown';
 import {
     CATEGORY_TONE,
     formatBytes,
@@ -13,17 +14,18 @@ import {
 import type { MediaUsage } from '../types';
 
 const RADIUS = 80;
-const STROKE = 30;
+const STROKE = 28;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 type Props = {
     usage: MediaUsage | null;
+    onRefresh: () => void;
 };
 
 /**
- * Donut of used space by category. Without a quota the donut shows the used total only.
+ * Donut of used space by category, with a legend. Without a quota the subtitle shows no free space.
  */
-export function MediaStorageDonut({ usage }: Props) {
+export function MediaStorageDonut({ usage, onRefresh }: Props) {
     const used = usage?.bytes ?? 0;
     const quota = usage?.quota_bytes ?? null;
     const percent = quotaPercent(used, quota);
@@ -43,17 +45,35 @@ export function MediaStorageDonut({ usage }: Props) {
     }));
 
     return (
-        <Card className="h-full min-w-0 border border-base-200 md:min-w-0">
-            <CardHeader className="border-b border-base-200 px-6 py-5">
-                <CardTitle className="text-xl">Storage details</CardTitle>
-                <p className="mt-1 text-sm text-text-100">
-                    {quota
-                        ? `${formatBytes(Math.max(quota - used, 0))} free space left`
-                        : 'No storage quota set'}
-                </p>
-            </CardHeader>
-            <CardContent className="space-y-6 p-6">
-                <div className="relative mx-auto aspect-square w-full max-w-[260px]">
+        <div className="flex h-full flex-col rounded-2xl border border-base-200 bg-card-background-50">
+            <div className="flex items-start justify-between gap-3 p-6">
+                <div>
+                    <h3 className="text-lg font-semibold text-title-50">
+                        Storage Details
+                    </h3>
+                    <p className="mt-1 text-sm text-text-100">
+                        {quota
+                            ? `${formatBytes(Math.max(quota - used, 0))} Free space left`
+                            : 'No storage quota set'}
+                    </p>
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger
+                        aria-label="Storage actions"
+                        className="flex size-10 items-center justify-center rounded-[10px] text-text-100 hover:bg-background-soft-50"
+                    >
+                        <MoreHorizontal className="size-5" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onAction={onRefresh}>
+                            Refresh
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+
+            <div className="flex flex-1 flex-col gap-6 px-6 pb-6">
+                <div className="relative mx-auto aspect-square w-full max-w-[220px]">
                     <svg
                         viewBox="0 0 200 200"
                         className="size-full -rotate-90"
@@ -90,10 +110,10 @@ export function MediaStorageDonut({ usage }: Props) {
                         )}
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                        <span className="text-2xl font-semibold text-title-50">
+                        <span className="text-2xl font-bold text-black dark:text-white">
                             {formatBytes(used)}
                         </span>
-                        <span className="text-sm text-text-100">
+                        <span className="text-xs text-text-100">
                             {quota
                                 ? `Used of ${formatBytes(quota)}${percent !== null ? ` (${percent}%)` : ''}`
                                 : 'Used'}
@@ -101,13 +121,13 @@ export function MediaStorageDonut({ usage }: Props) {
                     </div>
                 </div>
 
-                <ul className="space-y-3">
+                <ul className="flex flex-col gap-4">
                     {segments.map((segment) => (
                         <li
                             key={segment.category.value}
                             className="flex items-center justify-between text-sm"
                         >
-                            <span className="flex items-center gap-2 text-text-100">
+                            <span className="flex items-center gap-1.5 text-text-50">
                                 <span
                                     className="size-2.5 rounded-full"
                                     style={{
@@ -120,13 +140,13 @@ export function MediaStorageDonut({ usage }: Props) {
                                 />
                                 {segment.category.label}
                             </span>
-                            <span className="font-medium text-title-50">
+                            <span className="text-text-100">
                                 {formatBytes(segment.bytes)}
                             </span>
                         </li>
                     ))}
                 </ul>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

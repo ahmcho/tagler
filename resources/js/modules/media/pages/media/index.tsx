@@ -1,4 +1,5 @@
-import { FolderPlus, Images } from 'lucide-react';
+import { Images } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { ResourcePage } from '@/components/resource/resource-page';
 import {
@@ -7,84 +8,51 @@ import {
     AlertIndicator,
     AlertTitle,
 } from '@/components/tailgrids/core/alert';
-import { Button } from '@/components/tailgrids/core/button';
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
 } from '@/components/tailgrids/core/card';
-import {
-    Dialog,
-    DialogBody,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/tailgrids/core/dialog';
-import { Pagination } from '@/components/tailgrids/core/pagination';
 import { useAbility } from '@/hooks/use-ability';
-import { mediaApi, MediaApiError } from '@/modules/media/api/media-api';
+import { libraryPageUrl } from '@/modules/media/api/media-api';
 import { MediaDetailsSheet } from '@/modules/media/components/media-details-sheet';
 import { MediaFileTable } from '@/modules/media/components/media-file-table';
-import { MediaFolderDialog } from '@/modules/media/components/media-folder-dialog';
 import { MediaFolderGrid } from '@/modules/media/components/media-folder-grid';
 import { MediaStatTiles } from '@/modules/media/components/media-stat-tiles';
 import { MediaStorageDonut } from '@/modules/media/components/media-storage-donut';
 import {
-    MediaFileTools,
-    MediaHeaderActions,
+    MediaSearchField,
+    MediaUploadAction,
 } from '@/modules/media/components/media-toolbar';
 import { useMediaLibrary } from '@/modules/media/hooks/use-media-library';
-import { childFolders, folderPath } from '@/modules/media/lib/format';
-import type {
-    MediaFolder,
-    MediaLibraryQuery,
-    MediaUploadLimits,
-} from '@/modules/media/types';
+import { childFolders } from '@/modules/media/lib/format';
+import type { MediaUploadLimits } from '@/modules/media/types';
 import { index as mediaIndex } from '@/routes/media';
 
 type Props = {
-    upload: MediaUploadLimits & { maxKilobytes: number };
+    upload: MediaUploadLimits;
     quotaBytes: number | null;
 };
 
-function emptyMessage(loading: boolean, query: MediaLibraryQuery): string {
-    if (loading) {
-        return 'Loading…';
-    }
+const RECENT_LIMIT = 6;
 
-    if (query.trashed) {
-        return 'The trash is empty.';
-    }
-
-    if (query.category !== null || query.search.trim() !== '') {
-        return 'No files match these filters.';
-    }
-
-    return 'No files in this folder yet. Upload files to start.';
-}
-
-type FolderDialog =
-    | { mode: 'create' }
-    | { mode: 'rename'; folder: MediaFolder };
-
+/**
+ * The file manager dashboard. It shows summaries only. The View All links open the library in a new tab.
+ */
 export default function MediaIndex({ upload }: Props) {
     const ability = useAbility();
-    const library = useMediaLibrary();
+    const library = useMediaLibrary({
+        folder: 'all',
+        sort: 'created_desc',
+        perPage: RECENT_LIMIT,
+    });
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [folderDialog, setFolderDialog] = useState<FolderDialog | null>(null);
-    const [folderToDelete, setFolderToDelete] = useState<MediaFolder | null>(
-        null,
-    );
-    const [folderError, setFolderError] = useState<string | null>(null);
+    const [search, setSearch] = useState('');
 
-    const { query, files, folders, usage } = library;
+    const { files, folders, usage } = library;
     const selected = files?.data.find((file) => file.id === selectedId) ?? null;
-    const currentFolders = query.trashed
-        ? []
-        : childFolders(folders, query.folder);
-    const path = folderPath(folders, query.folder);
-    const canManageFolders = ability('media.folders');
+    const rootFolders = childFolders(folders, 'root');
 
     const abilities = {
         update: ability('media.update'),
@@ -93,43 +61,10 @@ export default function MediaIndex({ upload }: Props) {
         purge: ability('media.purge'),
     };
 
-    async function createOrRenameFolder(name: string) {
-        if (folderDialog?.mode === 'rename') {
-            await mediaApi.renameFolder(folderDialog.folder.id, name);
-        } else {
-            await mediaApi.createFolder(
-                name,
-                query.folder === 'root' ? null : query.folder,
-            );
-        }
-
-        setFolderDialog(null);
-        await library.refresh();
-    }
-
-    async function deleteFolder() {
-        if (!folderToDelete) {
-            return;
-        }
-
-        try {
-            await mediaApi.deleteFolder(folderToDelete.id);
-            setFolderToDelete(null);
-            setFolderError(null);
-            await library.refresh();
-        } catch (failure) {
-            setFolderError(
-                failure instanceof MediaApiError
-                    ? failure.message
-                    : 'The folder could not be deleted.',
-            );
-        }
-    }
-
     return (
-        <ResourcePage title="Media">
+        <ResourcePage title="File Manager">
             <div className="space-y-6">
-                <h1 className="text-2xl font-semibold text-title-50">
+                <h1 className="text-xl font-semibold text-title-50">
                     File Manager
                 </h1>
 
@@ -142,123 +77,72 @@ export default function MediaIndex({ upload }: Props) {
                     </Alert>
                 )}
 
-                <Card className="border border-base-200">
-                    <CardHeader className="flex flex-wrap items-center justify-between gap-4 border-b border-base-200 px-6 py-5">
-                        <CardTitle className="text-xl">All media</CardTitle>
-                        <MediaHeaderActions
-                            search={query.search}
-                            folder={query.folder}
-                            limits={upload}
-                            canUpload={ability('media.store')}
-                            onSearch={(search) => library.update({ search })}
-                            onUploaded={() => library.refresh()}
-                        />
+                <Card className="gap-0 rounded-2xl border border-base-200 bg-card-background-50">
+                    <CardHeader className="flex flex-col gap-3 border-b border-base-100/60 p-6 sm:flex-row sm:items-center sm:justify-between">
+                        <CardTitle className="text-lg md:text-lg">
+                            All Media
+                        </CardTitle>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <MediaSearchField
+                                search={search}
+                                onSearch={setSearch}
+                                onSubmit={() =>
+                                    window.open(
+                                        libraryPageUrl({ search }),
+                                        '_blank',
+                                        'noopener,noreferrer',
+                                    )
+                                }
+                            />
+                            <MediaUploadAction
+                                limits={upload}
+                                folder="root"
+                                canUpload={ability('media.store')}
+                                onUploaded={() => library.refresh()}
+                            />
+                        </div>
                     </CardHeader>
                     <CardContent className="p-6">
-                        <MediaStatTiles
-                            usage={usage}
-                            active={query.category}
-                            onSelect={(category) =>
-                                library.update({ category })
-                            }
-                        />
+                        <MediaStatTiles usage={usage} />
                     </CardContent>
                 </Card>
 
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-                    <Card className="min-w-0 border border-base-200 md:min-w-0 xl:col-span-2">
-                        <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-base-200 px-6 py-5">
-                            <div>
-                                <CardTitle className="text-lg">
-                                    All folders
-                                </CardTitle>
-                                <nav
-                                    aria-label="Folder path"
-                                    className="mt-1 flex flex-wrap items-center gap-1 text-sm text-text-100"
-                                >
-                                    <button
-                                        type="button"
-                                        className="hover:underline"
-                                        onClick={() =>
-                                            library.update({ folder: 'root' })
-                                        }
-                                    >
-                                        Library
-                                    </button>
-                                    {path.map((folder) => (
-                                        <span
-                                            key={folder.id}
-                                            className="flex items-center gap-1"
-                                        >
-                                            <span aria-hidden>/</span>
-                                            <button
-                                                type="button"
-                                                className="hover:underline"
-                                                onClick={() =>
-                                                    library.update({
-                                                        folder: folder.id,
-                                                    })
-                                                }
-                                            >
-                                                {folder.name}
-                                            </button>
-                                        </span>
-                                    ))}
-                                </nav>
-                            </div>
-                            {canManageFolders && (
-                                <Button
-                                    variant="primary"
-                                    appearance="outline"
-                                    onPress={() =>
-                                        setFolderDialog({ mode: 'create' })
-                                    }
-                                >
-                                    <FolderPlus className="size-4" />
-                                    New folder
-                                </Button>
-                            )}
+                    <Card className="gap-0 rounded-2xl border border-base-200 bg-card-background-50 xl:col-span-2">
+                        <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-base-100/60 p-6">
+                            <CardTitle className="text-lg md:text-lg">
+                                All Folders
+                            </CardTitle>
+                            <ViewAllLink />
                         </CardHeader>
                         <CardContent className="p-6">
                             <MediaFolderGrid
-                                folders={currentFolders}
-                                canManage={canManageFolders}
+                                folders={rootFolders}
                                 onOpen={(folder) =>
-                                    library.update({ folder: folder.id })
+                                    window.open(
+                                        libraryPageUrl({ folder: folder.id }),
+                                        '_blank',
+                                        'noopener,noreferrer',
+                                    )
                                 }
-                                onRename={(folder) =>
-                                    setFolderDialog({ mode: 'rename', folder })
-                                }
-                                onDelete={(folder) => {
-                                    setFolderError(null);
-                                    setFolderToDelete(folder);
-                                }}
                             />
                         </CardContent>
                     </Card>
 
-                    <MediaStorageDonut usage={usage} />
+                    <MediaStorageDonut
+                        usage={usage}
+                        onRefresh={() => library.refresh()}
+                    />
                 </div>
 
-                <Card className="border border-base-200">
-                    <CardHeader className="flex flex-wrap items-center justify-between gap-4 border-b border-base-200 px-6 py-5">
-                        <CardTitle className="text-lg">
-                            {query.trashed ? 'Trash' : 'Recent files'}
+                <Card className="gap-0 rounded-2xl border border-base-200 bg-card-background-50">
+                    <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-base-100/60 p-6">
+                        <CardTitle className="text-lg md:text-lg">
+                            Recent Files
                         </CardTitle>
-                        <MediaFileTools
-                            sort={query.sort}
-                            trashed={query.trashed}
-                            canCreateFolder={false}
-                            onSort={(sort) => library.update({ sort })}
-                            onToggleTrash={() =>
-                                library.update({ trashed: !query.trashed })
-                            }
-                            onNewFolder={() =>
-                                setFolderDialog({ mode: 'create' })
-                            }
-                        />
+                        <ViewAllLink />
                     </CardHeader>
-                    <CardContent className="space-y-4 p-6">
+                    <CardContent className="p-0">
                         {files && files.data.length > 0 ? (
                             <div className="overflow-x-auto">
                                 <MediaFileTable
@@ -267,19 +151,11 @@ export default function MediaIndex({ upload }: Props) {
                                 />
                             </div>
                         ) : (
-                            <p className="rounded-xl border border-dashed border-base-200 p-10 text-center text-sm text-text-100">
-                                {emptyMessage(library.loading, query)}
+                            <p className="p-6 text-center text-sm text-text-100">
+                                {library.loading
+                                    ? 'Loading…'
+                                    : 'No files yet. Upload files to start.'}
                             </p>
-                        )}
-
-                        {files && files.meta.last_page > 1 && (
-                            <Pagination
-                                currentPage={files.meta.current_page}
-                                totalPages={files.meta.last_page}
-                                onPageChange={(page) =>
-                                    library.update({ page })
-                                }
-                            />
                         )}
                     </CardContent>
                 </Card>
@@ -289,7 +165,7 @@ export default function MediaIndex({ upload }: Props) {
                     file={selected}
                     folders={folders}
                     abilities={abilities}
-                    inTrash={query.trashed}
+                    inTrash={false}
                     onClose={() => setSelectedId(null)}
                     onChanged={(updated) => library.replaceFile(updated)}
                     onRemoved={(uuid) => {
@@ -299,70 +175,30 @@ export default function MediaIndex({ upload }: Props) {
                     }}
                     onStructureChanged={() => library.refresh()}
                 />
-
-                {folderDialog && (
-                    <MediaFolderDialog
-                        title={
-                            folderDialog.mode === 'rename'
-                                ? 'Rename folder'
-                                : 'New folder'
-                        }
-                        initialName={
-                            folderDialog.mode === 'rename'
-                                ? folderDialog.folder.name
-                                : ''
-                        }
-                        onSubmit={createOrRenameFolder}
-                        onClose={() => setFolderDialog(null)}
-                    />
-                )}
-
-                {folderToDelete && (
-                    <Dialog
-                        isOpen
-                        onOpenChange={(open) =>
-                            !open && setFolderToDelete(null)
-                        }
-                    >
-                        <DialogHeader>
-                            <DialogTitle>
-                                Delete “{folderToDelete.name}”?
-                            </DialogTitle>
-                        </DialogHeader>
-                        <DialogBody>
-                            <p className="text-sm text-text-100">
-                                Only empty folders can be deleted. Move their
-                                files and subfolders first.
-                            </p>
-                            {folderError && (
-                                <p className="mt-2 text-sm text-error-500">
-                                    {folderError}
-                                </p>
-                            )}
-                        </DialogBody>
-                        <DialogFooter>
-                            <Button
-                                variant="primary"
-                                appearance="outline"
-                                onPress={() => setFolderToDelete(null)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button variant="danger" onPress={deleteFolder}>
-                                Delete folder
-                            </Button>
-                        </DialogFooter>
-                    </Dialog>
-                )}
             </div>
         </ResourcePage>
+    );
+}
+
+/** The design's "View All" link. It opens the library in a new tab. */
+function ViewAllLink() {
+    return (
+        <a
+            href={libraryPageUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-medium text-text-100 hover:text-title-50"
+        >
+            View All
+            <ArrowRight className="size-4" />
+        </a>
     );
 }
 
 MediaIndex.layout = {
     breadcrumbs: [
         {
-            title: 'Media',
+            title: 'File Manager',
             href: mediaIndex.url(),
             icon: <Images />,
         },

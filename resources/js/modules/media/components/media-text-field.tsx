@@ -14,6 +14,8 @@ type Props = {
     autoFocus?: boolean;
     required?: boolean;
     startIcon?: ReactNode;
+    onSubmit?: () => void;
+    inputClassName?: string;
 };
 
 /** Label, input and error text in the same layout as the other forms in the admin. */
@@ -28,6 +30,8 @@ export function MediaTextField({
     autoFocus,
     required,
     startIcon,
+    onSubmit,
+    inputClassName,
 }: Props) {
     return (
         <TextField
@@ -47,7 +51,13 @@ export function MediaTextField({
                     </span>
                 )}
                 <Input
-                    className={startIcon ? 'w-full pl-9' : 'w-full'}
+                    className={`${startIcon ? 'w-full pl-10' : 'w-full'} ${inputClassName ?? ''}`}
+                    onKeyDown={(event) => {
+                        if (event.key === 'Enter' && onSubmit) {
+                            event.preventDefault();
+                            onSubmit();
+                        }
+                    }}
                     placeholder={placeholder}
                     maxLength={maxLength}
                 />
