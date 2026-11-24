@@ -65,6 +65,11 @@ export type ResourceDateFilter = ResourceFilterBase & {
     type: 'date';
 };
 
+/** A calendar day range. The value is `YYYY-MM-DD,YYYY-MM-DD` (from, to), the same format as the server filter. */
+export type ResourceDateRangeFilter = ResourceFilterBase & {
+    type: 'daterange';
+};
+
 export type ResourceTextFilter = ResourceFilterBase & {
     type: 'text';
     inputMode?: 'text' | 'numeric';
@@ -82,6 +87,7 @@ export type ResourceSearchableFilter = ResourceFilterBase & {
 export type ResourceFilterField =
     | ResourceSelectFilter
     | ResourceDateFilter
+    | ResourceDateRangeFilter
     | ResourceTextFilter
     | ResourceSearchableFilter;
 

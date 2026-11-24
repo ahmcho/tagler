@@ -32,8 +32,7 @@ type Props = {
         status?: PageStatus;
         live?: '1' | '0';
         homepage?: '1' | '0';
-        publish_from?: string;
-        publish_to?: string;
+        publish_date?: string;
         title?: string;
         subtitle?: string;
         slug?: string;
@@ -189,14 +188,9 @@ export default function Index({ pages, filters, locales, status }: Props) {
                             options: YES_NO_OPTIONS,
                         },
                         {
-                            type: 'date',
-                            name: 'publish_from',
-                            label: 'Publish date from',
-                        },
-                        {
-                            type: 'date',
-                            name: 'publish_to',
-                            label: 'Publish date to',
+                            type: 'daterange',
+                            name: 'publish_date',
+                            label: 'Publish date',
                         },
                         { type: 'text', name: 'title', label: 'Title' },
                         { type: 'text', name: 'subtitle', label: 'Subtitle' },

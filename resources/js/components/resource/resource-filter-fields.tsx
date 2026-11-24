@@ -2,6 +2,11 @@ import {
     DatePickerField,
     toCalendarDate,
 } from '@/components/date-picker-field';
+import {
+    DateRangePickerField,
+    formatCalendarRange,
+    toCalendarRange,
+} from '@/components/date-range-picker-field';
 import { SearchableList } from '@/components/searchable-list';
 import type { SelectOption } from '@/components/searchable-list';
 import { SelectField } from '@/components/select-field';
@@ -54,6 +59,24 @@ export function ResourceFilterFields({
                                 onTextChange(
                                     field.name,
                                     next ? next.toString() : '',
+                                )
+                            }
+                        />
+                    );
+                }
+
+                if (field.type === 'daterange') {
+                    return (
+                        <DateRangePickerField
+                            key={field.name}
+                            label={field.label}
+                            value={toCalendarRange(
+                                textValues[field.name] ?? '',
+                            )}
+                            onChange={(next) =>
+                                onTextChange(
+                                    field.name,
+                                    next ? formatCalendarRange(next) : '',
                                 )
                             }
                         />
