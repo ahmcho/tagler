@@ -7,7 +7,7 @@ test('every element class listed in config is registered under its type key', fu
     $registry = app(ContentElementRegistry::class);
 
     expect(array_keys($registry->all()))->toEqualCanonicalizing([
-        'heading', 'paragraph', 'markdown', 'html', 'button', 'spacer', 'divider', 'quote',
+        'heading', 'paragraph', 'markdown', 'html', 'button', 'spacer', 'divider', 'quote', 'child-pages',
     ]);
 });
 

@@ -33,7 +33,7 @@ test('a second visit to a live page is served from the cache without rendering a
 
     $this->get("/{$this->locale}/cached-page")->assertOk();
 
-    $this->mock(PageRenderer::class)->shouldNotReceive('props');
+    $this->partialMock(PageRenderer::class)->shouldNotReceive('props');
 
     $this->get("/{$this->locale}/cached-page")
         ->assertOk()
@@ -83,7 +83,7 @@ test('flushing the cache renders every page again', function (): void {
 
     app(PublicPageCache::class)->flushAll();
 
-    $this->mock(PageRenderer::class, function (MockInterface $mock): void {
+    $this->partialMock(PageRenderer::class, function (MockInterface $mock): void {
         $mock->shouldReceive('props')->once()->andReturn(['page' => ['title' => 'Rendered again'], 'sections' => []]);
     });
 
@@ -96,7 +96,7 @@ test('the preview never reads the public cache', function (): void {
 
     $this->get("/{$this->locale}/preview-cache")->assertOk();
 
-    $this->mock(PageRenderer::class, function (MockInterface $mock): void {
+    $this->partialMock(PageRenderer::class, function (MockInterface $mock): void {
         $mock->shouldReceive('props')->once()->andReturn(['page' => ['title' => 'From the preview'], 'sections' => []]);
     });
 

@@ -66,6 +66,20 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
     /**
      * @return Collection<int, Page>
      */
+    public function liveChildrenOf(Page $page, string $locale, CarbonInterface $now): Collection
+    {
+        return $this->model->newQuery()
+            ->where('parent_id', $page->id)
+            ->whereIn('status', [PageStatus::Published, PageStatus::Scheduled])
+            ->whereHas('translations', fn (Builder $translations) => $translations->where('locale', $locale))
+            ->tap(fn (Builder $query) => $this->whereLiveAt($query, $now))
+            ->with('translations')
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, Page>
+     */
     public function dueScheduledPages(CarbonInterface $now): Collection
     {
         return $this->model->newQuery()

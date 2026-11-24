@@ -2,11 +2,17 @@
 
 namespace App\Modules\Pages\Services;
 
+use App\Modules\Pages\Events\PageRendered;
+use App\Modules\Pages\Events\PageRendering;
 use App\Modules\Pages\Models\PageTranslation;
 use App\Modules\Pages\Resources\PublicPageResource;
 use App\Modules\Pages\Support\ContentElementRegistry;
+use App\Modules\Pages\Support\ContentElements\DynamicContentElement;
 use App\Modules\Pages\Support\PageContentDocument;
+use App\Modules\Pages\Support\PageRenderContext;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Turns a translation's content document into the section props the public
@@ -29,6 +35,32 @@ class PageRenderer
             'page' => PublicPageResource::make($translation)->resolve(),
             'sections' => $this->sections($translation),
         ];
+    }
+
+    /**
+     * Runs the dynamic elements of cached props and fires the render events. Runs on every render, after the
+     * cache read, so component output is always current. Preview renders use it too.
+     *
+     * @param  array{page: array<string, mixed>, sections: list<array<string, mixed>>}  $props
+     * @return array{page: array<string, mixed>, sections: list<array<string, mixed>>}
+     */
+    public function finalize(PageTranslation $translation, array $props, bool $isPreview): array
+    {
+        Event::dispatch(new PageRendering($translation, $props, $isPreview));
+
+        $context = new PageRenderContext($translation, $isPreview);
+
+        $props['sections'] = array_map(
+            fn (array $section): array => [
+                ...$section,
+                'elements' => array_map(fn (array $element): array => $this->resolveElement($translation, $element, $context), $section['elements']),
+            ],
+            $props['sections'],
+        );
+
+        Event::dispatch(new PageRendered($translation, $props, $isPreview));
+
+        return $props;
     }
 
     /**
@@ -62,6 +94,33 @@ class PageRenderer
         }
 
         return $sections;
+    }
+
+    /**
+     * A component that fails keeps its config and logs the error, so the rest of the page still renders.
+     *
+     * @param  array{id: string, type: string, data: array<string, mixed>}  $element
+     * @return array{id: string, type: string, data: array<string, mixed>}
+     */
+    private function resolveElement(PageTranslation $translation, array $element, PageRenderContext $context): array
+    {
+        $handler = $this->registry->resolve($element['type']);
+
+        if (! $handler instanceof DynamicContentElement) {
+            return $element;
+        }
+
+        try {
+            $element['data'] = [...$element['data'], ...$handler->resolve($element['data'], $context)];
+        } catch (Throwable $exception) {
+            Log::error('Page component failed to resolve.', [
+                'translation_id' => $translation->id,
+                'type' => $element['type'],
+                'exception' => $exception->getMessage(),
+            ]);
+        }
+
+        return $element;
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Modules\Pages\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Pages\Enums\LocaleEnum;
+use App\Modules\Pages\Events\PageResolving;
 use App\Modules\Pages\Services\PageComponentResolver;
 use App\Modules\Pages\Services\PageRenderer;
 use App\Modules\Pages\Services\PageResolver;
@@ -31,6 +32,8 @@ class PublicPageController extends Controller
         $locale = (string) ($request->route('locale') ?? LocaleEnum::default());
         $path = (string) ($request->route('path') ?? '');
 
+        event(new PageResolving($locale, $path));
+
         $page = $resolver->resolve($locale, $path);
 
         if ($page === null) {
@@ -47,7 +50,11 @@ class PublicPageController extends Controller
 
         $translation->setRelation('page', $page);
 
-        $props = $cache->remember($page->id, $locale, fn (): array => $renderer->props($translation));
+        $props = $renderer->finalize(
+            $translation,
+            $cache->remember($page->id, $locale, fn (): array => $renderer->props($translation)),
+            false,
+        );
 
         return Inertia::render($components->forPage($page), $props)->toResponse($request);
     }

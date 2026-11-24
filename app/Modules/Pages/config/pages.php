@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Pages\Support\ContentElements\ButtonElement;
+use App\Modules\Pages\Support\ContentElements\ChildPagesElement;
 use App\Modules\Pages\Support\ContentElements\DividerElement;
 use App\Modules\Pages\Support\ContentElements\HeadingElement;
 use App\Modules\Pages\Support\ContentElements\HtmlElement;
@@ -63,6 +64,14 @@ return [
         SpacerElement::class,
         DividerElement::class,
         QuoteElement::class,
+    ],
+
+    /*
+     * Functional components: content element classes that resolve live data on every request. Each one is
+     * also a content element, so it is registered with the elements above. Only trusted classes listed here can run.
+     */
+    'components' => [
+        ChildPagesElement::class,
     ],
 
     /*

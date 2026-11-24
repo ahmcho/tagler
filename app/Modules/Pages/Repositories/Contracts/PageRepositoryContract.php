@@ -32,6 +32,13 @@ interface PageRepositoryContract extends EloquentRepositoryContract
     public function childrenOf(Page $page): Collection;
 
     /**
+     * The live children of a page that have a translation in this locale, with their translations loaded.
+     *
+     * @return Collection<int, Page>
+     */
+    public function liveChildrenOf(Page $page, string $locale, CarbonInterface $now): Collection;
+
+    /**
      * Scheduled pages whose publish time has passed, or that have no publish time.
      *
      * @return Collection<int, Page>

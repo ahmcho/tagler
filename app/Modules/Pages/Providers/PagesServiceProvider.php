@@ -16,11 +16,13 @@ use App\Modules\Pages\Repositories\PageTranslationRepository;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use App\Modules\Pages\Services\PageService;
 use App\Modules\Pages\Support\ContentElementRegistry;
+use App\Modules\Pages\Support\ContentElements\DynamicContentElement;
 use Crud\Providers\ModuleServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Ssr\Gateway;
 use Inertia\Ssr\HttpGateway;
+use InvalidArgumentException;
 
 class PagesServiceProvider extends ModuleServiceProvider
 {
@@ -92,7 +94,7 @@ class PagesServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * Element classes come from config/pages.php, so only code this application ships can run.
+     * Element and component classes come from config/pages.php, so only code this application ships can run.
      */
     private function registerContentElements(): void
     {
@@ -100,6 +102,16 @@ class PagesServiceProvider extends ModuleServiceProvider
 
         foreach (config('modules.pages.elements', []) as $elementClass) {
             $registry->register(app($elementClass));
+        }
+
+        foreach (config('modules.pages.components', []) as $componentClass) {
+            $component = app($componentClass);
+
+            if (! $component instanceof DynamicContentElement) {
+                throw new InvalidArgumentException("Page component [{$componentClass}] must implement DynamicContentElement.");
+            }
+
+            $registry->register($component);
         }
     }
 

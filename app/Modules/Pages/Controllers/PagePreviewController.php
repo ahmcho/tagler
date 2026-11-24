@@ -30,7 +30,9 @@ class PagePreviewController extends Controller
 
         Inertia::setRootView('public');
 
-        $response = Inertia::render($components->forPage($page), $renderer->props($translation))->toResponse($request);
+        $props = $renderer->finalize($translation, $renderer->props($translation), true);
+
+        $response = Inertia::render($components->forPage($page), $props)->toResponse($request);
 
         $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
         $response->headers->set('Cache-Control', 'no-store, private');
