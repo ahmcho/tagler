@@ -267,16 +267,7 @@ class PageController extends Controller
         $translations = [];
 
         foreach (LocaleEnum::codes() as $locale) {
-            $translation = $values['translations'][$locale] ?? null;
-
-            $translations[$locale] = [
-                'title' => $translation['title'] ?? '',
-                'subtitle' => $translation['subtitle'] ?? '',
-                'slug' => $translation['slug'] ?? '',
-                'seo_title' => $translation['seo_title'] ?? '',
-                'seo_description' => $translation['seo_description'] ?? '',
-                'content' => $translation['content'] ?? PageContentDocument::empty(),
-            ];
+            $translations[$locale] = $this->formTranslation($values['translations'][$locale] ?? null);
         }
 
         return [
@@ -288,6 +279,40 @@ class PageController extends Controller
             'layout' => $values['layout'],
             'theme_layout' => $values['theme_layout'],
             'translations' => $translations,
+        ];
+    }
+
+    /**
+     * One locale's form fields. A field the translation does not hold gets its blank value.
+     *
+     * @param  array<string, mixed>|null  $translation
+     * @return array<string, mixed>
+     */
+    private function formTranslation(?array $translation): array
+    {
+        $fields = [];
+
+        foreach ($this->blankTranslationFields() as $field => $blankValue) {
+            $fields[$field] = $translation[$field] ?? $blankValue;
+        }
+
+        return $fields;
+    }
+
+    /**
+     * The form field names of a translation, each with the value shown when the page has none.
+     *
+     * @return array<string, mixed>
+     */
+    private function blankTranslationFields(): array
+    {
+        return [
+            'title' => '',
+            'subtitle' => '',
+            'slug' => '',
+            'seo_title' => '',
+            'seo_description' => '',
+            'content' => PageContentDocument::empty(),
         ];
     }
 

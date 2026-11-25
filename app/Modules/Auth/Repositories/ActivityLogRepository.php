@@ -21,20 +21,43 @@ class ActivityLogRepository implements ActivityLogRepositoryContract
      */
     public function getAllPaginated(array $filters, int $perPage): LengthAwarePaginator
     {
-        $query = ActivityLog::query()
-            ->when($filters['event'] ?? null, fn (Builder $query, $event) => $query->where('event', $event))
-            ->when($filters['subject_type'] ?? null, fn (Builder $query, $type) => $query->where('subject_type', $type))
-            ->when($filters['subject_id'] ?? null, fn (Builder $query, $id) => $query->where('subject_id', (int) $id))
-            ->when($filters['causer_id'] ?? null, fn (Builder $query, $id) => $query->where('causer_id', (int) $id));
+        $query = ActivityLog::query();
 
-        $sortColumn = $filters['sort'] ?? 'created_at';
-        $query->orderBy($sortColumn, ($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc');
+        $this->applyFilters($query, $filters);
+        $this->applySort($query, $filters);
 
         $paginator = $query->paginate($perPage);
 
         $this->attachCausers($paginator->getCollection());
 
         return $paginator;
+    }
+
+    /**
+     * A filter with a falsy value adds no condition.
+     *
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyFilters(Builder $query, array $filters): void
+    {
+        $query
+            ->when($filters['event'] ?? null, fn (Builder $query, $event) => $query->where('event', $event))
+            ->when($filters['subject_type'] ?? null, fn (Builder $query, $type) => $query->where('subject_type', $type))
+            ->when($filters['subject_id'] ?? null, fn (Builder $query, $id) => $query->where('subject_id', (int) $id))
+            ->when($filters['causer_id'] ?? null, fn (Builder $query, $id) => $query->where('causer_id', (int) $id));
+    }
+
+    /**
+     * Sorts by created_at descending unless the request names a column and direction.
+     *
+     * @param  array<string, mixed>  $filters
+     */
+    private function applySort(Builder $query, array $filters): void
+    {
+        $sortColumn = $filters['sort'] ?? 'created_at';
+        $direction = ($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
+        $query->orderBy($sortColumn, $direction);
     }
 
     public function findOrFail(string $id): ActivityLog

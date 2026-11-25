@@ -99,40 +99,94 @@ class MediaRepository extends EloquentRepository implements MediaRepositoryContr
      */
     private function applyLibraryFilters(Builder $query, array $filters): void
     {
-        $query
-            ->when(
-                ($filters['category'] ?? null) !== null,
-                fn (Builder $query) => $this->applyCategory($query, MediaCategory::from($filters['category'])),
-            )
-            ->when(
-                ($filters['search'] ?? null) !== null,
-                fn (Builder $query) => $query->where(function (Builder $query) use ($filters): void {
-                    $term = '%'.addcslashes((string) $filters['search'], '%_\\').'%';
-                    $query->whereRaw('original_name ILIKE ?', [$term])->orWhereRaw('title ILIKE ?', [$term]);
-                }),
-            )
-            ->when(
-                array_key_exists('folder', $filters),
-                fn (Builder $query) => ($filters['folder'] ?? null) === null
-                    ? $query->whereNull('folder_id')
-                    : $query->where('folder_id', (int) $filters['folder']),
-            )
-            ->when(
-                ($filters['visibility'] ?? null) !== null,
-                fn (Builder $query) => $query->where('visibility', $filters['visibility']),
-            )
-            ->when(
-                ($filters['uploaded_by'] ?? null) !== null,
-                fn (Builder $query) => $query->where('uploaded_by', (int) $filters['uploaded_by']),
-            )
-            ->when(
-                ($filters['created_from'] ?? null) !== null,
-                fn (Builder $query) => $query->whereDate('created_at', '>=', $filters['created_from']),
-            )
-            ->when(
-                ($filters['created_to'] ?? null) !== null,
-                fn (Builder $query) => $query->whereDate('created_at', '<=', $filters['created_to']),
-            );
+        $this->applyCategoryFilter($query, $filters);
+        $this->applySearchFilter($query, $filters);
+        $this->applyFolderFilter($query, $filters);
+        $this->applyVisibilityFilter($query, $filters);
+        $this->applyUploaderFilter($query, $filters);
+        $this->applyCreatedDateFilters($query, $filters);
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyCategoryFilter(Builder $query, array $filters): void
+    {
+        if (($filters['category'] ?? null) !== null) {
+            $this->applyCategory($query, MediaCategory::from($filters['category']));
+        }
+    }
+
+    /**
+     * Matches the term in the original name or the title, ignoring case.
+     *
+     * @param  array<string, mixed>  $filters
+     */
+    private function applySearchFilter(Builder $query, array $filters): void
+    {
+        if (($filters['search'] ?? null) === null) {
+            return;
+        }
+
+        $term = '%'.addcslashes((string) $filters['search'], '%_\\').'%';
+
+        $query->where(function (Builder $query) use ($term): void {
+            $query->whereRaw('original_name ILIKE ?', [$term])->orWhereRaw('title ILIKE ?', [$term]);
+        });
+    }
+
+    /**
+     * A folder key with a null value means the root folder, which is stored as a null folder_id.
+     *
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyFolderFilter(Builder $query, array $filters): void
+    {
+        if (! array_key_exists('folder', $filters)) {
+            return;
+        }
+
+        if (($filters['folder'] ?? null) === null) {
+            $query->whereNull('folder_id');
+
+            return;
+        }
+
+        $query->where('folder_id', (int) $filters['folder']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyVisibilityFilter(Builder $query, array $filters): void
+    {
+        if (($filters['visibility'] ?? null) !== null) {
+            $query->where('visibility', $filters['visibility']);
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyUploaderFilter(Builder $query, array $filters): void
+    {
+        if (($filters['uploaded_by'] ?? null) !== null) {
+            $query->where('uploaded_by', (int) $filters['uploaded_by']);
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyCreatedDateFilters(Builder $query, array $filters): void
+    {
+        if (($filters['created_from'] ?? null) !== null) {
+            $query->whereDate('created_at', '>=', $filters['created_from']);
+        }
+
+        if (($filters['created_to'] ?? null) !== null) {
+            $query->whereDate('created_at', '<=', $filters['created_to']);
+        }
     }
 
     private function applyCategory(Builder $query, MediaCategory $category): void

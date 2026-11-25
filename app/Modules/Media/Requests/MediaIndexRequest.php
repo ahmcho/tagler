@@ -39,22 +39,51 @@ class MediaIndexRequest extends AppFormRequest
     public function filters(): array
     {
         $validated = $this->validated();
-        $filters = [
+        $filters = array_merge($this->matchFilters($validated), $this->orderingFilters($validated));
+
+        if (array_key_exists('folder', $validated)) {
+            $filters['folder'] = $this->folderFilter($validated['folder']);
+        }
+
+        return $filters;
+    }
+
+    /**
+     * The nullable filters that narrow the library by content, owner or date.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function matchFilters(array $validated): array
+    {
+        return [
             'category' => $validated['category'] ?? null,
             'search' => $validated['search'] ?? null,
             'visibility' => $validated['visibility'] ?? null,
             'uploaded_by' => $validated['uploaded_by'] ?? null,
             'created_from' => $validated['created_from'] ?? null,
             'created_to' => $validated['created_to'] ?? null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return array{sort: string, trashed: bool}
+     */
+    private function orderingFilters(array $validated): array
+    {
+        return [
             'sort' => $validated['sort'] ?? 'created_desc',
             'trashed' => (bool) ($validated['trashed'] ?? false),
         ];
+    }
 
-        if (array_key_exists('folder', $validated)) {
-            $filters['folder'] = $validated['folder'] === 'root' ? null : (int) $validated['folder'];
-        }
-
-        return $filters;
+    /**
+     * The root folder is stored as null, so it maps to null rather than to an id.
+     */
+    private function folderFilter(mixed $folder): ?int
+    {
+        return $folder === 'root' ? null : (int) $folder;
     }
 
     public function resultsPerPage(): int

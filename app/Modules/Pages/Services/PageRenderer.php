@@ -91,7 +91,7 @@ class PageRenderer
      */
     private function renderSection(PageTranslation $translation, mixed $section, array $layouts): ?array
     {
-        if (($section['enabled'] ?? true) !== true) {
+        if (! $this->isSectionEnabled($section)) {
             return null;
         }
 
@@ -106,9 +106,25 @@ class PageRenderer
         return [
             'id' => (string) ($section['id'] ?? ''),
             'layout' => $layout,
-            'settings' => is_array($section['settings'] ?? null) ? $section['settings'] : [],
+            'settings' => $this->sectionSettings($section),
             'elements' => $this->elements($translation, $section['elements'] ?? []),
         ];
+    }
+
+    /**
+     * A section is enabled unless its flag is anything other than the boolean true.
+     */
+    private function isSectionEnabled(mixed $section): bool
+    {
+        return ($section['enabled'] ?? true) === true;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function sectionSettings(mixed $section): array
+    {
+        return is_array($section['settings'] ?? null) ? $section['settings'] : [];
     }
 
     /**
@@ -147,22 +163,44 @@ class PageRenderer
         $rendered = [];
 
         foreach ($elements as $element) {
-            $type = (string) ($element['type'] ?? '');
-            $handler = $this->registry->resolve($type);
+            $renderedElement = $this->renderElement($translation, $element);
 
-            if ($handler === null) {
-                Log::info('Page element skipped: unknown type.', ['translation_id' => $translation->id, 'type' => $type]);
-
-                continue;
+            if ($renderedElement !== null) {
+                $rendered[] = $renderedElement;
             }
-
-            $rendered[] = [
-                'id' => (string) ($element['id'] ?? ''),
-                'type' => $type,
-                'data' => $handler->present(is_array($element['data'] ?? null) ? $element['data'] : []),
-            ];
         }
 
         return $rendered;
+    }
+
+    /**
+     * Null means the element is skipped: its type has no registered handler.
+     *
+     * @return array{id: string, type: string, data: array<string, mixed>}|null
+     */
+    private function renderElement(PageTranslation $translation, mixed $element): ?array
+    {
+        $type = (string) ($element['type'] ?? '');
+        $handler = $this->registry->resolve($type);
+
+        if ($handler === null) {
+            Log::info('Page element skipped: unknown type.', ['translation_id' => $translation->id, 'type' => $type]);
+
+            return null;
+        }
+
+        return [
+            'id' => (string) ($element['id'] ?? ''),
+            'type' => $type,
+            'data' => $handler->present($this->elementData($element)),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function elementData(mixed $element): array
+    {
+        return is_array($element['data'] ?? null) ? $element['data'] : [];
     }
 }

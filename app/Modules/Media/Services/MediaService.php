@@ -39,34 +39,58 @@ class MediaService implements MediaServiceContract
 
         $stored = $this->storage->store($file, $visibility, $uuid, $extension);
 
+        $media = $this->persistUpload($stored, [
+            'uuid' => $uuid,
+            'disk' => $stored['disk'],
+            'path' => $stored['path'],
+            'original_name' => $this->cleanOriginalName($file->getClientOriginalName()),
+            'file_name' => $uuid.'.'.$extension,
+            'mime_type' => $mimeType,
+            'extension' => $extension,
+            'size' => $file->getSize(),
+            'checksum' => $checksum,
+            ...$this->metadataAttributes($payload),
+            'visibility' => $visibility,
+            'processing_status' => MediaProcessingStatus::Pending,
+            'uploaded_by' => $uploader->getKey(),
+        ]);
+
+        ProcessMedia::dispatch($media->getKey());
+
+        return $media;
+    }
+
+    /**
+     * Saves the file row. When the save fails, the stored file is deleted and the error is rethrown.
+     *
+     * @param  array{disk: string, path: string}  $stored
+     * @param  array<string, mixed>  $attributes
+     */
+    private function persistUpload(array $stored, array $attributes): Media
+    {
         try {
-            $media = DB::transaction(fn (): Media => $this->repository->createFromUpload([
-                'uuid' => $uuid,
-                'disk' => $stored['disk'],
-                'path' => $stored['path'],
-                'original_name' => $this->cleanOriginalName($file->getClientOriginalName()),
-                'file_name' => $uuid.'.'.$extension,
-                'mime_type' => $mimeType,
-                'extension' => $extension,
-                'size' => $file->getSize(),
-                'checksum' => $checksum,
-                'folder_id' => $payload['folder_id'] ?? null,
-                'title' => $payload['title'] ?? null,
-                'alt_text' => $payload['alt_text'] ?? null,
-                'description' => $payload['description'] ?? null,
-                'visibility' => $visibility,
-                'processing_status' => MediaProcessingStatus::Pending,
-                'uploaded_by' => $uploader->getKey(),
-            ]));
+            return DB::transaction(fn (): Media => $this->repository->createFromUpload($attributes));
         } catch (Throwable $exception) {
             $this->storage->delete($stored['disk'], $stored['path']);
 
             throw $exception;
         }
+    }
 
-        ProcessMedia::dispatch($media->getKey());
-
-        return $media;
+    /**
+     * The optional library fields of an upload. Each one defaults to null.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{folder_id: mixed, title: mixed, alt_text: mixed, description: mixed}
+     */
+    private function metadataAttributes(array $payload): array
+    {
+        return [
+            'folder_id' => $payload['folder_id'] ?? null,
+            'title' => $payload['title'] ?? null,
+            'alt_text' => $payload['alt_text'] ?? null,
+            'description' => $payload['description'] ?? null,
+        ];
     }
 
     public function update(Media $media, array $payload): Media

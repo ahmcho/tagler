@@ -96,31 +96,81 @@ abstract class AppFormRequest extends FormRequest
         return parent::getValidatorInstance();
     }
 
+    /**
+     * @return list<array{0: string, 1: string, 2: mixed}>
+     */
     final protected function generateAutoFilters(): array
     {
-        $rules = collect($this->rules())
-            ->forget($this->customFilters)
-            ->toArray();
-
         $values = $this->validated();
-
         $autoFilters = [];
 
-        foreach ($rules as $attr => $rule) {
-            if (! is_array($rule) && ! is_string($rule)) {
-                continue;
-            }
+        foreach ($this->autoFilterableRules() as $attr => $rule) {
+            $autoFilter = $this->autoFilterFor($attr, $rule, $values);
 
-            $rule = is_string($rule) ? explode('|', $rule) : $rule;
-
-            if (in_array('string', $rule) && ! empty($values[$attr])) {
-                $autoFilters[] = [$attr, 'LIKE', "%{$values[$attr]}%"];
-            } elseif (isset($values[$attr]) && $values[$attr] != null) {
-                $autoFilters[] = [$attr, '=', $values[$attr]];
+            if ($autoFilter !== null) {
+                $autoFilters[] = $autoFilter;
             }
         }
 
         return $autoFilters;
+    }
+
+    /**
+     * The validation rules without the keys that are read verbatim as custom filters.
+     *
+     * @return array<string, mixed>
+     */
+    private function autoFilterableRules(): array
+    {
+        return collect($this->rules())
+            ->forget($this->customFilters)
+            ->toArray();
+    }
+
+    /**
+     * Null means the attribute gets no automatic condition.
+     *
+     * @param  array<string, mixed>  $values
+     * @return array{0: string, 1: string, 2: mixed}|null
+     */
+    private function autoFilterFor(int|string $attr, mixed $rule, array $values): ?array
+    {
+        if (! is_array($rule) && ! is_string($rule)) {
+            return null;
+        }
+
+        $ruleNames = is_string($rule) ? explode('|', $rule) : $rule;
+
+        if ($this->isLikeFilterable($attr, $ruleNames, $values)) {
+            return [$attr, 'LIKE', "%{$values[$attr]}%"];
+        }
+
+        if ($this->isExactFilterable($attr, $values)) {
+            return [$attr, '=', $values[$attr]];
+        }
+
+        return null;
+    }
+
+    /**
+     * A string rule with a non-empty value becomes a LIKE condition.
+     *
+     * @param  array<int|string, mixed>  $ruleNames
+     * @param  array<string, mixed>  $values
+     */
+    private function isLikeFilterable(int|string $attr, array $ruleNames, array $values): bool
+    {
+        return in_array('string', $ruleNames) && ! empty($values[$attr]);
+    }
+
+    /**
+     * Any other set, non-null value becomes an exact-match condition.
+     *
+     * @param  array<string, mixed>  $values
+     */
+    private function isExactFilterable(int|string $attr, array $values): bool
+    {
+        return isset($values[$attr]) && $values[$attr] != null;
     }
 
     final protected function customFilters(): array

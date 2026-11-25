@@ -6,6 +6,7 @@ use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Repositories\Contracts\PageRepositoryContract;
 use App\Modules\Pages\Support\PagePath;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
 /**
@@ -31,6 +32,11 @@ class PageResolver
             return null;
         }
 
+        return $this->findLivePage($locale, $path);
+    }
+
+    private function findLivePage(string $locale, PagePath $path): ?Page
+    {
         $now = Carbon::now();
         $page = $this->pageRepository->findByLocalizedPath($locale, $path);
 
@@ -38,13 +44,14 @@ class PageResolver
             return null;
         }
 
+        return $this->hasLiveAncestors($locale, $path, $now) ? $page : null;
+    }
+
+    private function hasLiveAncestors(string $locale, PagePath $path, CarbonInterface $now): bool
+    {
         $ancestors = $path->ancestors();
 
-        if ($this->pageRepository->countLiveByLocalizedPaths($locale, $ancestors, $now) !== count($ancestors)) {
-            return null;
-        }
-
-        return $page;
+        return $this->pageRepository->countLiveByLocalizedPaths($locale, $ancestors, $now) === count($ancestors);
     }
 
     /**

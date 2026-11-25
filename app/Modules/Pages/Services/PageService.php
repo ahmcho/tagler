@@ -288,11 +288,34 @@ class PageService extends BaseCrudService implements PageServiceContract
      */
     private function syncTranslations(Page $page, ?Page $parent, array $translations): void
     {
-        $active = array_filter(
+        $active = $this->activeTranslations($translations);
+
+        $this->deleteInactiveTranslations($page, $active);
+
+        foreach ($active as $locale => $translation) {
+            $this->saveTranslation($page, $parent, (string) $locale, $translation);
+        }
+    }
+
+    /**
+     * A translation is active when it has both a title and a slug.
+     *
+     * @param  array<string, array<string, mixed>>  $translations
+     * @return array<string, array<string, mixed>>
+     */
+    private function activeTranslations(array $translations): array
+    {
+        return array_filter(
             $translations,
             fn (array $translation): bool => filled($translation['title'] ?? null) && filled($translation['slug'] ?? null),
         );
+    }
 
+    /**
+     * @param  array<string, array<string, mixed>>  $active
+     */
+    private function deleteInactiveTranslations(Page $page, array $active): void
+    {
         foreach ($this->translationRepository->forPage($page) as $existing) {
             if (isset($active[$existing->locale])) {
                 continue;
@@ -306,36 +329,75 @@ class PageService extends BaseCrudService implements PageServiceContract
 
             $this->translationRepository->deleteForLocale($page, $existing->locale);
         }
+    }
 
-        foreach ($active as $locale => $translation) {
-            $locale = (string) $locale;
-            $path = $page->is_homepage
-                ? PagePath::homepage()
-                : $this->pathUnder($parent, $locale, (string) $translation['slug']);
+    /**
+     * @param  array<string, mixed>  $translation
+     */
+    private function saveTranslation(Page $page, ?Page $parent, string $locale, array $translation): void
+    {
+        $path = $this->translationPath($page, $parent, $locale, $translation);
 
-            if ($this->translationRepository->pathIsTaken($locale, $path->value, $page->id)) {
-                throw ValidationException::withMessages([
-                    "translations.{$locale}.slug" => __('pages.errors.path_taken', ['path' => $path->value]),
-                ]);
-            }
-
-            $attributes = [
-                'title' => $translation['title'],
-                'subtitle' => $translation['subtitle'] ?? null,
-                'slug' => $translation['slug'],
-                'path' => $path->value,
-                'seo_title' => $translation['seo_title'] ?? null,
-                'seo_description' => $translation['seo_description'] ?? null,
-            ];
-
-            if (is_array($translation['content'] ?? null)) {
-                $attributes['content'] = $translation['content'];
-            } elseif ($this->translationRepository->find($page, $locale) === null) {
-                $attributes['content'] = PageContentDocument::empty();
-            }
-
-            $this->translationRepository->save($page, $locale, $attributes);
+        if ($this->translationRepository->pathIsTaken($locale, $path->value, $page->id)) {
+            throw ValidationException::withMessages([
+                "translations.{$locale}.slug" => __('pages.errors.path_taken', ['path' => $path->value]),
+            ]);
         }
+
+        $attributes = $this->withContent(
+            $page,
+            $locale,
+            $translation,
+            $this->translationAttributes($translation, $path),
+        );
+
+        $this->translationRepository->save($page, $locale, $attributes);
+    }
+
+    /**
+     * The homepage always sits at the root path. Other pages get a path under their parent.
+     *
+     * @param  array<string, mixed>  $translation
+     */
+    private function translationPath(Page $page, ?Page $parent, string $locale, array $translation): PagePath
+    {
+        return $page->is_homepage
+            ? PagePath::homepage()
+            : $this->pathUnder($parent, $locale, (string) $translation['slug']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $translation
+     * @return array<string, mixed>
+     */
+    private function translationAttributes(array $translation, PagePath $path): array
+    {
+        return [
+            'title' => $translation['title'],
+            'subtitle' => $translation['subtitle'] ?? null,
+            'slug' => $translation['slug'],
+            'path' => $path->value,
+            'seo_title' => $translation['seo_title'] ?? null,
+            'seo_description' => $translation['seo_description'] ?? null,
+        ];
+    }
+
+    /**
+     * Sets the content when the form sent one. A new translation without one starts blank.
+     *
+     * @param  array<string, mixed>  $translation
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    private function withContent(Page $page, string $locale, array $translation, array $attributes): array
+    {
+        if (is_array($translation['content'] ?? null)) {
+            $attributes['content'] = $translation['content'];
+        } elseif ($this->translationRepository->find($page, $locale) === null) {
+            $attributes['content'] = PageContentDocument::empty();
+        }
+
+        return $attributes;
     }
 
     /**
