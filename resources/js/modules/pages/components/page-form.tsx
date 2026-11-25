@@ -43,6 +43,7 @@ import {
     SERVER_TIME_ZONE,
 } from '@/modules/pages/components/page-schedule';
 import { RichTextEditor } from '@/modules/pages/components/rich-text-editor';
+import type { BodyFormatValue } from '@/modules/pages/components/rich-text-editor';
 import { cn } from '@/utils/cn';
 
 export type PageParentOption = {
@@ -74,8 +75,10 @@ export type PageTranslationFormData = {
     slug: string;
     seo_title: string;
     seo_description: string;
-    /** The locale's body: sanitised HTML, or empty. */
+    /** The locale's body, as written in its format. Empty when the locale has none. */
     body: string;
+    /** Whether the body is rich text (HTML) or Markdown. */
+    body_format: BodyFormatValue;
 };
 
 export type PageFormData = {
@@ -506,7 +509,17 @@ function LocaleFields({
                 <FieldLabel>Body</FieldLabel>
                 <RichTextEditor
                     value={translation.body}
-                    onChange={(html) => setField('body', html)}
+                    format={translation.body_format}
+                    onChange={(body, bodyFormat) =>
+                        form.setData('translations', {
+                            ...form.data.translations,
+                            [code]: {
+                                ...translation,
+                                body,
+                                body_format: bodyFormat,
+                            },
+                        })
+                    }
                     invalid={Boolean(errorFor(form, field('body')))}
                 />
                 <ErrorMessage message={errorFor(form, field('body'))} />
