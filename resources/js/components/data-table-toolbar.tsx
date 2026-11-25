@@ -201,7 +201,7 @@ function DataTableBatchMenu<Row>({
     );
 }
 
-export type DataTableToolbarProps<Row> = {
+type DataTableToolbarProps<Row> = {
     title: ReactNode;
     subtitle: ReactNode;
     search?: DataTableSearch;

@@ -7,7 +7,7 @@ const PAST_DATE_MESSAGE = 'Choose a date that is not in the past.';
 const PAST_TIME_MESSAGE = 'Choose a time later than the current time (UTC).';
 
 /** The current date and time in UTC, as `YYYY-MM-DD` and `HH:mm`. */
-export function utcNow(): { date: string; time: string } {
+function utcNow(): { date: string; time: string } {
     const iso = new Date().toISOString();
 
     return { date: iso.slice(0, 10), time: iso.slice(11, 16) };
@@ -43,7 +43,7 @@ export function scheduleError(
     return null;
 }
 
-export type ScheduleIssue = NonNullable<ReturnType<typeof scheduleError>>;
+type ScheduleIssue = NonNullable<ReturnType<typeof scheduleError>>;
 
 /** The server error for a publish field. Without one, the early schedule message for that field. */
 export function publishError(

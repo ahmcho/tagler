@@ -67,8 +67,6 @@ export type ContentEditorConfig = {
     canUseHtml: boolean;
 };
 
-export const EMPTY_CONTENT: ContentDocument = { version: 1, sections: [] };
-
 /** A UUID v4. Falls back to random bytes where `crypto.randomUUID` needs a secure context. */
 export function newId(): string {
     if (typeof crypto.randomUUID === 'function') {
