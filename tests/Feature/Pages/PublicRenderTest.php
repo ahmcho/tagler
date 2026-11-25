@@ -63,6 +63,23 @@ test('a section whose layout is no longer available is skipped and the page stil
     $this->get('/')->assertOk()->assertInertia(fn (Assert $page) => $page->has('sections', 0));
 });
 
+test('a skipped section for an unknown layout logs a warning with its layout', function (): void {
+    Log::spy();
+
+    PageFixtures::create(['is_homepage' => true], [
+        'locale' => $this->locale,
+        'slug' => 'home',
+        'path' => '/',
+        'content' => contentOf([['id' => '11111111-1111-4111-8111-111111111111', 'layout' => 'retired-layout', 'elements' => []]]),
+    ]);
+
+    $this->get('/')->assertOk();
+
+    Log::shouldHaveReceived('warning')
+        ->with('Page section skipped: unknown layout.', Mockery::on(fn (array $context): bool => $context['layout'] === 'retired-layout'))
+        ->once();
+});
+
 test('an element type that is not registered is skipped', function (): void {
     PageFixtures::create(['is_homepage' => true], [
         'locale' => $this->locale,
