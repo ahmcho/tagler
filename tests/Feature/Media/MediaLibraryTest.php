@@ -204,3 +204,23 @@ test('the trash filter returns only trashed files when sent as 1', function (): 
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.name', 'gone.jpg');
 });
+
+test('the library filters by visibility, uploader and creation date range', function (): void {
+    $uploader = User::factory()->create();
+    Media::factory()->public()->create(['original_name' => 'shared.jpg', 'uploaded_by' => $uploader->id, 'created_at' => '2026-03-10 12:00:00']);
+    Media::factory()->create(['original_name' => 'private-early.jpg', 'uploaded_by' => $uploader->id, 'created_at' => '2026-01-05 09:00:00']);
+    Media::factory()->public()->create(['original_name' => 'public-late.jpg', 'created_at' => '2026-06-01 09:00:00']);
+
+    $this->actingAs($this->admin)
+        ->getJson(route('media.files.index', ['visibility' => 'public']))
+        ->assertJsonCount(2, 'data');
+
+    $this->actingAs($this->admin)
+        ->getJson(route('media.files.index', ['uploaded_by' => $uploader->id]))
+        ->assertJsonCount(2, 'data');
+
+    $this->actingAs($this->admin)
+        ->getJson(route('media.files.index', ['created_from' => '2026-02-01', 'created_to' => '2026-04-30']))
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.name', 'shared.jpg');
+});
