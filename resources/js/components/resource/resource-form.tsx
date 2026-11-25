@@ -48,7 +48,6 @@ export type ResourceContentProps<TData extends Record<string, unknown>> =
     ResourceFormProps<TData> & {
         /** Document title, for example "New role". */
         pageTitle: string;
-        status?: string | null;
     };
 
 /**

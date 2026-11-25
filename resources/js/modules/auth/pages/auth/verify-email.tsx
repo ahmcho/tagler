@@ -1,30 +1,12 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import {
-    Alert,
-    AlertContent,
-    AlertIndicator,
-    AlertTitle,
-} from '@/components/tailgrids/core/alert';
 import { Button } from '@/components/tailgrids/core/button';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 
-export default function VerifyEmail({ status }: { status?: string }) {
+export default function VerifyEmail() {
     return (
         <>
             <Head title="Email verification" />
-
-            {status === 'verification-link-sent' && (
-                <Alert status="success" className="mb-5">
-                    <AlertIndicator />
-                    <AlertContent>
-                        <AlertTitle>
-                            A new verification link has been sent to the email
-                            address you provided during registration.
-                        </AlertTitle>
-                    </AlertContent>
-                </Alert>
-            )}
 
             <Form noValidate {...send.form()} className="space-y-6 text-center">
                 {({ processing }) => (

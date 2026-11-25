@@ -1,10 +1,4 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import {
-    Alert,
-    AlertContent,
-    AlertIndicator,
-    AlertTitle,
-} from '@/components/tailgrids/core/alert';
 import { Button } from '@/components/tailgrids/core/button';
 import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
 import { Input } from '@/components/tailgrids/core/input';
@@ -12,19 +6,10 @@ import { TextField } from '@/components/tailgrids/core/text-field';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
-export default function ForgotPassword({ status }: { status?: string }) {
+export default function ForgotPassword() {
     return (
         <>
             <Head title="Forgot password" />
-
-            {status && (
-                <Alert status="success" className="mb-5">
-                    <AlertIndicator />
-                    <AlertContent>
-                        <AlertTitle>{status}</AlertTitle>
-                    </AlertContent>
-                </Alert>
-            )}
 
             <Form noValidate {...email.form()} className="space-y-5">
                 {({ processing, errors }) => (

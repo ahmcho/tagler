@@ -8,11 +8,10 @@ import { ResourcePage } from '@/components/resource/resource-page';
  */
 export function ResourceCreateContent<TData extends Record<string, unknown>>({
     pageTitle,
-    status,
     ...formProps
 }: ResourceContentProps<TData>) {
     return (
-        <ResourcePage title={pageTitle} status={status}>
+        <ResourcePage title={pageTitle}>
             <ResourceForm<TData> {...formProps} />
         </ResourcePage>
     );

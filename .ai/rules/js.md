@@ -53,6 +53,14 @@ Show pages will go in the same folder later.
 
 Use Inertia's `useForm` (or `<Form>`), as `resources/js/modules/auth/pages/settings/security.tsx` does. Every `<form>` and `<Form>` gets `noValidate`. The browser then shows no default bubbles, and the server's validation errors appear in the theme through `FieldError`. Do not add zod or react-hook-form. Keep server validation keys aligned with the form state. For example, nested `translations.{code}` errors match `form.data.translations`.
 
+## Flash messages are toasts
+
+Flash messages show as Sonner toasts. `FlashToaster` (`components/flash-toaster.tsx`) is mounted in `AppLayout` and `AuthLayout`. It draws the TailGrids `Alert`. Do not add inline status alerts to pages.
+
+- A controller `->with('status', …)` shows as a success toast.
+- `Inertia::flash('toast', ['type' => …, 'message' => …])` shows a typed toast. `type` is `success`, `error`, `warning` or `info`.
+- A Fortify status key (for example `verification-link-sent`) needs a sentence in `utils/flash-message.ts`, because the toast must not show the raw key.
+
 ## Do not add dependencies without approval
 
 Do not add a package to `package.json` without the user's approval.

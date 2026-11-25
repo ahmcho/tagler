@@ -26,7 +26,6 @@ type Props = {
         permission?: number;
     };
     selectedPermission: { id: number; name: string } | null;
-    status?: string | null;
 };
 
 const columns: DataTableColumn<RoleRecord>[] = [
@@ -45,12 +44,7 @@ const columns: DataTableColumn<RoleRecord>[] = [
     },
 ];
 
-export default function Index({
-    roles,
-    filters,
-    selectedPermission,
-    status,
-}: Props) {
+export default function Index({ roles, filters, selectedPermission }: Props) {
     const ability = useAbility();
     const { loadOptions: loadPermissions } = useSearch<{
         id: number;
@@ -64,7 +58,7 @@ export default function Index({
     });
 
     return (
-        <ResourcePage title="Roles" status={status}>
+        <ResourcePage title="Roles">
             <ResourceIndexContent<RoleRecord>
                 caption="Roles"
                 subtitle={

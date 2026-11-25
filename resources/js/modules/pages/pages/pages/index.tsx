@@ -42,7 +42,6 @@ type Props = {
     };
     locales: PageLocaleOption[];
     defaultLocale: string;
-    status?: string | null;
 };
 
 function createColumns(
@@ -112,7 +111,7 @@ const YES_NO_OPTIONS = [
     { value: '0', label: 'No' },
 ];
 
-export default function Index({ pages, filters, locales, status }: Props) {
+export default function Index({ pages, filters, locales }: Props) {
     const ability = useAbility();
     const localeByCode = new Map(
         locales.map((locale) => [locale.code, locale]),
@@ -125,7 +124,7 @@ export default function Index({ pages, filters, locales, status }: Props) {
     );
 
     return (
-        <ResourcePage title="Pages" status={status}>
+        <ResourcePage title="Pages">
             {actionErrors.map((message) => (
                 <Alert key={message} status="error" className="max-w-none">
                     <AlertIndicator />

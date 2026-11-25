@@ -1,5 +1,6 @@
 import { usePage } from '@inertiajs/react';
 import { BrandMark } from '@/components/brand-mark';
+import { FlashToaster } from '@/components/flash-toaster';
 import type { AuthLayoutProps } from '@/types';
 
 export default function AuthLayout({
@@ -29,6 +30,8 @@ export default function AuthLayout({
                     {children}
                 </div>
             </div>
+
+            <FlashToaster />
         </main>
     );
 }

@@ -24,10 +24,8 @@ import { send } from '@/routes/verification';
 
 export default function Profile({
     mustVerifyEmail,
-    status,
 }: {
     mustVerifyEmail: boolean;
-    status?: string;
 }) {
     const { auth } = usePage().props;
     const isEmailUnverified =
@@ -103,14 +101,6 @@ export default function Profile({
                                                 {errors.email}
                                             </FieldError>
                                         </TextField>
-
-                                        {status ===
-                                            'verification-link-sent' && (
-                                            <p className="text-success-600 text-sm font-medium dark:text-success-500">
-                                                A new verification link has been
-                                                sent to your email address.
-                                            </p>
-                                        )}
                                     </FieldGroup>
                                 </CardContent>
 

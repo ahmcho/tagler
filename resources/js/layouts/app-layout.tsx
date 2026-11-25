@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import { AppHeader } from '@/components/app-header';
 import { AppSidebar } from '@/components/app-sidebar';
+import { FlashToaster } from '@/components/flash-toaster';
 import { Breadcrumbs } from '@/components/tailgrids/core/breadcrumbs';
 import { SidebarProvider } from '@/components/tailgrids/core/sidebar';
 import type { AppLayoutProps } from '@/types';
@@ -36,6 +37,8 @@ export default function AppLayout({
                     </div>
                 </main>
             </div>
+
+            <FlashToaster />
         </SidebarProvider>
     );
 }

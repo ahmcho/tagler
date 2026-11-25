@@ -22,7 +22,6 @@ type Props = {
     };
     filters: { sort?: string; direction?: 'asc' | 'desc'; role?: number };
     selectedRole: { id: number; name: string } | null;
-    status?: string | null;
 };
 
 const columns: DataTableColumn<UserRecord>[] = [
@@ -36,7 +35,7 @@ const columns: DataTableColumn<UserRecord>[] = [
     },
 ];
 
-export default function Index({ users, filters, selectedRole, status }: Props) {
+export default function Index({ users, filters, selectedRole }: Props) {
     const ability = useAbility();
     const { loadOptions: loadRoles } = useSearch<{ id: number; name: string }>({
         route: rolesSearch,
@@ -44,7 +43,7 @@ export default function Index({ users, filters, selectedRole, status }: Props) {
     });
 
     return (
-        <ResourcePage title="Users" status={status}>
+        <ResourcePage title="Users">
             <ResourceIndexContent<UserRecord>
                 caption="Users"
                 subtitle={

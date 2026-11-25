@@ -34,7 +34,6 @@ type Props = {
     groups: string[];
     tables: string[];
     filters: Filters;
-    status?: string | null;
 };
 
 const columns: DataTableColumn<TranslationRecord>[] = [
@@ -55,13 +54,7 @@ const exportColumns: (keyof TranslationRecord & string)[] = [
     'updated_at',
 ];
 
-export default function Index({
-    records,
-    groups,
-    tables,
-    filters,
-    status,
-}: Props) {
+export default function Index({ records, groups, tables, filters }: Props) {
     const exportSelected = (selectedRowIds: DataTableRowId[]) => {
         downloadCsv(
             'translations.csv',
@@ -71,7 +64,7 @@ export default function Index({
     };
 
     return (
-        <ResourcePage title="Translations" status={status}>
+        <ResourcePage title="Translations">
             <ResourceIndexContent<TranslationRecord>
                 caption="Translations"
                 indexUrl={index.url()}

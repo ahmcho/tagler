@@ -20,7 +20,6 @@ type ThemeRecord = {
 
 type Props = {
     themes: ThemeRecord[];
-    status?: string | null;
 };
 
 const columns: DataTableColumn<ThemeRecord>[] = [
@@ -83,11 +82,11 @@ function activateAction(): ResourceRowAction<ThemeRecord> {
     };
 }
 
-export default function Index({ themes, status }: Props) {
+export default function Index({ themes }: Props) {
     const ability = useAbility();
 
     return (
-        <ResourcePage title="Themes" status={status}>
+        <ResourcePage title="Themes">
             <ResourceIndexContent<ThemeRecord>
                 caption="Themes"
                 indexUrl={index.url()}

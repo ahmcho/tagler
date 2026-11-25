@@ -1,11 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import { PasswordField } from '@/components/password-field';
-import {
-    Alert,
-    AlertContent,
-    AlertIndicator,
-    AlertTitle,
-} from '@/components/tailgrids/core/alert';
 import { Button } from '@/components/tailgrids/core/button';
 import { Checkbox } from '@/components/tailgrids/core/checkbox';
 import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
@@ -15,23 +9,13 @@ import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
 type Props = {
-    status?: string;
     canResetPassword: boolean;
 };
 
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({ canResetPassword }: Props) {
     return (
         <>
             <Head title="Log in" />
-
-            {status && (
-                <Alert status="success" className="mb-5">
-                    <AlertIndicator />
-                    <AlertContent>
-                        <AlertTitle>{status}</AlertTitle>
-                    </AlertContent>
-                </Alert>
-            )}
 
             <Form
                 noValidate
