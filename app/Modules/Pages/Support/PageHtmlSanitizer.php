@@ -22,7 +22,11 @@ final readonly class PageHtmlSanitizer
             ->allowRelativeLinks()
             ->allowMediaSchemes(['http', 'https'])
             ->allowRelativeMedias()
-            ->forceAttribute('a', 'rel', 'noopener noreferrer');
+            ->forceAttribute('a', 'rel', 'noopener noreferrer')
+            ->allowElement('input', ['type', 'checked', 'disabled'])
+            ->allowAttribute('class', ['code'])
+            ->allowAttribute('id', ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+            ->withMaxInputLength(-1);
 
         $this->sanitizer = new HtmlSanitizer($config);
     }

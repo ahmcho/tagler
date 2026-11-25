@@ -151,7 +151,7 @@ test('the public page exposes only the visible fields of its translation', funct
 
 test('an unpublished page is not visible through its locale URL even when the translation exists', function (): void {
     $page = PageFixtures::create([], ['locale' => $this->locale, 'slug' => 'about', 'path' => 'about']);
-    Page::query()->whereKey($page->id)->update(['status' => PageStatus::Draft->value]);
+    Page::query()->whereKey($page->id)->update(['status' => PageStatus::Draft]);
 
     $this->get("/{$this->locale}/about")->assertNotFound();
 });

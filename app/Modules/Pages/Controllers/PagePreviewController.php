@@ -38,7 +38,7 @@ class PagePreviewController extends Controller
 
         $response = Inertia::render($components->forPage($page), [
             'page' => PublicPageResource::make($translation)->resolve(),
-            'body' => $translation->body,
+            'body' => $translation->renderedBody(),
             'children' => $children->forTranslation($translation),
         ])->toResponse($request);
 

@@ -160,7 +160,7 @@ class PageService extends BaseCrudService implements PageServiceContract
     private function snapshotOf(Page $page): array
     {
         return [
-            'status' => $page->status->value,
+            'status' => $page->status,
             'parent_id' => $page->parent_id,
             'publish_date' => $page->publish_date?->toDateString(),
             'publish_time' => $page->publish_time,
@@ -174,6 +174,7 @@ class PageService extends BaseCrudService implements PageServiceContract
                     'seo_title' => $translation->seo_title,
                     'seo_description' => $translation->seo_description,
                     'body' => $translation->body,
+                    'body_format' => $translation->body_format,
                 ]])
                 ->all(),
         ];

@@ -30,7 +30,7 @@ class PageResource extends JsonResource
             'title' => $defaultTranslation?->title,
             'path' => $defaultTranslation?->path,
             'public_url' => $defaultTranslation === null ? null : $this->publicUrl($defaultTranslation->path),
-            'status' => $this->status->value,
+            'status' => $this->status,
             'is_homepage' => $this->is_homepage,
             'is_live' => $isLive,
             'locales' => $this->translations->pluck('locale')->values(),

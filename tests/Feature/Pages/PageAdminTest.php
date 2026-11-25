@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Modules\Auth\Database\Seeders\RolesAndPermissionsSeeder;
 use App\Modules\Auth\Models\Role;
+use App\Modules\Pages\Enums\BodyFormat;
 use App\Modules\Pages\Enums\PageStatus;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Models\PageTranslation;
@@ -369,6 +370,29 @@ test('the edit page gets every locale, blank where the page has no translation, 
             ->where('model.translations.az.slug', '')
             ->has('parents', 1)
             ->where('parents.0.id', $other->id));
+});
+
+test('a body longer than 200000 characters is accepted and stored', function (): void {
+    $body = '<p>'.str_repeat('a', 250000).'</p>';
+
+    $this->actingAs(pageAdmin())
+        ->post(route('pages.store'), pagePayload([], [config('app.locale') => ['title' => 'Long', 'slug' => 'long-body', 'body' => $body]]))
+        ->assertSessionHasNoErrors();
+
+    expect(PageTranslation::query()->where('slug', 'long-body')->value('body'))->toBe($body);
+});
+
+test('a markdown body is stored as written, with its format', function (): void {
+    $markdown = "# Title\n\n<script>x</script>\n";
+
+    $this->actingAs(pageAdmin())
+        ->post(route('pages.store'), pagePayload([], [config('app.locale') => ['title' => 'Md', 'slug' => 'md-body', 'body' => $markdown, 'body_format' => 'markdown']]))
+        ->assertSessionHasNoErrors();
+
+    $translation = PageTranslation::query()->where('slug', 'md-body')->first();
+
+    expect($translation?->body)->toBe(trim($markdown))
+        ->and($translation?->body_format)->toBe(BodyFormat::Markdown);
 });
 
 test('the body is sanitised before it is stored', function (): void {

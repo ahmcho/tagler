@@ -2,7 +2,9 @@
 
 namespace App\Modules\Pages\Concerns;
 
+use App\Modules\Pages\Enums\BodyFormat;
 use App\Modules\Pages\Enums\LocaleEnum;
+use App\Modules\Pages\Enums\PageStatus;
 use App\Modules\Pages\Models\Page;
 
 /**
@@ -13,13 +15,13 @@ trait HasPageFormValues
     /**
      * The form values of a saved page.
      *
-     * @return array{parent_id: int|null, status: string, publish_date: string|null, publish_time: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}
+     * @return array{parent_id: int|null, status: PageStatus, publish_date: string|null, publish_time: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}
      */
     private function pageValues(?Page $page): array
     {
         return [
             'parent_id' => $page?->parent_id,
-            'status' => $page?->status->value ?? 'draft',
+            'status' => $page?->status ?? PageStatus::Draft,
             'publish_date' => $page?->publish_date?->format('Y-m-d'),
             'publish_time' => $page?->publish_time,
             'layout' => $page->layout ?? '',
@@ -34,13 +36,13 @@ trait HasPageFormValues
      * The form values stored in a revision, in the same shape as `pageValues()`.
      *
      * @param  array<string, mixed>  $snapshot
-     * @return array{parent_id: int|null, status: string, publish_date: string|null, publish_time: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}
+     * @return array{parent_id: int|null, status: PageStatus, publish_date: string|null, publish_time: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}
      */
     private function snapshotValues(array $snapshot): array
     {
         return [
             'parent_id' => $snapshot['parent_id'] ?? null,
-            'status' => (string) ($snapshot['status'] ?? 'draft'),
+            'status' => PageStatus::tryFrom((string) ($snapshot['status'] ?? '')) ?? PageStatus::Draft,
             'publish_date' => $snapshot['publish_date'] ?? null,
             'publish_time' => $snapshot['publish_time'] ?? null,
             'layout' => (string) ($snapshot['layout'] ?? ''),
@@ -52,7 +54,7 @@ trait HasPageFormValues
     /**
      * The form model. Every supported locale gets an entry, blank when the page has no translation there.
      *
-     * @param  array{parent_id: int|null, status: string, publish_date: string|null, publish_time: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}  $values
+     * @param  array{parent_id: int|null, status: PageStatus, publish_date: string|null, publish_time: string|null, layout: string, theme_layout: bool, translations: array<string, array<string, mixed>|null>}  $values
      * @return array<string, mixed>
      */
     private function formModel(?Page $page, array $values): array
@@ -106,6 +108,7 @@ trait HasPageFormValues
             'seo_title' => '',
             'seo_description' => '',
             'body' => '',
+            'body_format' => BodyFormat::Html,
         ];
     }
 

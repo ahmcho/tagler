@@ -41,3 +41,11 @@ test('the not-found page has no body and no children', function (): void {
             ->where('body', null)
             ->where('children', []));
 });
+
+test('a markdown body is rendered to html for the visitor', function (): void {
+    PageFixtures::create([], ['locale' => $this->locale, 'slug' => 'notes', 'path' => 'notes', 'body' => "## Notes\n\n- [x] first\n", 'body_format' => 'markdown']);
+
+    $this->get("/{$this->locale}/notes")
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('body', fn (string $body): bool => str_contains($body, '<h2 id="notes">Notes</h2>') && str_contains($body, 'type="checkbox"')));
+});

@@ -4,6 +4,8 @@ namespace App\Modules\Pages\Models;
 
 use App\Modules\Auth\Concerns\HasActivityLogs;
 use App\Modules\Pages\Database\Factories\PageTranslationFactory;
+use App\Modules\Pages\Enums\BodyFormat;
+use App\Modules\Pages\Support\MarkdownRenderer;
 use App\Modules\Settings\Concerns\HasLocalDates;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -26,17 +28,39 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $path
  * @property string|null $seo_title
  * @property string|null $seo_description
- * @property string|null $body Sanitized HTML
+ * @property string|null $body The body as written: sanitised HTML, or Markdown
+ * @property BodyFormat $body_format
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
  */
 #[Table(name: 'page_translations')]
 #[UseFactory(PageTranslationFactory::class)]
-#[Fillable(['page_id', 'locale', 'title', 'subtitle', 'slug', 'path', 'seo_title', 'seo_description', 'body'])]
+#[Fillable(['page_id', 'locale', 'title', 'subtitle', 'slug', 'path', 'seo_title', 'seo_description', 'body', 'body_format'])]
 class PageTranslation extends Model
 {
     /** @use HasFactory<PageTranslationFactory> */
     use HasActivityLogs, HasFactory, HasLocalDates;
+
+    /**
+     * The HTML a visitor sees. Markdown bodies are rendered here, so the stored text stays as written.
+     */
+    public function renderedBody(): ?string
+    {
+        if ($this->body === null || $this->body === '') {
+            return null;
+        }
+
+        return $this->body_format === BodyFormat::Markdown
+            ? app(MarkdownRenderer::class)->render($this->body)
+            : $this->body;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'body_format' => BodyFormat::class,
+        ];
+    }
 
     /**
      * @return BelongsTo<Page, $this>

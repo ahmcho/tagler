@@ -22,7 +22,7 @@ class PageController extends Controller
     use HasPageFormValues;
 
     /** @var list<string> */
-    private const array TRANSLATION_FIELDS = ['title', 'subtitle', 'slug', 'seo_title', 'seo_description', 'body'];
+    private const array TRANSLATION_FIELDS = ['title', 'subtitle', 'slug', 'seo_title', 'seo_description', 'body', 'body_format'];
 
     public function __construct(
         private readonly PageServiceContract $service,

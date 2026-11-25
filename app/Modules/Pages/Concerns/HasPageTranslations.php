@@ -2,6 +2,7 @@
 
 namespace App\Modules\Pages\Concerns;
 
+use App\Modules\Pages\Enums\BodyFormat;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Support\PageHtmlSanitizer;
 use App\Modules\Pages\Support\PagePath;
@@ -104,16 +105,34 @@ trait HasPageTranslations
             'path' => $path->value,
             'seo_title' => $translation['seo_title'] ?? null,
             'seo_description' => $translation['seo_description'] ?? null,
-            'body' => $this->cleanBody($translation['body'] ?? null),
+            'body' => $this->cleanBody($translation['body'] ?? null, $this->bodyFormatOf($translation)),
+            'body_format' => $this->bodyFormatOf($translation),
         ];
     }
 
     /**
-     * The body is HTML from the editor. It is sanitised before it is stored, so the public page renders it as is.
+     * The format sent by the form. Anything unknown is stored as HTML.
+     *
+     * @param  array<string, mixed>  $translation
      */
-    private function cleanBody(?string $body): ?string
+    private function bodyFormatOf(array $translation): BodyFormat
     {
-        return filled($body) ? app(PageHtmlSanitizer::class)->sanitize($body) : null;
+        return BodyFormat::tryFrom((string) ($translation['body_format'] ?? '')) ?? BodyFormat::Html;
+    }
+
+    /**
+     * HTML from the editor is sanitised before it is stored, so the public page renders it as is.
+     * Markdown is stored as written and rendered when the page is shown.
+     */
+    private function cleanBody(?string $body, BodyFormat $format): ?string
+    {
+        if (! filled($body)) {
+            return null;
+        }
+
+        return $format === BodyFormat::Markdown
+            ? $body
+            : app(PageHtmlSanitizer::class)->sanitize($body);
     }
 
     /**

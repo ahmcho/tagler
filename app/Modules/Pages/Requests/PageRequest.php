@@ -3,6 +3,7 @@
 namespace App\Modules\Pages\Requests;
 
 use App\Modules\Pages\Concerns\FiltersQuery;
+use App\Modules\Pages\Enums\BodyFormat;
 use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Enums\PageStatus;
 use App\Modules\Pages\Models\Page;
@@ -37,8 +38,8 @@ class PageRequest extends AppFormRequest
             self::SCENARIO_INSERT, self::SCENARIO_UPDATE => [
                 'status' => ['required', Rule::enum(PageStatus::class)],
                 'parent_id' => ['nullable', 'integer', 'exists:pages,id'],
-                'publish_date' => ['nullable', 'date_format:Y-m-d', 'required_if:status,'.PageStatus::Scheduled->value],
-                'publish_time' => ['nullable', 'date_format:H:i', 'required_if:status,'.PageStatus::Scheduled->value],
+                'publish_date' => ['nullable', 'date_format:Y-m-d', Rule::requiredIf(fn (): bool => $this->enum('status', PageStatus::class) === PageStatus::Scheduled)],
+                'publish_time' => ['nullable', 'date_format:H:i', Rule::requiredIf(fn (): bool => $this->enum('status', PageStatus::class) === PageStatus::Scheduled)],
                 'layout' => ['nullable', 'string', 'max:64'],
                 'theme_layout' => ['sometimes', 'boolean'],
                 'translations' => ['required', 'array'],
@@ -102,7 +103,8 @@ class PageRequest extends AppFormRequest
             $rules["translations.{$locale}.slug"] = [$isDefault ? 'required' : 'nullable', 'string', 'max:255'];
             $rules["translations.{$locale}.seo_title"] = ['nullable', 'string', 'max:255'];
             $rules["translations.{$locale}.seo_description"] = ['nullable', 'string', 'max:500'];
-            $rules["translations.{$locale}.body"] = ['nullable', 'string', 'max:200000'];
+            $rules["translations.{$locale}.body"] = ['nullable', 'string'];
+            $rules["translations.{$locale}.body_format"] = ['nullable', Rule::enum(BodyFormat::class)];
         }
 
         return $rules;
@@ -136,7 +138,7 @@ class PageRequest extends AppFormRequest
      */
     private function checkScheduledInFuture(Validator $validator): void
     {
-        if ($this->input('status') !== PageStatus::Scheduled->value) {
+        if ($this->enum('status', PageStatus::class) !== PageStatus::Scheduled) {
             return;
         }
 
@@ -220,6 +222,8 @@ class PageRequest extends AppFormRequest
      */
     private function hasAnyValue(array $translation): bool
     {
+        unset($translation['body_format']);
+
         return collect($translation)->contains(fn (mixed $value): bool => filled($value));
     }
 
