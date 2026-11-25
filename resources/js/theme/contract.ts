@@ -18,22 +18,17 @@ export type ThemePage = {
     og_locale: string;
 };
 
-export type ThemeElement = {
-    id: string;
-    type: string;
-    data: Record<string, unknown>;
-};
-
-export type ThemeSection = {
-    id: string;
-    layout: string;
-    settings: Record<string, unknown>;
-    elements: ThemeElement[];
+export type ThemeChild = {
+    title: string;
+    url: string;
 };
 
 export type ThemeTemplateProps = {
     page: ThemePage;
-    sections: ThemeSection[];
+    /** Sanitised HTML written by the editor, or null when the locale has no body. Render it as is. */
+    body: string | null;
+    /** The live child pages of this page in the current locale. */
+    children: ThemeChild[];
 };
 
 export type ThemeTemplate = ComponentType<ThemeTemplateProps>;

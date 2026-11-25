@@ -3,7 +3,6 @@
 namespace App\Modules\Pages\Database\Factories;
 
 use App\Modules\Pages\Models\PageTranslation;
-use App\Modules\Pages\Support\PageContentDocument;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -26,7 +25,7 @@ class PageTranslationFactory extends Factory
             'path' => $slug,
             'seo_title' => null,
             'seo_description' => null,
-            'content' => PageContentDocument::empty(),
+            'body' => '<p>'.fake()->paragraph().'</p>',
         ];
     }
 }

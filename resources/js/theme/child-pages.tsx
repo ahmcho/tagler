@@ -1,26 +1,24 @@
 import type { ReactNode } from 'react';
 
-type ChildPageItem = {
-    title: string;
-    url: string;
-};
+import type { ThemeChild } from '@/theme/contract';
 
-export function ChildPagesElement({
-    data,
+/**
+ * The live child pages of the current page. Nothing renders when there are none.
+ */
+export function ChildPages({
+    title,
+    items,
 }: {
-    data: Record<string, unknown>;
+    title?: string;
+    items: ThemeChild[];
 }): ReactNode {
-    const items = Array.isArray(data.items)
-        ? (data.items as ChildPageItem[])
-        : [];
-
     if (items.length === 0) {
         return null;
     }
 
     return (
         <section>
-            {data.title ? <h2>{String(data.title)}</h2> : null}
+            {title ? <h2>{title}</h2> : null}
             <ul>
                 {items.map((item) => (
                     <li key={item.url}>

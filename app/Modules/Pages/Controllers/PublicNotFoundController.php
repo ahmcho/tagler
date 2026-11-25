@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The 404 page for visitors. It uses the `public` root view. Its props have the same shape as a public page, so the
- * default theme's not-found template and the plain fallback both receive a `page` and no sections.
+ * default theme's not-found template and the plain fallback both receive a `page`, no body and no children.
  */
 class PublicNotFoundController extends Controller
 {
@@ -45,7 +45,8 @@ class PublicNotFoundController extends Controller
                 'canonical_url' => null,
                 'og_locale' => PublicPageResource::ogLocaleFor($locale),
             ],
-            'sections' => [],
+            'body' => null,
+            'children' => [],
         ])
             ->toResponse($request)
             ->setStatusCode(404);

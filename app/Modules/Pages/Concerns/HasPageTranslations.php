@@ -3,7 +3,7 @@
 namespace App\Modules\Pages\Concerns;
 
 use App\Modules\Pages\Models\Page;
-use App\Modules\Pages\Support\PageContentDocument;
+use App\Modules\Pages\Support\PageHtmlSanitizer;
 use App\Modules\Pages\Support\PagePath;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -76,14 +76,7 @@ trait HasPageTranslations
             ]);
         }
 
-        $attributes = $this->withContent(
-            $page,
-            $locale,
-            $translation,
-            $this->translationAttributes($translation, $path),
-        );
-
-        $this->translationRepository->save($page, $locale, $attributes);
+        $this->translationRepository->save($page, $locale, $this->translationAttributes($translation, $path));
     }
 
     /**
@@ -111,25 +104,16 @@ trait HasPageTranslations
             'path' => $path->value,
             'seo_title' => $translation['seo_title'] ?? null,
             'seo_description' => $translation['seo_description'] ?? null,
+            'body' => $this->cleanBody($translation['body'] ?? null),
         ];
     }
 
     /**
-     * Sets the content when the form sent one. A new translation without one starts blank.
-     *
-     * @param  array<string, mixed>  $translation
-     * @param  array<string, mixed>  $attributes
-     * @return array<string, mixed>
+     * The body is HTML from the editor. It is sanitised before it is stored, so the public page renders it as is.
      */
-    private function withContent(Page $page, string $locale, array $translation, array $attributes): array
+    private function cleanBody(?string $body): ?string
     {
-        if (is_array($translation['content'] ?? null)) {
-            $attributes['content'] = $translation['content'];
-        } elseif ($this->translationRepository->find($page, $locale) === null) {
-            $attributes['content'] = PageContentDocument::empty();
-        }
-
-        return $attributes;
+        return filled($body) ? app(PageHtmlSanitizer::class)->sanitize($body) : null;
     }
 
     /**

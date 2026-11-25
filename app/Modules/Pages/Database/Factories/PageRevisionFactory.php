@@ -32,7 +32,7 @@ class PageRevisionFactory extends Factory
                         'slug' => fake()->unique()->slug(2),
                         'seo_title' => null,
                         'seo_description' => null,
-                        'content' => ['version' => 1, 'sections' => []],
+                        'body' => null,
                     ],
                 ],
             ],

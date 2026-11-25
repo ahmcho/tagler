@@ -4,11 +4,10 @@ namespace App\Modules\Pages\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Pages\Enums\LocaleEnum;
-use App\Modules\Pages\Events\PageResolving;
+use App\Modules\Pages\Resources\PublicPageResource;
+use App\Modules\Pages\Services\PageChildrenResolver;
 use App\Modules\Pages\Services\PageComponentResolver;
-use App\Modules\Pages\Services\PageRenderer;
 use App\Modules\Pages\Services\PageResolver;
-use App\Modules\Pages\Support\PublicPageCache;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,16 +22,13 @@ class PublicPageController extends Controller
     public function __invoke(
         Request $request,
         PageResolver $resolver,
-        PageRenderer $renderer,
-        PublicPageCache $cache,
+        PageChildrenResolver $children,
         PageComponentResolver $components,
     ): Response {
         Inertia::setRootView('public');
 
         $locale = (string) ($request->route('locale') ?? LocaleEnum::default());
         $path = (string) ($request->route('path') ?? '');
-
-        event(new PageResolving($locale, $path));
 
         $page = $resolver->resolve($locale, $path);
 
@@ -50,12 +46,10 @@ class PublicPageController extends Controller
 
         $translation->setRelation('page', $page);
 
-        $props = $renderer->finalize(
-            $translation,
-            $cache->remember($page->id, $locale, fn (): array => $renderer->props($translation)),
-            false,
-        );
-
-        return Inertia::render($components->forPage($page), $props)->toResponse($request);
+        return Inertia::render($components->forPage($page), [
+            'page' => PublicPageResource::make($translation)->resolve(),
+            'body' => $translation->body,
+            'children' => $children->forTranslation($translation),
+        ])->toResponse($request);
     }
 }

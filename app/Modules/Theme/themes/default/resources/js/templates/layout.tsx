@@ -1,12 +1,16 @@
 import type { ReactNode } from 'react';
 
-import { PageHead, renderElement } from '@/theme/api';
+import { ChildPages, PageHead } from '@/theme/api';
 import type { ThemeTemplateProps } from '@/theme/contract';
 
 /**
  * The page frame of the default theme. Both templates use it, so they share one layout.
  */
-export function ThemeLayout({ page, sections }: ThemeTemplateProps): ReactNode {
+export function ThemeLayout({
+    page,
+    body,
+    children,
+}: ThemeTemplateProps): ReactNode {
     return (
         <main className="theme-default" lang={page.locale}>
             <PageHead page={page} />
@@ -16,22 +20,14 @@ export function ThemeLayout({ page, sections }: ThemeTemplateProps): ReactNode {
                 {page.subtitle && <p>{page.subtitle}</p>}
             </header>
 
-            {sections.map((section) => (
-                <section
-                    key={section.id}
-                    className="theme-default__section"
-                    data-layout={section.layout}
-                    data-background={String(
-                        section.settings.background ?? 'none',
-                    )}
-                >
-                    {section.elements.map((element) => (
-                        <div key={element.id} data-element={element.type}>
-                            {renderElement(element)}
-                        </div>
-                    ))}
-                </section>
-            ))}
+            {body && (
+                <div
+                    className="theme-default__body"
+                    dangerouslySetInnerHTML={{ __html: body }}
+                />
+            )}
+
+            <ChildPages items={children} />
         </main>
     );
 }

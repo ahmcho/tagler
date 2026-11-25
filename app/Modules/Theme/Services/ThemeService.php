@@ -2,7 +2,6 @@
 
 namespace App\Modules\Theme\Services;
 
-use App\Modules\Pages\Support\PublicPageCache;
 use App\Modules\Settings\Services\Contracts\SettingServiceContract;
 use App\Modules\Theme\Contracts\ThemeRegistryContract;
 use App\Modules\Theme\Contracts\ThemeServiceContract;
@@ -20,7 +19,6 @@ class ThemeService implements ThemeServiceContract
     public function __construct(
         private readonly ThemeRegistryContract $registry,
         private readonly SettingServiceContract $settings,
-        private readonly PublicPageCache $publicPageCache,
     ) {}
 
     public function activeTheme(): ?ThemeManifest
@@ -51,8 +49,6 @@ class ThemeService implements ThemeServiceContract
         }
 
         DB::transaction(fn () => $this->settings->setString((string) config('modules.theme.active_setting'), $theme->slug));
-
-        $this->publicPageCache->flushAll();
 
         return $theme;
     }

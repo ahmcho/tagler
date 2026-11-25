@@ -3,12 +3,6 @@ import { FileText } from 'lucide-react';
 import { ResourceEditContent } from '@/components/resource/resource-edit-content';
 import { FieldLabel } from '@/components/tailgrids/core/field';
 import type {
-    ContentBackground,
-    ContentEditorConfig,
-    ContentElementType,
-    ContentLayout,
-} from '@/modules/pages/components/content-document';
-import type {
     PageFormData,
     PageLocaleOption,
     PageParentOption,
@@ -31,10 +25,6 @@ type Props = {
     parents: PageParentOption[];
     locales: PageLocaleOption[];
     defaultLocale: string;
-    layouts: ContentLayout[];
-    backgrounds: ContentBackground[];
-    elementTypes: ContentElementType[];
-    canUseHtml: boolean;
     model: PageFormData & { id: number };
     revisions: Revision[];
     loadedRevision: LoadedRevision;
@@ -53,19 +43,9 @@ function EditForm({
     parents,
     locales,
     defaultLocale,
-    layouts,
-    backgrounds,
-    elementTypes,
-    canUseHtml,
     revisions,
     loadedRevision,
 }: Props) {
-    const editor: ContentEditorConfig = {
-        layouts,
-        backgrounds,
-        elementTypes,
-        canUseHtml,
-    };
     const form = useForm<PageFormData>({
         parent_id: model.parent_id,
         status: model.status,
@@ -100,7 +80,6 @@ function EditForm({
                 parents={parents}
                 locales={locales}
                 defaultLocale={defaultLocale}
-                editor={editor}
             />
 
             <PreviewLinks

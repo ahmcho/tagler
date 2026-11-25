@@ -64,7 +64,7 @@ test('an admin creates a top-level page with a translation in the default locale
     $translation = PageTranslation::query()->where('locale', config('app.locale'))->first();
 
     expect($translation?->path)->toBe('about')
-        ->and($translation?->content)->toBe(['version' => 1, 'sections' => []]);
+        ->and($translation?->body)->toBeNull();
 });
 
 test('a child page path combines its parent path and its slug in the same locale', function (): void {
@@ -368,17 +368,20 @@ test('the edit page gets every locale, blank where the page has no translation, 
             ->where('model.translations.'.config('app.locale').'.slug', 'about')
             ->where('model.translations.az.slug', '')
             ->has('parents', 1)
-            ->where('parents.0.id', $other->id)
-            ->has('backgrounds', 4)
-            ->where('backgrounds.0.key', 'none'));
+            ->where('parents.0.id', $other->id));
 });
 
-test('the content box must hold valid JSON', function (): void {
-    $payload = pagePayload([], [config('app.locale') => ['title' => 'Bad', 'slug' => 'bad', 'content' => '{not json']]);
+test('the body is sanitised before it is stored', function (): void {
+    $payload = pagePayload([], [config('app.locale') => ['title' => 'Safe', 'slug' => 'safe', 'body' => '<p>Hi</p><script>alert(1)</script>']]);
 
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), $payload)
-        ->assertSessionHasErrors('translations.'.config('app.locale').'.content');
+        ->assertSessionHasNoErrors();
+
+    $body = PageTranslation::query()->where('slug', 'safe')->value('body');
+
+    expect($body)->toContain('<p>Hi</p>')
+        ->and($body)->not->toContain('script');
 });
 
 test('a new homepage takes the root path and the old homepage keeps its slug path', function (): void {
@@ -408,10 +411,10 @@ test('the homepage assignment is rejected with a validation error when the old s
     expect($old->refresh()->is_homepage)->toBeTrue();
 });
 
-test('a blank locale is skipped even when its content box holds the empty document', function (): void {
+test('a blank locale is skipped even when its body is empty', function (): void {
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), pagePayload([], [
-            'ru' => ['content' => ['version' => 1, 'sections' => []]],
+            'ru' => ['body' => ''],
         ]))
         ->assertSessionHasNoErrors();
 

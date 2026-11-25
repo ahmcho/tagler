@@ -38,7 +38,7 @@ final class PageFixtures
         $default = config('app.locale');
         $locales = array_column(config('app.supported_locales'), 'code');
 
-        $blank = array_fill_keys($locales, ['title' => null, 'subtitle' => null, 'slug' => null, 'seo_title' => null, 'seo_description' => null, 'content' => null]);
+        $blank = array_fill_keys($locales, ['title' => null, 'subtitle' => null, 'slug' => null, 'seo_title' => null, 'seo_description' => null, 'body' => null]);
         $blank[$default] = ['title' => 'About', 'slug' => 'about'];
 
         foreach ($translations as $locale => $fieldsForLocale) {

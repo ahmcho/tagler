@@ -22,7 +22,7 @@ class PageController extends Controller
     use HasPageFormValues;
 
     /** @var list<string> */
-    private const array TRANSLATION_FIELDS = ['title', 'subtitle', 'slug', 'seo_title', 'seo_description', 'content'];
+    private const array TRANSLATION_FIELDS = ['title', 'subtitle', 'slug', 'seo_title', 'seo_description', 'body'];
 
     public function __construct(
         private readonly PageServiceContract $service,
@@ -75,7 +75,6 @@ class PageController extends Controller
             'parents' => $this->parentOptions(null),
             'locales' => $this->localeOptions(),
             'defaultLocale' => LocaleEnum::default(),
-            ...$this->editorProps(),
         ]);
     }
 
@@ -107,7 +106,6 @@ class PageController extends Controller
                 'id' => $revision->id,
                 'created_at' => $revision->created_at->format('Y-m-d H:i'),
             ],
-            ...$this->editorProps(),
         ]);
     }
 

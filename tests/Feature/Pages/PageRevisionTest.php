@@ -154,22 +154,17 @@ test('a user without update permission is forbidden from opening a revision', fu
         ->assertForbidden();
 });
 
-test('a revision saved before the date and time split shows its old publish time in the form', function (): void {
+test('a revision opens the form with the status it was saved with', function (): void {
     $editor = revisionEditor(['pages.update']);
-    $page = PageFixtures::create(['status' => 'published'], ['locale' => $this->locale, 'title' => 'Start', 'slug' => 'legacy-revision', 'path' => 'legacy-revision']);
+    $page = PageFixtures::create(['status' => 'published'], ['locale' => $this->locale, 'title' => 'Start', 'slug' => 'revision-status', 'path' => 'revision-status']);
 
-    $this->actingAs($editor)->put(route('pages.update', $page), titlePayload($this->locale, 'Legacy title', 'legacy-revision'));
+    $this->actingAs($editor)->put(route('pages.update', $page), titlePayload($this->locale, 'Saved title', 'revision-status'));
 
     $revision = PageRevision::query()->where('page_id', $page->id)->firstOrFail();
-    $snapshot = $revision->snapshot;
-    unset($snapshot['publish_date'], $snapshot['publish_time']);
-    $snapshot['published_at'] = '2026-11-19T10:30:00+00:00';
-    $revision->update(['snapshot' => $snapshot]);
 
     $this->actingAs($editor)
         ->get(route('pages.edit', [$page, 'revision' => $revision->id]))
         ->assertOk()
         ->assertInertia(fn (Assert $inertia) => $inertia
-            ->where('model.publish_date', '2026-11-19')
-            ->where('model.publish_time', '10:30'));
+            ->where('model.status', 'published'));
 });

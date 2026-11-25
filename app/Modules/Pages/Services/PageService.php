@@ -173,7 +173,7 @@ class PageService extends BaseCrudService implements PageServiceContract
                     'slug' => $translation->slug,
                     'seo_title' => $translation->seo_title,
                     'seo_description' => $translation->seo_description,
-                    'content' => $translation->content,
+                    'body' => $translation->body,
                 ]])
                 ->all(),
         ];

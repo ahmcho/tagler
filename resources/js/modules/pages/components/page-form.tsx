@@ -36,17 +36,13 @@ import {
     TimePickerTrigger,
 } from '@/components/tailgrids/core/time-picker';
 import { Toggle } from '@/components/tailgrids/core/toggle';
-import type {
-    ContentDocument,
-    ContentEditorConfig,
-} from '@/modules/pages/components/content-document';
-import { ContentEditor } from '@/modules/pages/components/content-editor';
 import { LocaleFlag } from '@/modules/pages/components/locale-flag';
 import {
     publishError,
     scheduleError,
     SERVER_TIME_ZONE,
 } from '@/modules/pages/components/page-schedule';
+import { RichTextEditor } from '@/modules/pages/components/rich-text-editor';
 import { cn } from '@/utils/cn';
 
 export type PageParentOption = {
@@ -78,8 +74,8 @@ export type PageTranslationFormData = {
     slug: string;
     seo_title: string;
     seo_description: string;
-    /** The locale's content document: sections and elements. */
-    content: ContentDocument;
+    /** The locale's body: sanitised HTML, or empty. */
+    body: string;
 };
 
 export type PageFormData = {
@@ -100,7 +96,6 @@ type Props = {
     parents: PageParentOption[];
     locales: PageLocaleOption[];
     defaultLocale: string;
-    editor: ContentEditorConfig;
 };
 
 function parentKey(parentId: number | null): string {
@@ -284,13 +279,7 @@ function LocaleTabs({
  * Page fields. Page-wide fields come first. The locale tabs hold the fields
  * that differ per language. The shared `ResourceForm` provides the form and buttons.
  */
-export function PageFields({
-    form,
-    parents,
-    locales,
-    defaultLocale,
-    editor,
-}: Props) {
+export function PageFields({ form, parents, locales, defaultLocale }: Props) {
     const [activeLocale, setActiveLocale] = useState(defaultLocale);
     const { timeHourCycle } = usePage().props;
 
@@ -375,7 +364,6 @@ export function PageFields({
                                 form={form}
                                 code={locale.code}
                                 isDefault={locale.code === defaultLocale}
-                                editor={editor}
                             />
                         </div>
                     ))}
@@ -418,26 +406,6 @@ function ErrorMessage({ message }: { message?: string }) {
     ) : null;
 }
 
-/**
- * Joins every content error for one locale. The server reports each bad
- * element or field under its own path, for example `translations.en.content.sections.0.layout`.
- */
-function contentErrorFor(
-    form: InertiaFormProps<PageFormData>,
-    code: string,
-): string | undefined {
-    const prefix = `translations.${code}.content`;
-    const topLevel = [prefix, `${prefix}.version`];
-    const messages = Object.entries(
-        form.errors as Record<string, string | undefined>,
-    )
-        .filter(([key]) => topLevel.includes(key))
-        .map(([, message]) => message)
-        .filter((message): message is string => Boolean(message));
-
-    return messages.length > 0 ? messages.join(' ') : undefined;
-}
-
 /** Reads a nested error key such as `translations.en.slug`, which the typed form errors do not list. */
 function errorFor(
     form: InertiaFormProps<PageFormData>,
@@ -450,12 +418,10 @@ function LocaleFields({
     form,
     code,
     isDefault,
-    editor,
 }: {
     form: InertiaFormProps<PageFormData>;
     code: string;
     isDefault: boolean;
-    editor: ContentEditorConfig;
 }) {
     const translation = form.data.translations[code];
     const field = (name: keyof PageTranslationFormData) =>
@@ -537,16 +503,13 @@ function LocaleFields({
             </TextField>
 
             <div className="flex flex-col gap-3">
-                <FieldLabel>Sections</FieldLabel>
-                <ContentEditor
-                    value={translation.content}
-                    onChange={(next) => setField('content', next)}
-                    config={editor}
-                    errorFor={(path) =>
-                        errorFor(form, `translations.${code}.content.${path}`)
-                    }
+                <FieldLabel>Body</FieldLabel>
+                <RichTextEditor
+                    value={translation.body}
+                    onChange={(html) => setField('body', html)}
+                    invalid={Boolean(errorFor(form, field('body')))}
                 />
-                <ErrorMessage message={contentErrorFor(form, code)} />
+                <ErrorMessage message={errorFor(form, field('body'))} />
             </div>
         </>
     );

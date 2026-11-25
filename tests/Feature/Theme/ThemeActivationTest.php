@@ -6,7 +6,6 @@ use App\Modules\Auth\Models\Role;
 use App\Modules\Settings\Services\Contracts\SettingServiceContract;
 use App\Modules\Theme\Contracts\ThemeRegistryContract;
 use App\Modules\Theme\Contracts\ThemeServiceContract;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\ThemeFixtures;
@@ -76,17 +75,14 @@ test('an unknown slug gives a validation error and changes nothing', function ()
     expect(app(ThemeServiceContract::class)->activeTheme())->toBeNull();
 });
 
-test('activating a valid theme stores it and clears the public page cache', function (): void {
-    $versionBefore = (int) Cache::get('pages.public.version', 1);
-
+test('activating a valid theme stores it', function (): void {
     $this->actingAs(themeUser(['themes.activate']))
         ->post(route('themes.activate', 'default'))
         ->assertRedirect(route('themes.index'))
         ->assertSessionHas('status');
 
     expect(app(SettingServiceContract::class)->string('active_theme'))->toBe('default')
-        ->and(app(ThemeServiceContract::class)->activeTheme()?->slug)->toBe('default')
-        ->and((int) Cache::get('pages.public.version'))->toBe($versionBefore + 1);
+        ->and(app(ThemeServiceContract::class)->activeTheme()?->slug)->toBe('default');
 });
 
 test('the active theme can be changed to another installed theme', function (): void {

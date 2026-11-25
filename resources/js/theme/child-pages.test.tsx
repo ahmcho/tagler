@@ -1,19 +1,17 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { ChildPagesElement } from './child-pages';
+import { ChildPages } from './child-pages';
 
-describe('ChildPagesElement', () => {
+describe('ChildPages', () => {
     it('renders the heading and a link for each child page', () => {
         const markup = renderToStaticMarkup(
-            <ChildPagesElement
-                data={{
-                    title: 'Services',
-                    items: [
-                        { title: 'Web', url: '/services/web' },
-                        { title: 'Design', url: '/services/design' },
-                    ],
-                }}
+            <ChildPages
+                title="Services"
+                items={[
+                    { title: 'Web', url: '/services/web' },
+                    { title: 'Design', url: '/services/design' },
+                ]}
             />,
         );
 
@@ -24,13 +22,13 @@ describe('ChildPagesElement', () => {
 
     it('renders nothing when there are no child pages', () => {
         const markup = renderToStaticMarkup(
-            <ChildPagesElement data={{ title: 'Services', items: [] }} />,
+            <ChildPages title="Services" items={[]} />,
         );
 
         expect(markup).toBe('');
     });
 
     it('renders nothing when the resolved items are missing', () => {
-        expect(renderToStaticMarkup(<ChildPagesElement data={{}} />)).toBe('');
+        expect(renderToStaticMarkup(<ChildPages items={[]} />)).toBe('');
     });
 });

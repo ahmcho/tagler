@@ -7,7 +7,6 @@ use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Enums\PageStatus;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
-use App\Modules\Pages\Services\PageContentValidator;
 use Crud\Requests\AppFormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\Carbon;
@@ -28,13 +27,6 @@ class PageRequest extends AppFormRequest
     protected array $customFilters = [
         'status', 'live', 'homepage', 'publish_date', 'title', 'subtitle', 'slug', 'path',
     ];
-
-    /**
-     * The cleaned content document of each locale, set while the rules run.
-     *
-     * @var array<string, array<string, mixed>>
-     */
-    private array $cleanContent = [];
 
     /**
      * @return array<string, mixed>
@@ -110,24 +102,10 @@ class PageRequest extends AppFormRequest
             $rules["translations.{$locale}.slug"] = [$isDefault ? 'required' : 'nullable', 'string', 'max:255'];
             $rules["translations.{$locale}.seo_title"] = ['nullable', 'string', 'max:255'];
             $rules["translations.{$locale}.seo_description"] = ['nullable', 'string', 'max:500'];
-            $rules["translations.{$locale}.content"] = ['nullable', 'array'];
+            $rules["translations.{$locale}.body"] = ['nullable', 'string', 'max:200000'];
         }
 
         return $rules;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        $messages = [];
-
-        foreach (LocaleEnum::codes() as $locale) {
-            $messages["translations.{$locale}.content.array"] = __('pages.errors.content_not_json');
-        }
-
-        return $messages;
     }
 
     /**
@@ -182,27 +160,6 @@ class PageRequest extends AppFormRequest
         }
     }
 
-    /**
-     * @param  mixed  $key
-     * @param  mixed  $default
-     */
-    public function validated($key = null, $default = null): mixed
-    {
-        $data = parent::validated($key, $default);
-
-        if ($key !== null || ! is_array($data)) {
-            return $data;
-        }
-
-        foreach ($this->cleanContent as $locale => $document) {
-            if (isset($data['translations'][$locale]['content'])) {
-                $data['translations'][$locale]['content'] = $document;
-            }
-        }
-
-        return $data;
-    }
-
     private function checkEachLocale(Validator $validator): void
     {
         $service = app(PageServiceContract::class);
@@ -216,8 +173,6 @@ class PageRequest extends AppFormRequest
             if (! $this->hasAnyValue($translation)) {
                 continue;
             }
-
-            $this->checkContent($validator, $locale);
 
             if ($validator->errors()->has("translations.{$locale}.title") || $validator->errors()->has("translations.{$locale}.slug")) {
                 continue;
@@ -260,35 +215,11 @@ class PageRequest extends AppFormRequest
         }
     }
 
-    private function checkContent(Validator $validator, string $locale): void
-    {
-        $content = $this->input("translations.{$locale}.content");
-
-        if (! is_array($content)) {
-            return;
-        }
-
-        $result = app(PageContentValidator::class)->validate(
-            $content,
-            fn (string $permission): bool => (bool) $this->user()?->can($permission),
-        );
-
-        $this->cleanContent[$locale] = $result['document'];
-
-        foreach ($result['errors'] as $key => $message) {
-            $validator->errors()->add("translations.{$locale}.{$key}", is_string($message) ? $message : implode(' ', $message));
-        }
-    }
-
     /**
-     * The content box always holds a document, so it does not count as a value. Only the visible fields do.
-     *
      * @param  array<string, mixed>  $translation
      */
     private function hasAnyValue(array $translation): bool
     {
-        unset($translation['content']);
-
         return collect($translation)->contains(fn (mixed $value): bool => filled($value));
     }
 

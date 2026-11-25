@@ -4,13 +4,9 @@ namespace App\Modules\Pages\Concerns;
 
 use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Models\Page;
-use App\Modules\Pages\Support\ContentElementRegistry;
-use App\Modules\Pages\Support\ContentElements\ContentElement;
-use App\Modules\Pages\Support\PageContentDocument;
-use Illuminate\Support\Carbon;
 
 /**
- * Builds the form values and the editor props for the page form.
+ * Builds the form values for the page form.
  */
 trait HasPageFormValues
 {
@@ -42,38 +38,15 @@ trait HasPageFormValues
      */
     private function snapshotValues(array $snapshot): array
     {
-        [$publishDate, $publishTime] = $this->publishPartsOf($snapshot);
-
         return [
             'parent_id' => $snapshot['parent_id'] ?? null,
             'status' => (string) ($snapshot['status'] ?? 'draft'),
-            'publish_date' => $publishDate,
-            'publish_time' => $publishTime,
+            'publish_date' => $snapshot['publish_date'] ?? null,
+            'publish_time' => $snapshot['publish_time'] ?? null,
             'layout' => (string) ($snapshot['layout'] ?? ''),
             'theme_layout' => (bool) ($snapshot['theme_layout'] ?? true),
             'translations' => $snapshot['translations'] ?? [],
         ];
-    }
-
-    /**
-     * Revisions saved before the date and time split hold `published_at` instead.
-     *
-     * @param  array<string, mixed>  $snapshot
-     * @return array{0: string|null, 1: string|null}
-     */
-    private function publishPartsOf(array $snapshot): array
-    {
-        if (array_key_exists('publish_date', $snapshot)) {
-            return [$snapshot['publish_date'], $snapshot['publish_time'] ?? null];
-        }
-
-        if (! isset($snapshot['published_at'])) {
-            return [null, null];
-        }
-
-        $publishAt = Carbon::parse($snapshot['published_at']);
-
-        return [$publishAt->toDateString(), $publishAt->format('H:i')];
     }
 
     /**
@@ -132,36 +105,7 @@ trait HasPageFormValues
             'slug' => '',
             'seo_title' => '',
             'seo_description' => '',
-            'content' => PageContentDocument::empty(),
-        ];
-    }
-
-    /**
-     * What the section editor needs: layouts, backgrounds, element types with their fields, and whether the editor may write raw HTML.
-     *
-     * @return array{layouts: array<int, array{key: string, label: string}>, backgrounds: array<int, array{key: string, label: string}>, elementTypes: array<int, array<string, mixed>>, canUseHtml: bool}
-     */
-    private function editorProps(): array
-    {
-        return [
-            'layouts' => collect((array) config('modules.pages.layouts', []))
-                ->map(fn (string $label, string $key): array => ['key' => $key, 'label' => $label])
-                ->values()
-                ->all(),
-            'backgrounds' => collect((array) config('modules.pages.backgrounds', []))
-                ->map(fn (string $label, string $key): array => ['key' => $key, 'label' => $label])
-                ->values()
-                ->all(),
-            'elementTypes' => collect(app(ContentElementRegistry::class)->all())
-                ->map(fn (ContentElement $element): array => [
-                    'type' => $element->key(),
-                    'label' => $element->label(),
-                    'requiresPermission' => $element->requiresPermission(),
-                    'schema' => $element->schema(),
-                ])
-                ->values()
-                ->all(),
-            'canUseHtml' => (bool) auth()->user()?->can('pages.html'),
+            'body' => '',
         ];
     }
 

@@ -1,28 +1,17 @@
 import type { ReactNode } from 'react';
-import type { PageSection } from '@/modules/pages/components/page-sections';
-import { PageSections } from '@/modules/pages/components/page-sections';
-import { PageHead } from '@/theme/api';
+import { ChildPages, PageHead } from '@/theme/api';
+import type { ThemePage } from '@/theme/contract';
 
 type Props = {
-    page: {
-        locale: string;
-        title: string;
-        subtitle: string | null;
-        path: string;
-        layout: string | null;
-        seo_title: string | null;
-        seo_description: string | null;
-        canonical_url: string | null;
-        og_locale: string;
-    };
-    sections: PageSection[];
+    page: ThemePage;
+    body: string | null;
+    children: { title: string; url: string }[];
 };
 
 /**
- * Public page. Plain semantic HTML. The sections carry data attributes, so a
- * future theme can style them without changing the page.
+ * Public page without a theme template. Plain semantic HTML. The body is sanitised on save.
  */
-export default function Show({ page, sections }: Props): ReactNode {
+export default function Show({ page, body, children }: Props): ReactNode {
     return (
         <main lang={page.locale} data-layout={page.layout ?? undefined}>
             <PageHead page={page} />
@@ -32,7 +21,9 @@ export default function Show({ page, sections }: Props): ReactNode {
                 {page.subtitle && <p>{page.subtitle}</p>}
             </header>
 
-            <PageSections sections={sections} />
+            {body && <div dangerouslySetInnerHTML={{ __html: body }} />}
+
+            <ChildPages items={children} />
         </main>
     );
 }

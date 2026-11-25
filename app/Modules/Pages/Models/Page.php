@@ -5,11 +5,9 @@ namespace App\Modules\Pages\Models;
 use App\Modules\Auth\Concerns\HasActivityLogs;
 use App\Modules\Pages\Database\Factories\PageFactory;
 use App\Modules\Pages\Enums\PageStatus;
-use App\Modules\Pages\Observers\PageObserver;
 use App\Modules\Settings\Concerns\HasLocalDates;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -39,7 +37,6 @@ use Illuminate\Support\Carbon;
 #[Table(name: 'pages')]
 #[UseFactory(PageFactory::class)]
 #[Fillable(['parent_id', 'status', 'layout', 'theme_layout', 'publish_date', 'publish_time'])]
-#[ObservedBy([PageObserver::class])]
 class Page extends Model
 {
     /** @use HasFactory<PageFactory> */

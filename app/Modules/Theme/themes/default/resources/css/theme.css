@@ -16,25 +16,9 @@
     margin: 0 0 0.5rem;
 }
 
-.theme-default__section {
-    padding: 2.5rem 1.5rem;
-}
-
-.theme-default__section > div {
+.theme-default__body,
+.theme-default__children {
     max-width: 960px;
-    margin: 0 auto 1rem;
-}
-
-.theme-default__section[data-background='light'] {
-    background: #f5f7fa;
-}
-
-.theme-default__section[data-background='dark'] {
-    background: #1f2933;
-    color: #f5f7fa;
-}
-
-.theme-default__section[data-background='primary'] {
-    background: #2563eb;
-    color: #ffffff;
+    margin: 0 auto;
+    padding: 0 1.5rem 2.5rem;
 }

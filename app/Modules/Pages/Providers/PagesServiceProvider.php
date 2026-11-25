@@ -15,14 +15,11 @@ use App\Modules\Pages\Repositories\PageRevisionRepository;
 use App\Modules\Pages\Repositories\PageTranslationRepository;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use App\Modules\Pages\Services\PageService;
-use App\Modules\Pages\Support\ContentElementRegistry;
-use App\Modules\Pages\Support\ContentElements\DynamicContentElement;
 use Crud\Providers\ModuleServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Ssr\Gateway;
 use Inertia\Ssr\HttpGateway;
-use InvalidArgumentException;
 
 class PagesServiceProvider extends ModuleServiceProvider
 {
@@ -42,13 +39,6 @@ class PagesServiceProvider extends ModuleServiceProvider
         PageServiceContract::class => PageService::class,
     ];
 
-    public function register(): void
-    {
-        parent::register();
-
-        $this->app->singleton(ContentElementRegistry::class);
-    }
-
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
@@ -58,7 +48,6 @@ class PagesServiceProvider extends ModuleServiceProvider
 
         $this->registerPermissions();
         $this->registerAbilities();
-        $this->registerContentElements();
         $this->registerConsole();
         $this->disableSsrForPublicPages();
     }
@@ -93,28 +82,6 @@ class PagesServiceProvider extends ModuleServiceProvider
         });
     }
 
-    /**
-     * Element and component classes come from config/pages.php, so only code this application ships can run.
-     */
-    private function registerContentElements(): void
-    {
-        $registry = app(ContentElementRegistry::class);
-
-        foreach (config('modules.pages.elements', []) as $elementClass) {
-            $registry->register(app($elementClass));
-        }
-
-        foreach (config('modules.pages.components', []) as $componentClass) {
-            $component = app($componentClass);
-
-            if (! $component instanceof DynamicContentElement) {
-                throw new InvalidArgumentException("Page component [{$componentClass}] must implement DynamicContentElement.");
-            }
-
-            $registry->register($component);
-        }
-    }
-
     private function registerPermissions(): void
     {
         app(PermissionRegistry::class)->register([
@@ -124,7 +91,6 @@ class PagesServiceProvider extends ModuleServiceProvider
             ['name' => 'pages.destroy', 'description' => 'Delete pages'],
             ['name' => 'pages.publish', 'description' => 'Publish and unpublish pages'],
             ['name' => 'pages.homepage', 'description' => 'Assign the homepage'],
-            ['name' => 'pages.html', 'description' => 'Save raw HTML blocks on pages'],
         ]);
     }
 

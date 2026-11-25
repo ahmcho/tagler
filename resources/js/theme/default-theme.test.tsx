@@ -48,7 +48,7 @@ describe('default theme', () => {
         const Home = templates.home;
 
         const html = renderToStaticMarkup(
-            createElement(Home, { page, sections: [] }),
+            createElement(Home, { page, body: null, children: [] }),
         );
 
         expect(html).toContain('class="theme-default"');
@@ -66,7 +66,8 @@ describe('default theme', () => {
                     seo_title: 'Welcome SEO',
                     seo_description: 'A short summary',
                 },
-                sections: [],
+                body: null,
+                children: [],
             }),
         );
 
@@ -82,7 +83,7 @@ describe('default theme', () => {
         const Home = templates.home;
 
         const html = renderToStaticMarkup(
-            createElement(Home, { page, sections: [] }),
+            createElement(Home, { page, body: null, children: [] }),
         );
 
         expect(html).toContain('property="og:title" content="Welcome"');
@@ -95,7 +96,7 @@ describe('default theme', () => {
         const Home = templates.home;
 
         const html = renderToStaticMarkup(
-            createElement(Home, { page, sections: [] }),
+            createElement(Home, { page, body: null, children: [] }),
         );
 
         expect(html).toContain('property="og:locale" content="en_GB"');
@@ -110,7 +111,8 @@ describe('default theme', () => {
                     ...page,
                     canonical_url: 'https://example.test/en/about',
                 },
-                sections: [],
+                body: null,
+                children: [],
             }),
         );
 
@@ -122,13 +124,14 @@ describe('default theme', () => {
         );
     });
 
-    it('renders the not-found template with the page title and no sections', () => {
+    it('renders the not-found template with the page title and no body', () => {
         const NotFound = templates['not-found'];
 
         const html = renderToStaticMarkup(
             createElement(NotFound, {
                 page: { ...page, title: 'Page not found' },
-                sections: [],
+                body: null,
+                children: [],
             }),
         );
 
@@ -136,25 +139,19 @@ describe('default theme', () => {
         expect(html).not.toContain('data-layout');
     });
 
-    it('renders each section with its layout and background', () => {
+    it('renders the body HTML and the child page links', () => {
         const Home = templates.home;
 
         const html = renderToStaticMarkup(
             createElement(Home, {
                 page,
-                sections: [
-                    {
-                        id: 's1',
-                        layout: 'centered',
-                        settings: { background: 'dark' },
-                        elements: [{ id: 'e1', type: 'divider', data: {} }],
-                    },
-                ],
+                body: '<p>Hello body</p>',
+                children: [{ title: 'Services', url: '/en/services' }],
             }),
         );
 
-        expect(html).toContain('data-layout="centered"');
-        expect(html).toContain('data-background="dark"');
-        expect(html).toContain('data-element="divider"');
+        expect(html).toContain('class="theme-default__body"');
+        expect(html).toContain('<p>Hello body</p>');
+        expect(html).toContain('<a href="/en/services">Services</a>');
     });
 });
