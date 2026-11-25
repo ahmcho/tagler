@@ -18,6 +18,7 @@ import {
     SheetTitle,
 } from '@/components/tailgrids/core/sheet';
 import { Toggle } from '@/components/tailgrids/core/toggle';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { mediaApi, MediaApiError } from '../api/media-api';
 import { formatBytes, formatDate } from '../lib/format';
 import type { MediaFolder, MediaRecord } from '../types';
@@ -61,6 +62,7 @@ function MediaDetailsBody({
     const [message, setMessage] = useState<string | null>(null);
     const [confirmPurge, setConfirmPurge] = useState(false);
     const [busy, setBusy] = useState(false);
+    const [, copy] = useClipboard();
 
     async function run(action: () => Promise<void>) {
         setBusy(true);
@@ -246,10 +248,15 @@ function MediaDetailsBody({
                         onPress={() =>
                             run(async () => {
                                 const { url } = await mediaApi.fileUrl(file.id);
-                                await navigator.clipboard.writeText(
+                                const copied = await copy(
                                     new URL(url, window.location.origin).href,
                                 );
-                                setMessage('Link copied.');
+
+                                if (copied) {
+                                    setMessage('Link copied.');
+                                } else {
+                                    setError('The link could not be copied.');
+                                }
                             })
                         }
                     >
