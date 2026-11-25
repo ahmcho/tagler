@@ -1,4 +1,5 @@
 import { FolderPlus, Images } from 'lucide-react';
+import type { ComponentProps } from 'react';
 import { useState } from 'react';
 import { ResourcePage } from '@/components/resource/resource-page';
 import {
@@ -49,7 +50,8 @@ type Props = {
 };
 
 type FolderDialog =
-    { mode: 'create' } | { mode: 'rename'; folder: MediaFolder };
+    | { mode: 'create' }
+    | { mode: 'rename'; folder: MediaFolder };
 
 /** Reads the starting folder and search from the URL, for links from the dashboard. */
 function initialQueryFromUrl(): Partial<MediaLibraryQuery> {
@@ -61,6 +63,182 @@ function initialQueryFromUrl(): Partial<MediaLibraryQuery> {
         folder: folder ? (Number(folder) as MediaFolderFilter) : 'root',
         search: search ?? '',
     };
+}
+
+/** The folder a new folder is created in. The root and the "all" view both mean the top level. */
+function parentFolderFor(folder: MediaFolderFilter): number | null {
+    return folder === 'root' || folder === 'all' ? null : folder;
+}
+
+/** Subfolders of the open folder. A search, a category or the trash shows files only. */
+function visibleFolderRows(
+    folders: MediaFolder[],
+    query: MediaLibraryQuery,
+): MediaFolder[] {
+    if (
+        query.trashed ||
+        query.search.trim() !== '' ||
+        query.category !== null
+    ) {
+        return [];
+    }
+
+    return childFolders(folders, query.folder);
+}
+
+function folderDialogTitle(dialog: FolderDialog): string {
+    return dialog.mode === 'rename' ? 'Rename folder' : 'New folder';
+}
+
+function folderDialogInitialName(dialog: FolderDialog): string {
+    return dialog.mode === 'rename' ? dialog.folder.name : '';
+}
+
+function emptyLibraryMessage(loading: boolean, trashed: boolean): string {
+    if (loading) {
+        return 'Loading…';
+    }
+
+    return trashed ? 'The trash is empty.' : 'Nothing here yet.';
+}
+
+function FolderPathNav({
+    path,
+    onOpen,
+}: {
+    path: MediaFolder[];
+    onOpen: (folder: MediaFolderFilter) => void;
+}) {
+    return (
+        <nav
+            aria-label="Folder path"
+            className="flex flex-wrap items-center gap-1 text-sm text-text-100"
+        >
+            <button
+                type="button"
+                className="font-medium text-title-50 hover:underline"
+                onClick={() => onOpen('root')}
+            >
+                Library
+            </button>
+            {path.map((folder) => (
+                <span key={folder.id} className="flex items-center gap-1">
+                    <span aria-hidden>/</span>
+                    <button
+                        type="button"
+                        className="font-medium text-title-50 hover:underline"
+                        onClick={() => onOpen(folder.id)}
+                    >
+                        {folder.name}
+                    </button>
+                </span>
+            ))}
+        </nav>
+    );
+}
+
+function FolderDeleteDialog({
+    folder,
+    error,
+    onCancel,
+    onConfirm,
+}: {
+    folder: MediaFolder;
+    error: string | null;
+    onCancel: () => void;
+    onConfirm: () => void;
+}) {
+    return (
+        <Dialog isOpen onOpenChange={(open) => !open && onCancel()}>
+            <DialogHeader>
+                <DialogTitle>Delete “{folder.name}”?</DialogTitle>
+            </DialogHeader>
+            <DialogBody>
+                <p className="text-sm text-text-100">
+                    Only empty folders can be deleted. Move their files and
+                    subfolders first.
+                </p>
+                {error && (
+                    <p className="mt-2 text-sm text-error-500">{error}</p>
+                )}
+            </DialogBody>
+            <DialogFooter>
+                <Button
+                    variant="primary"
+                    appearance="outline"
+                    onPress={onCancel}
+                >
+                    Cancel
+                </Button>
+                <Button variant="danger" onPress={onConfirm}>
+                    Delete folder
+                </Button>
+            </DialogFooter>
+        </Dialog>
+    );
+}
+
+type LibraryFiles = ReturnType<typeof useMediaLibrary>['files'];
+
+type MediaLibraryContentProps = {
+    files: LibraryFiles;
+    folderRows: MediaFolder[];
+    canManageFolders: boolean;
+    loading: boolean;
+    trashed: boolean;
+    onOpenFolder: (folder: MediaFolder) => void;
+    onRenameFolder: (folder: MediaFolder) => void;
+    onDeleteFolder: (folder: MediaFolder) => void;
+    onOpenFile: ComponentProps<typeof MediaLibraryTable>['onOpenFile'];
+    onPageChange: (page: number) => void;
+};
+
+/** The table or the empty message, then the pager. */
+function MediaLibraryContent({
+    files,
+    folderRows,
+    canManageFolders,
+    loading,
+    trashed,
+    onOpenFolder,
+    onRenameFolder,
+    onDeleteFolder,
+    onOpenFile,
+    onPageChange,
+}: MediaLibraryContentProps) {
+    const hasRows = files
+        ? files.data.length > 0 || folderRows.length > 0
+        : false;
+
+    return (
+        <CardContent className="space-y-6 p-6">
+            {files && hasRows ? (
+                <div className="overflow-x-auto rounded-2xl border border-base-200">
+                    <MediaLibraryTable
+                        folders={folderRows}
+                        files={files.data}
+                        canManageFolders={canManageFolders}
+                        onOpenFolder={onOpenFolder}
+                        onRenameFolder={onRenameFolder}
+                        onDeleteFolder={onDeleteFolder}
+                        onOpenFile={onOpenFile}
+                    />
+                </div>
+            ) : (
+                <p className="rounded-2xl border border-dashed border-base-200 p-10 text-center text-sm text-text-100">
+                    {emptyLibraryMessage(loading, trashed)}
+                </p>
+            )}
+
+            {files && files.meta.last_page > 1 && (
+                <Pagination
+                    currentPage={files.meta.current_page}
+                    totalPages={files.meta.last_page}
+                    onPageChange={onPageChange}
+                />
+            )}
+        </CardContent>
+    );
 }
 
 /**
@@ -82,13 +260,7 @@ export default function MediaLibrary({ upload }: Props) {
     const selected = files?.data.find((file) => file.id === selectedId) ?? null;
     const canManageFolders = ability('media.folders');
     const path = folderPath(folders, query.folder);
-    const folderRows =
-        query.trashed || query.search.trim() !== '' || query.category !== null
-            ? []
-            : childFolders(
-                  folders,
-                  query.folder === 'root' ? 'root' : query.folder,
-              );
+    const folderRows = visibleFolderRows(folders, query);
 
     const abilities = {
         update: ability('media.update'),
@@ -97,16 +269,20 @@ export default function MediaLibrary({ upload }: Props) {
         purge: ability('media.purge'),
     };
 
+    function openFolder(folder: MediaFolder) {
+        library.update({ folder: folder.id });
+    }
+
+    function requestFolderDelete(folder: MediaFolder) {
+        setFolderError(null);
+        setFolderToDelete(folder);
+    }
+
     async function createOrRenameFolder(name: string) {
         if (folderDialog?.mode === 'rename') {
             await mediaApi.renameFolder(folderDialog.folder.id, name);
         } else {
-            await mediaApi.createFolder(
-                name,
-                query.folder === 'root' || query.folder === 'all'
-                    ? null
-                    : query.folder,
-            );
+            await mediaApi.createFolder(name, parentFolderFor(query.folder));
         }
 
         setFolderDialog(null);
@@ -148,39 +324,10 @@ export default function MediaLibrary({ upload }: Props) {
 
                 <Card className="gap-0 rounded-2xl border border-base-200 bg-card-background-50">
                     <CardHeader className="flex flex-col gap-3 border-b border-base-100/60 p-6">
-                        <nav
-                            aria-label="Folder path"
-                            className="flex flex-wrap items-center gap-1 text-sm text-text-100"
-                        >
-                            <button
-                                type="button"
-                                className="font-medium text-title-50 hover:underline"
-                                onClick={() =>
-                                    library.update({ folder: 'root' })
-                                }
-                            >
-                                Library
-                            </button>
-                            {path.map((folder) => (
-                                <span
-                                    key={folder.id}
-                                    className="flex items-center gap-1"
-                                >
-                                    <span aria-hidden>/</span>
-                                    <button
-                                        type="button"
-                                        className="font-medium text-title-50 hover:underline"
-                                        onClick={() =>
-                                            library.update({
-                                                folder: folder.id,
-                                            })
-                                        }
-                                    >
-                                        {folder.name}
-                                    </button>
-                                </span>
-                            ))}
-                        </nav>
+                        <FolderPathNav
+                            path={path}
+                            onOpen={(folder) => library.update({ folder })}
+                        />
                         <div className="flex flex-wrap items-end gap-3">
                             <MediaSearchField
                                 search={query.search}
@@ -217,52 +364,20 @@ export default function MediaLibrary({ upload }: Props) {
                         </div>
                     </CardHeader>
 
-                    <CardContent className="space-y-6 p-6">
-                        {files &&
-                        (files.data.length > 0 || folderRows.length > 0) ? (
-                            <div className="overflow-x-auto rounded-2xl border border-base-200">
-                                <MediaLibraryTable
-                                    folders={folderRows}
-                                    files={files.data}
-                                    canManageFolders={canManageFolders}
-                                    onOpenFolder={(folder) =>
-                                        library.update({ folder: folder.id })
-                                    }
-                                    onRenameFolder={(folder) =>
-                                        setFolderDialog({
-                                            mode: 'rename',
-                                            folder,
-                                        })
-                                    }
-                                    onDeleteFolder={(folder) => {
-                                        setFolderError(null);
-                                        setFolderToDelete(folder);
-                                    }}
-                                    onOpenFile={(file) =>
-                                        setSelectedId(file.id)
-                                    }
-                                />
-                            </div>
-                        ) : (
-                            <p className="rounded-2xl border border-dashed border-base-200 p-10 text-center text-sm text-text-100">
-                                {library.loading
-                                    ? 'Loading…'
-                                    : query.trashed
-                                      ? 'The trash is empty.'
-                                      : 'Nothing here yet.'}
-                            </p>
-                        )}
-
-                        {files && files.meta.last_page > 1 && (
-                            <Pagination
-                                currentPage={files.meta.current_page}
-                                totalPages={files.meta.last_page}
-                                onPageChange={(page) =>
-                                    library.update({ page })
-                                }
-                            />
-                        )}
-                    </CardContent>
+                    <MediaLibraryContent
+                        files={files}
+                        folderRows={folderRows}
+                        canManageFolders={canManageFolders}
+                        loading={library.loading}
+                        trashed={query.trashed}
+                        onOpenFolder={openFolder}
+                        onRenameFolder={(folder) =>
+                            setFolderDialog({ mode: 'rename', folder })
+                        }
+                        onDeleteFolder={requestFolderDelete}
+                        onOpenFile={(file) => setSelectedId(file.id)}
+                        onPageChange={(page) => library.update({ page })}
+                    />
                 </Card>
 
                 <MediaDetailsSheet
@@ -282,57 +397,20 @@ export default function MediaLibrary({ upload }: Props) {
 
                 {folderDialog && (
                     <MediaFolderDialog
-                        title={
-                            folderDialog.mode === 'rename'
-                                ? 'Rename folder'
-                                : 'New folder'
-                        }
-                        initialName={
-                            folderDialog.mode === 'rename'
-                                ? folderDialog.folder.name
-                                : ''
-                        }
+                        title={folderDialogTitle(folderDialog)}
+                        initialName={folderDialogInitialName(folderDialog)}
                         onSubmit={createOrRenameFolder}
                         onClose={() => setFolderDialog(null)}
                     />
                 )}
 
                 {folderToDelete && (
-                    <Dialog
-                        isOpen
-                        onOpenChange={(open) =>
-                            !open && setFolderToDelete(null)
-                        }
-                    >
-                        <DialogHeader>
-                            <DialogTitle>
-                                Delete “{folderToDelete.name}”?
-                            </DialogTitle>
-                        </DialogHeader>
-                        <DialogBody>
-                            <p className="text-sm text-text-100">
-                                Only empty folders can be deleted. Move their
-                                files and subfolders first.
-                            </p>
-                            {folderError && (
-                                <p className="mt-2 text-sm text-error-500">
-                                    {folderError}
-                                </p>
-                            )}
-                        </DialogBody>
-                        <DialogFooter>
-                            <Button
-                                variant="primary"
-                                appearance="outline"
-                                onPress={() => setFolderToDelete(null)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button variant="danger" onPress={deleteFolder}>
-                                Delete folder
-                            </Button>
-                        </DialogFooter>
-                    </Dialog>
+                    <FolderDeleteDialog
+                        folder={folderToDelete}
+                        error={folderError}
+                        onCancel={() => setFolderToDelete(null)}
+                        onConfirm={deleteFolder}
+                    />
                 )}
             </div>
         </ResourcePage>

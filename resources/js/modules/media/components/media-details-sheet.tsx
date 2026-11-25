@@ -44,6 +44,221 @@ type Props = {
 
 type BodyProps = Omit<Props, 'file' | 'onClose'> & { file: MediaRecord };
 
+type DetailsFields = {
+    title: string;
+    altText: string;
+    description: string;
+};
+
+type DetailsFieldName = keyof DetailsFields;
+
+const ROOT_FOLDER_VALUE = 'root';
+
+function folderValue(folderId: number | null): string {
+    return folderId === null ? ROOT_FOLDER_VALUE : String(folderId);
+}
+
+function MediaFileMetadata({ file }: { file: MediaRecord }) {
+    return (
+        <>
+            <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-gray-50">
+                {file.thumbnail_url ? (
+                    <img
+                        src={file.thumbnail_url}
+                        alt={file.alt_text ?? ''}
+                        className="size-full object-contain"
+                    />
+                ) : (
+                    <span className="text-sm text-text-100">
+                        No preview for this file type.
+                    </span>
+                )}
+            </div>
+
+            <dl className="grid grid-cols-2 gap-3 text-sm">
+                <dt className="text-text-100">Type</dt>
+                <dd className="text-text-50">{file.extension.toUpperCase()}</dd>
+                <dt className="text-text-100">Uploaded by</dt>
+                <dd className="text-text-50">
+                    {file.uploaded_by?.name ?? '—'}
+                </dd>
+                {file.dimensions && (
+                    <>
+                        <dt className="text-text-100">Dimensions</dt>
+                        <dd className="text-text-50">
+                            {file.dimensions.width} × {file.dimensions.height}
+                        </dd>
+                    </>
+                )}
+                <dt className="text-text-100">Processing</dt>
+                <dd className="text-text-50">{file.processing_status}</dd>
+            </dl>
+        </>
+    );
+}
+
+function MediaVisibilityToggle({
+    isPublic,
+    disabled,
+    onChange,
+}: {
+    isPublic: boolean;
+    disabled: boolean;
+    onChange: (isPublic: boolean) => void;
+}) {
+    return (
+        <Toggle
+            label={
+                isPublic
+                    ? 'Public: anyone with the link can open it'
+                    : 'Private: only signed-in staff'
+            }
+            checked={isPublic}
+            disabled={disabled}
+            onChange={(event) => onChange(event.target.checked)}
+        />
+    );
+}
+
+type MediaDetailsFormProps = {
+    fields: DetailsFields;
+    onFieldChange: (name: DetailsFieldName, value: string) => void;
+    folders: MediaFolder[];
+    folderId: number | null;
+    busy: boolean;
+    message: string | null;
+    onSubmit: () => void;
+    onFolderChange: (value: string) => void;
+};
+
+function MediaDetailsForm({
+    fields,
+    onFieldChange,
+    folders,
+    folderId,
+    busy,
+    message,
+    onSubmit,
+    onFolderChange,
+}: MediaDetailsFormProps) {
+    const folderOptions = [
+        { value: ROOT_FOLDER_VALUE, label: 'Library root' },
+        ...folders.map((folder) => ({
+            value: String(folder.id),
+            label: folder.name,
+        })),
+    ];
+
+    return (
+        <form
+            className="space-y-4"
+            onSubmit={(event) => {
+                event.preventDefault();
+                onSubmit();
+            }}
+        >
+            <MediaTextField
+                label="Title"
+                value={fields.title}
+                onChange={(value) => onFieldChange('title', value)}
+            />
+            <MediaTextField
+                label="Alt text"
+                value={fields.altText}
+                onChange={(value) => onFieldChange('altText', value)}
+            />
+            <MediaTextField
+                label="Description"
+                value={fields.description}
+                onChange={(value) => onFieldChange('description', value)}
+            />
+            <div className="flex items-center gap-3">
+                <Button type="submit" variant="primary" disabled={busy}>
+                    Save details
+                </Button>
+                {message && (
+                    <span className="text-sm text-text-100">{message}</span>
+                )}
+            </div>
+
+            <SelectField
+                label="Folder"
+                value={folderValue(folderId)}
+                onChange={onFolderChange}
+                options={folderOptions}
+            />
+        </form>
+    );
+}
+
+type MediaTrashActionsProps = {
+    abilities: Abilities;
+    inTrash: boolean;
+    busy: boolean;
+    confirmPurge: boolean;
+    onTrash: () => void;
+    onRestore: () => void;
+    onRequestPurge: () => void;
+    onPurge: () => void;
+};
+
+/** Move to trash, restore, and the two-step permanent delete. */
+function MediaTrashActions({
+    abilities,
+    inTrash,
+    busy,
+    confirmPurge,
+    onTrash,
+    onRestore,
+    onRequestPurge,
+    onPurge,
+}: MediaTrashActionsProps) {
+    return (
+        <>
+            {abilities.destroy && !inTrash && (
+                <Button
+                    variant="danger"
+                    appearance="outline"
+                    disabled={busy}
+                    onPress={onTrash}
+                >
+                    <Trash2 className="size-4" />
+                    Move to trash
+                </Button>
+            )}
+
+            {inTrash && abilities.destroy && (
+                <Button variant="primary" disabled={busy} onPress={onRestore}>
+                    <RotateCcw className="size-4" />
+                    Restore
+                </Button>
+            )}
+
+            {inTrash && abilities.purge && (
+                <div className="space-y-2">
+                    {confirmPurge ? (
+                        <Button
+                            variant="danger"
+                            disabled={busy}
+                            onPress={onPurge}
+                        >
+                            Confirm permanent delete
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="danger"
+                            disabled={busy}
+                            onPress={onRequestPurge}
+                        >
+                            Delete permanently
+                        </Button>
+                    )}
+                </div>
+            )}
+        </>
+    );
+}
+
 /** Preview, metadata, visibility and actions for one file. The sheet keys it per file. */
 function MediaDetailsBody({
     file,
@@ -54,10 +269,12 @@ function MediaDetailsBody({
     onRemoved,
     onStructureChanged,
 }: BodyProps) {
-    const [title, setTitle] = useState(file?.title ?? '');
-    const [altText, setAltText] = useState(file?.alt_text ?? '');
-    const [description, setDescription] = useState(file?.description ?? '');
-    const [folderId, setFolderId] = useState(file?.folder_id ?? null);
+    const [fields, setFields] = useState<DetailsFields>({
+        title: file.title ?? '',
+        altText: file.alt_text ?? '',
+        description: file.description ?? '',
+    });
+    const [folderId, setFolderId] = useState(file.folder_id ?? null);
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
     const [confirmPurge, setConfirmPurge] = useState(false);
@@ -81,14 +298,79 @@ function MediaDetailsBody({
         }
     }
 
-    const isPublic = file.visibility === 'public';
-    const folderOptions = [
-        { value: 'root', label: 'Library root' },
-        ...folders.map((folder) => ({
-            value: String(folder.id),
-            label: folder.name,
-        })),
-    ];
+    function updateField(name: DetailsFieldName, value: string) {
+        setFields((previous) => ({ ...previous, [name]: value }));
+    }
+
+    function changeVisibility(isPublicNext: boolean) {
+        run(async () => {
+            onChanged(
+                await mediaApi.changeVisibility(
+                    file.id,
+                    isPublicNext ? 'public' : 'private',
+                ),
+            );
+        });
+    }
+
+    function saveDetails() {
+        run(async () => {
+            onChanged(
+                await mediaApi.updateFile(file.id, {
+                    title: fields.title || null,
+                    alt_text: fields.altText || null,
+                    description: fields.description || null,
+                }),
+            );
+            setMessage('Saved.');
+        });
+    }
+
+    function changeFolder(value: string) {
+        run(async () => {
+            const target = value === ROOT_FOLDER_VALUE ? null : Number(value);
+
+            onChanged(await mediaApi.moveFile(file.id, target));
+            setFolderId(target);
+            onStructureChanged();
+        });
+    }
+
+    function copyLink() {
+        run(async () => {
+            const { url } = await mediaApi.fileUrl(file.id);
+            const copied = await copy(
+                new URL(url, window.location.origin).href,
+            );
+
+            if (copied) {
+                setMessage('Link copied.');
+            } else {
+                setError('The link could not be copied.');
+            }
+        });
+    }
+
+    function trashFile() {
+        run(async () => {
+            await mediaApi.trashFile(file.id);
+            onRemoved(file.id);
+        });
+    }
+
+    function restoreFile() {
+        run(async () => {
+            await mediaApi.restoreFile(file.id);
+            onRemoved(file.id);
+        });
+    }
+
+    function purgeFile() {
+        run(async () => {
+            await mediaApi.purgeFile(file.id);
+            onRemoved(file.id);
+        });
+    }
 
     return (
         <>
@@ -110,155 +392,34 @@ function MediaDetailsBody({
                     </Alert>
                 )}
 
-                <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-gray-50">
-                    {file.thumbnail_url ? (
-                        <img
-                            src={file.thumbnail_url}
-                            alt={file.alt_text ?? ''}
-                            className="size-full object-contain"
-                        />
-                    ) : (
-                        <span className="text-sm text-text-100">
-                            No preview for this file type.
-                        </span>
-                    )}
-                </div>
-
-                <dl className="grid grid-cols-2 gap-3 text-sm">
-                    <dt className="text-text-100">Type</dt>
-                    <dd className="text-text-50">
-                        {file.extension.toUpperCase()}
-                    </dd>
-                    <dt className="text-text-100">Uploaded by</dt>
-                    <dd className="text-text-50">
-                        {file.uploaded_by?.name ?? '—'}
-                    </dd>
-                    {file.dimensions && (
-                        <>
-                            <dt className="text-text-100">Dimensions</dt>
-                            <dd className="text-text-50">
-                                {file.dimensions.width} ×{' '}
-                                {file.dimensions.height}
-                            </dd>
-                        </>
-                    )}
-                    <dt className="text-text-100">Processing</dt>
-                    <dd className="text-text-50">{file.processing_status}</dd>
-                </dl>
+                <MediaFileMetadata file={file} />
 
                 {abilities.visibility && (
-                    <Toggle
-                        label={
-                            isPublic
-                                ? 'Public: anyone with the link can open it'
-                                : 'Private: only signed-in staff'
-                        }
-                        checked={isPublic}
+                    <MediaVisibilityToggle
+                        isPublic={file.visibility === 'public'}
                         disabled={busy || inTrash}
-                        onChange={(event) =>
-                            run(async () => {
-                                onChanged(
-                                    await mediaApi.changeVisibility(
-                                        file.id,
-                                        event.target.checked
-                                            ? 'public'
-                                            : 'private',
-                                    ),
-                                );
-                            })
-                        }
+                        onChange={changeVisibility}
                     />
                 )}
 
                 {abilities.update && (
-                    <form
-                        className="space-y-4"
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            run(async () => {
-                                onChanged(
-                                    await mediaApi.updateFile(file.id, {
-                                        title: title || null,
-                                        alt_text: altText || null,
-                                        description: description || null,
-                                    }),
-                                );
-                                setMessage('Saved.');
-                            });
-                        }}
-                    >
-                        <MediaTextField
-                            label="Title"
-                            value={title}
-                            onChange={setTitle}
-                        />
-                        <MediaTextField
-                            label="Alt text"
-                            value={altText}
-                            onChange={setAltText}
-                        />
-                        <MediaTextField
-                            label="Description"
-                            value={description}
-                            onChange={setDescription}
-                        />
-                        <div className="flex items-center gap-3">
-                            <Button
-                                type="submit"
-                                variant="primary"
-                                disabled={busy}
-                            >
-                                Save details
-                            </Button>
-                            {message && (
-                                <span className="text-sm text-text-100">
-                                    {message}
-                                </span>
-                            )}
-                        </div>
-
-                        <SelectField
-                            label="Folder"
-                            value={
-                                folderId === null ? 'root' : String(folderId)
-                            }
-                            onChange={(value) =>
-                                run(async () => {
-                                    const target =
-                                        value === 'root' ? null : Number(value);
-                                    onChanged(
-                                        await mediaApi.moveFile(
-                                            file.id,
-                                            target,
-                                        ),
-                                    );
-                                    setFolderId(target);
-                                    onStructureChanged();
-                                })
-                            }
-                            options={folderOptions}
-                        />
-                    </form>
+                    <MediaDetailsForm
+                        fields={fields}
+                        onFieldChange={updateField}
+                        folders={folders}
+                        folderId={folderId}
+                        busy={busy}
+                        message={message}
+                        onSubmit={saveDetails}
+                        onFolderChange={changeFolder}
+                    />
                 )}
 
                 <div className="flex flex-wrap gap-2">
                     <Button
                         variant="primary"
                         appearance="outline"
-                        onPress={() =>
-                            run(async () => {
-                                const { url } = await mediaApi.fileUrl(file.id);
-                                const copied = await copy(
-                                    new URL(url, window.location.origin).href,
-                                );
-
-                                if (copied) {
-                                    setMessage('Link copied.');
-                                } else {
-                                    setError('The link could not be copied.');
-                                }
-                            })
-                        }
+                        onPress={copyLink}
                     >
                         <Copy className="size-4" />
                         Copy link
@@ -273,65 +434,16 @@ function MediaDetailsBody({
                     </a>
                 </div>
 
-                {abilities.destroy && !inTrash && (
-                    <Button
-                        variant="danger"
-                        appearance="outline"
-                        disabled={busy}
-                        onPress={() =>
-                            run(async () => {
-                                await mediaApi.trashFile(file.id);
-                                onRemoved(file.id);
-                            })
-                        }
-                    >
-                        <Trash2 className="size-4" />
-                        Move to trash
-                    </Button>
-                )}
-
-                {inTrash && abilities.destroy && (
-                    <Button
-                        variant="primary"
-                        disabled={busy}
-                        onPress={() =>
-                            run(async () => {
-                                await mediaApi.restoreFile(file.id);
-                                onRemoved(file.id);
-                            })
-                        }
-                    >
-                        <RotateCcw className="size-4" />
-                        Restore
-                    </Button>
-                )}
-
-                {inTrash && abilities.purge && (
-                    <div className="space-y-2">
-                        {!confirmPurge ? (
-                            <Button
-                                variant="danger"
-                                disabled={busy}
-                                onPress={() => setConfirmPurge(true)}
-                            >
-                                Delete permanently
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="danger"
-                                disabled={busy}
-                                onPress={() =>
-                                    run(async () => {
-                                        await mediaApi.purgeFile(file.id);
-                                        onRemoved(file.id);
-                                    })
-                                }
-                            >
-                                Confirm permanent delete
-                            </Button>
-                        )}
-                    </div>
-                )}
+                <MediaTrashActions
+                    abilities={abilities}
+                    inTrash={inTrash}
+                    busy={busy}
+                    confirmPurge={confirmPurge}
+                    onTrash={trashFile}
+                    onRestore={restoreFile}
+                    onRequestPurge={() => setConfirmPurge(true)}
+                    onPurge={purgeFile}
+                />
             </SheetBody>
         </>
     );

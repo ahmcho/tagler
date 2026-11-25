@@ -35,6 +35,110 @@ type SearchableListProps = {
     hasError?: boolean;
 };
 
+/** The first page replaces the list. Later pages add only options that are not loaded yet. */
+function mergeOptions(
+    previous: SelectOption[],
+    incoming: SelectOption[],
+    page: number,
+): SelectOption[] {
+    if (page === 1) {
+        return incoming;
+    }
+
+    const newOptions = incoming.filter(
+        (option) => !previous.some((loaded) => loaded.value === option.value),
+    );
+
+    return [...previous, ...newOptions];
+}
+
+/** The selected option stays in the list, so its label shows even when it is not in the results. */
+function withSelectedOption(
+    options: SelectOption[],
+    value: SelectOption | null,
+): SelectOption[] {
+    if (
+        value === null ||
+        options.some((option) => option.value === value.value)
+    ) {
+        return options;
+    }
+
+    return [value, ...options];
+}
+
+function isNearBottom(list: HTMLElement): boolean {
+    const distanceToBottom =
+        list.scrollHeight - list.scrollTop - list.clientHeight;
+
+    return distanceToBottom < LOAD_MORE_THRESHOLD_PX;
+}
+
+type SearchableFieldProps = {
+    inputId: string;
+    placeholder: string;
+    hasError?: boolean;
+    isDisabled?: boolean;
+    canClear: boolean;
+    onClear: () => void;
+};
+
+/** The input row: the text field, the clear button and the chevron. */
+function SearchableField({
+    inputId,
+    placeholder,
+    hasError,
+    isDisabled,
+    canClear,
+    onClear,
+}: SearchableFieldProps) {
+    return (
+        <div
+            className={cn(
+                'flex min-h-11 w-full items-center gap-2 rounded-lg border border-base-300 bg-input-background px-4 py-2.5 text-title-50 focus-within:border-input-primary-focus-border focus-within:ring-4 focus-within:ring-input-primary-focus-border/20',
+                hasError &&
+                    'border-input-error-focus-border focus-within:ring-input-error-focus-border/20',
+                isDisabled && 'opacity-60',
+            )}
+        >
+            <AriaInput
+                id={inputId}
+                placeholder={placeholder}
+                className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-text-100"
+            />
+            {canClear && (
+                <AriaButton
+                    slot={null}
+                    aria-label="Clear"
+                    onPress={onClear}
+                    className="flex size-6 shrink-0 items-center justify-center rounded-md text-text-100 outline-none hover:text-title-50 focus-visible:ring-2 focus-visible:ring-primary-500 [&>svg]:size-4"
+                >
+                    <Close />
+                </AriaButton>
+            )}
+            <SelectIndicator />
+        </div>
+    );
+}
+
+type EmptyMessageProps = {
+    isLoading: boolean;
+    loadingMessage: string;
+    noOptionsMessage: string;
+};
+
+function EmptyMessage({
+    isLoading,
+    loadingMessage,
+    noOptionsMessage,
+}: EmptyMessageProps) {
+    return (
+        <div className="px-3 py-2 text-sm text-text-100">
+            {isLoading ? loadingMessage : noOptionsMessage}
+        </div>
+    );
+}
+
 /**
  * Debounced, paged async combo box built on react-aria. The menu loads the first page
  * when it opens or when the query changes, and the next page when it is scrolled to the bottom.
@@ -82,17 +186,7 @@ export function SearchableList({
             lastPageRef.current = page;
             setHasMore(result.hasMore);
             setOptions((previous) =>
-                page === 1
-                    ? result.options
-                    : [
-                          ...previous,
-                          ...result.options.filter(
-                              (option) =>
-                                  !previous.some(
-                                      (loaded) => loaded.value === option.value,
-                                  ),
-                          ),
-                      ],
+                mergeOptions(previous, result.options, page),
             );
         } finally {
             if (requestId === requestRef.current) {
@@ -110,20 +204,21 @@ export function SearchableList({
     }
 
     function handleMenuOpen() {
-        if (lastPageRef.current === 0 || queryRef.current !== '') {
-            clearTimeout(debounceRef.current);
-            queryRef.current = '';
-            loadPage('', 1);
+        const needsFreshList =
+            lastPageRef.current === 0 || queryRef.current !== '';
+
+        if (!needsFreshList) {
+            return;
         }
+
+        clearTimeout(debounceRef.current);
+        queryRef.current = '';
+        loadPage('', 1);
     }
 
     function handleMenuScroll(event: UIEvent<HTMLDivElement>) {
-        const list = event.target as HTMLElement;
-        const distanceToBottom =
-            list.scrollHeight - list.scrollTop - list.clientHeight;
-
         if (
-            distanceToBottom < LOAD_MORE_THRESHOLD_PX &&
+            isNearBottom(event.target as HTMLElement) &&
             hasMore &&
             !isLoading
         ) {
@@ -131,11 +226,13 @@ export function SearchableList({
         }
     }
 
-    // The selected option stays in the list, so its label shows even when it is not in the results.
-    const items =
-        value && !options.some((option) => option.value === value.value)
-            ? [value, ...options]
-            : options;
+    function handleClear() {
+        setInputValue('');
+        onChange(null);
+    }
+
+    const items = withSelectedOption(options, value);
+    const canClear = value !== null && !isDisabled;
 
     return (
         <ComboBox<SelectOption>
@@ -158,34 +255,14 @@ export function SearchableList({
             aria-label={placeholder}
             className="flex w-full flex-col gap-1.5"
         >
-            <div
-                className={cn(
-                    'flex min-h-11 w-full items-center gap-2 rounded-lg border border-base-300 bg-input-background px-4 py-2.5 text-title-50 focus-within:border-input-primary-focus-border focus-within:ring-4 focus-within:ring-input-primary-focus-border/20',
-                    hasError &&
-                        'border-input-error-focus-border focus-within:ring-input-error-focus-border/20',
-                    isDisabled && 'opacity-60',
-                )}
-            >
-                <AriaInput
-                    id={inputId}
-                    placeholder={placeholder}
-                    className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-text-100"
-                />
-                {value && !isDisabled && (
-                    <AriaButton
-                        slot={null}
-                        aria-label="Clear"
-                        onPress={() => {
-                            setInputValue('');
-                            onChange(null);
-                        }}
-                        className="flex size-6 shrink-0 items-center justify-center rounded-md text-text-100 outline-none hover:text-title-50 focus-visible:ring-2 focus-visible:ring-primary-500 [&>svg]:size-4"
-                    >
-                        <Close />
-                    </AriaButton>
-                )}
-                <SelectIndicator />
-            </div>
+            <SearchableField
+                inputId={inputId}
+                placeholder={placeholder}
+                hasError={hasError}
+                isDisabled={isDisabled}
+                canClear={canClear}
+                onClear={handleClear}
+            />
             <Popover
                 className="w-(--trigger-width) overflow-auto rounded-xl bg-dropdown-background shadow-md outline-hidden"
                 onScrollCapture={handleMenuScroll}
@@ -193,9 +270,11 @@ export function SearchableList({
                 <ListBox
                     className="max-h-72 overflow-auto p-1 outline-hidden"
                     renderEmptyState={() => (
-                        <div className="px-3 py-2 text-sm text-text-100">
-                            {isLoading ? loadingMessage : noOptionsMessage}
-                        </div>
+                        <EmptyMessage
+                            isLoading={isLoading}
+                            loadingMessage={loadingMessage}
+                            noOptionsMessage={noOptionsMessage}
+                        />
                     )}
                 >
                     {(option: SelectOption) => (

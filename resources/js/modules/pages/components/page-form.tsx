@@ -141,6 +141,197 @@ type Props = {
     editor: ContentEditorConfig;
 };
 
+type ScheduleIssue = NonNullable<ReturnType<typeof scheduleError>>;
+
+/** The server error for a publish field. Without one, the early schedule message for that field. */
+function publishError(
+    serverError: string | undefined,
+    scheduleIssue: ScheduleIssue | null,
+    field: ScheduleIssue['field'],
+): string | undefined {
+    return (
+        serverError ??
+        (scheduleIssue?.field === field ? scheduleIssue.message : undefined)
+    );
+}
+
+function parentKey(parentId: number | null): string {
+    return parentId === null ? NO_PARENT_KEY : String(parentId);
+}
+
+function parentIdFromKey(key: unknown): number | null {
+    return String(key) === NO_PARENT_KEY ? null : Number(key);
+}
+
+function localeHasErrors(
+    errors: InertiaFormProps<PageFormData>['errors'],
+    localeCode: string,
+): boolean {
+    return Object.keys(errors).some((key) =>
+        key.startsWith(`translations.${localeCode}.`),
+    );
+}
+
+type PageFormProps = { form: InertiaFormProps<PageFormData> };
+
+function ParentSelect({
+    form,
+    parents,
+}: PageFormProps & { parents: PageParentOption[] }) {
+    return (
+        <div className="flex flex-col gap-1.5">
+            <Select
+                value={parentKey(form.data.parent_id)}
+                onChange={(key) =>
+                    form.setData('parent_id', parentIdFromKey(key))
+                }
+                isInvalid={Boolean(form.errors.parent_id)}
+            >
+                <SelectLabel>Parent page</SelectLabel>
+                <SelectTrigger>
+                    <SelectValue />
+                    <SelectIndicator />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem id={NO_PARENT_KEY}>
+                        No parent (top level)
+                    </SelectItem>
+                    {parents.map((parent) => (
+                        <SelectItem key={parent.id} id={String(parent.id)}>
+                            {parent.title} ({parent.path})
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            <ErrorMessage message={form.errors.parent_id} />
+        </div>
+    );
+}
+
+function StatusSelect({ form }: PageFormProps) {
+    return (
+        <div className="flex flex-col gap-1.5">
+            <Select
+                value={form.data.status}
+                onChange={(key) => {
+                    form.setData('status', String(key) as PageStatus);
+                    form.clearErrors('publish_date', 'publish_time');
+                }}
+                isInvalid={Boolean(form.errors.status)}
+            >
+                <SelectLabel>Status</SelectLabel>
+                <InputGroup
+                    className={cn(
+                        form.errors.status && 'border-input-error-focus-border',
+                    )}
+                >
+                    <SelectTrigger className="flex-1 rounded-none border-none bg-transparent shadow-none focus:border-none focus:ring-0">
+                        <SelectValue />
+                        <SelectIndicator />
+                    </SelectTrigger>
+                    <InputGroupAddon align="inline-end">
+                        <StatusHelp />
+                    </InputGroupAddon>
+                </InputGroup>
+                <SelectContent>
+                    {(Object.keys(STATUS_LABELS) as PageStatus[]).map(
+                        (status) => (
+                            <SelectItem key={status} id={status}>
+                                {STATUS_LABELS[status]}
+                            </SelectItem>
+                        ),
+                    )}
+                </SelectContent>
+            </Select>
+            <ErrorMessage message={form.errors.status} />
+        </div>
+    );
+}
+
+function PublishTimeField({
+    form,
+    hourCycle,
+    error,
+}: PageFormProps & { hourCycle: 12 | 24; error: string | undefined }) {
+    return (
+        <div className="flex w-full flex-col gap-1.5">
+            <FieldLabel>Publish time</FieldLabel>
+            <TimePicker
+                hourCycle={hourCycle}
+                value={form.data.publish_time}
+                onChange={(next) => {
+                    form.setData('publish_time', next);
+                    form.clearErrors('publish_time');
+                }}
+            >
+                <TimePickerTrigger
+                    className={cn(
+                        'min-w-37.5 justify-start',
+                        error && 'border-input-error-focus-border',
+                    )}
+                >
+                    {formatTime(form.data.publish_time, hourCycle) ||
+                        'Select time'}
+                </TimePickerTrigger>
+            </TimePicker>
+            <ErrorMessage message={error} />
+        </div>
+    );
+}
+
+/** The language tabs. A tab turns red when its locale has any error. */
+function LocaleTabs({
+    locales,
+    activeLocale,
+    errors,
+    onSelect,
+}: {
+    locales: PageLocaleOption[];
+    activeLocale: string;
+    errors: InertiaFormProps<PageFormData>['errors'];
+    onSelect: (code: string) => void;
+}) {
+    return (
+        <div
+            role="tablist"
+            aria-label="Languages"
+            className="flex flex-wrap justify-center gap-2"
+        >
+            {locales.map((locale) => {
+                const isActive = activeLocale === locale.code;
+
+                return (
+                    <button
+                        key={locale.code}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-label={locale.name}
+                        title={locale.name}
+                        onClick={() => onSelect(locale.code)}
+                        className={cn(
+                            'inline-flex items-center gap-2 rounded-lg border px-3 py-2',
+                            isActive
+                                ? 'border-primary-500 bg-primary-500 text-white'
+                                : 'border-base-300 text-title-50',
+                            localeHasErrors(errors, locale.code) &&
+                                'border-input-error-focus-border',
+                        )}
+                    >
+                        <LocaleFlag
+                            country={locale.country}
+                            label={locale.name}
+                        />
+                        <span className="text-sm font-medium">
+                            {locale.name}
+                        </span>
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
 /**
  * Page fields. Page-wide fields come first. The locale tabs hold the fields
  * that differ per language. The shared `ResourceForm` provides the form and buttons.
@@ -160,96 +351,13 @@ export function PageFields({
         form.data.publish_date,
         form.data.publish_time,
     );
-    const publishDateError =
-        form.errors.publish_date ??
-        (scheduleIssue?.field === 'publish_date'
-            ? scheduleIssue.message
-            : undefined);
-    const publishTimeError =
-        form.errors.publish_time ??
-        (scheduleIssue?.field === 'publish_time'
-            ? scheduleIssue.message
-            : undefined);
     const isScheduled = form.data.status === 'scheduled';
 
     return (
         <>
             <div className="grid gap-6 md:grid-cols-2">
-                <div className="flex flex-col gap-1.5">
-                    <Select
-                        value={
-                            form.data.parent_id === null
-                                ? NO_PARENT_KEY
-                                : String(form.data.parent_id)
-                        }
-                        onChange={(key) =>
-                            form.setData(
-                                'parent_id',
-                                String(key) === NO_PARENT_KEY
-                                    ? null
-                                    : Number(key),
-                            )
-                        }
-                        isInvalid={Boolean(form.errors.parent_id)}
-                    >
-                        <SelectLabel>Parent page</SelectLabel>
-                        <SelectTrigger>
-                            <SelectValue />
-                            <SelectIndicator />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem id={NO_PARENT_KEY}>
-                                No parent (top level)
-                            </SelectItem>
-                            {parents.map((parent) => (
-                                <SelectItem
-                                    key={parent.id}
-                                    id={String(parent.id)}
-                                >
-                                    {parent.title} ({parent.path})
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <ErrorMessage message={form.errors.parent_id} />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                    <Select
-                        value={form.data.status}
-                        onChange={(key) => {
-                            form.setData('status', String(key) as PageStatus);
-                            form.clearErrors('publish_date', 'publish_time');
-                        }}
-                        isInvalid={Boolean(form.errors.status)}
-                    >
-                        <SelectLabel>Status</SelectLabel>
-                        <InputGroup
-                            className={cn(
-                                form.errors.status &&
-                                    'border-input-error-focus-border',
-                            )}
-                        >
-                            <SelectTrigger className="flex-1 rounded-none border-none bg-transparent shadow-none focus:border-none focus:ring-0">
-                                <SelectValue />
-                                <SelectIndicator />
-                            </SelectTrigger>
-                            <InputGroupAddon align="inline-end">
-                                <StatusHelp />
-                            </InputGroupAddon>
-                        </InputGroup>
-                        <SelectContent>
-                            {(Object.keys(STATUS_LABELS) as PageStatus[]).map(
-                                (status) => (
-                                    <SelectItem key={status} id={status}>
-                                        {STATUS_LABELS[status]}
-                                    </SelectItem>
-                                ),
-                            )}
-                        </SelectContent>
-                    </Select>
-                    <ErrorMessage message={form.errors.status} />
-                </div>
+                <ParentSelect form={form} parents={parents} />
+                <StatusSelect form={form} />
 
                 <DatePickerField
                     label="Publish date"
@@ -262,34 +370,22 @@ export function PageFields({
                         form.clearErrors('publish_date');
                     }}
                     minValue={isScheduled ? today(SERVER_TIME_ZONE) : undefined}
-                    error={publishDateError}
+                    error={publishError(
+                        form.errors.publish_date,
+                        scheduleIssue,
+                        'publish_date',
+                    )}
                 />
 
-                <div className="flex w-full flex-col gap-1.5">
-                    <FieldLabel>Publish time</FieldLabel>
-                    <TimePicker
-                        hourCycle={timeHourCycle}
-                        value={form.data.publish_time}
-                        onChange={(next) => {
-                            form.setData('publish_time', next);
-                            form.clearErrors('publish_time');
-                        }}
-                    >
-                        <TimePickerTrigger
-                            className={cn(
-                                'min-w-37.5 justify-start',
-                                publishTimeError &&
-                                    'border-input-error-focus-border',
-                            )}
-                        >
-                            {formatTime(
-                                form.data.publish_time,
-                                timeHourCycle,
-                            ) || 'Select time'}
-                        </TimePickerTrigger>
-                    </TimePicker>
-                    <ErrorMessage message={publishTimeError} />
-                </div>
+                <PublishTimeField
+                    form={form}
+                    hourCycle={timeHourCycle}
+                    error={publishError(
+                        form.errors.publish_time,
+                        scheduleIssue,
+                        'publish_time',
+                    )}
+                />
 
                 <TextField
                     value={form.data.layout}
@@ -312,45 +408,12 @@ export function PageFields({
             </div>
 
             <div className="flex flex-col gap-4">
-                <div
-                    role="tablist"
-                    aria-label="Languages"
-                    className="flex flex-wrap justify-center gap-2"
-                >
-                    {locales.map((locale) => {
-                        const hasErrors = Object.keys(form.errors).some((key) =>
-                            key.startsWith(`translations.${locale.code}.`),
-                        );
-
-                        return (
-                            <button
-                                key={locale.code}
-                                type="button"
-                                role="tab"
-                                aria-selected={activeLocale === locale.code}
-                                aria-label={locale.name}
-                                title={locale.name}
-                                onClick={() => setActiveLocale(locale.code)}
-                                className={cn(
-                                    'inline-flex items-center gap-2 rounded-lg border px-3 py-2',
-                                    activeLocale === locale.code
-                                        ? 'border-primary-500 bg-primary-500 text-white'
-                                        : 'border-base-300 text-title-50',
-                                    hasErrors &&
-                                        'border-input-error-focus-border',
-                                )}
-                            >
-                                <LocaleFlag
-                                    country={locale.country}
-                                    label={locale.name}
-                                />
-                                <span className="text-sm font-medium">
-                                    {locale.name}
-                                </span>
-                            </button>
-                        );
-                    })}
-                </div>
+                <LocaleTabs
+                    locales={locales}
+                    activeLocale={activeLocale}
+                    errors={form.errors}
+                    onSelect={setActiveLocale}
+                />
 
                 {locales
                     .filter((locale) => locale.code === activeLocale)
