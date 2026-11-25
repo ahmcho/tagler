@@ -73,27 +73,42 @@ class PageRenderer
         $sections = [];
 
         foreach ($document['sections'] ?? [] as $section) {
-            if (($section['enabled'] ?? true) !== true) {
-                continue;
+            $rendered = $this->renderSection($translation, $section, $layouts);
+
+            if ($rendered !== null) {
+                $sections[] = $rendered;
             }
-
-            $layout = (string) ($section['layout'] ?? '');
-
-            if (! array_key_exists($layout, $layouts)) {
-                Log::warning('Page section skipped: unknown layout.', ['translation_id' => $translation->id, 'layout' => $layout]);
-
-                continue;
-            }
-
-            $sections[] = [
-                'id' => (string) ($section['id'] ?? ''),
-                'layout' => $layout,
-                'settings' => is_array($section['settings'] ?? null) ? $section['settings'] : [],
-                'elements' => $this->elements($translation, $section['elements'] ?? []),
-            ];
         }
 
         return $sections;
+    }
+
+    /**
+     * Null means the section is skipped: it is disabled or its layout is unknown.
+     *
+     * @param  array<string, mixed>  $layouts
+     * @return array{id: string, layout: string, settings: array<string, mixed>, elements: list<array{id: string, type: string, data: array<string, mixed>}>}|null
+     */
+    private function renderSection(PageTranslation $translation, mixed $section, array $layouts): ?array
+    {
+        if (($section['enabled'] ?? true) !== true) {
+            return null;
+        }
+
+        $layout = (string) ($section['layout'] ?? '');
+
+        if (! array_key_exists($layout, $layouts)) {
+            Log::warning('Page section skipped: unknown layout.', ['translation_id' => $translation->id, 'layout' => $layout]);
+
+            return null;
+        }
+
+        return [
+            'id' => (string) ($section['id'] ?? ''),
+            'layout' => $layout,
+            'settings' => is_array($section['settings'] ?? null) ? $section['settings'] : [],
+            'elements' => $this->elements($translation, $section['elements'] ?? []),
+        ];
     }
 
     /**

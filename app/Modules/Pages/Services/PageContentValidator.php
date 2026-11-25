@@ -25,15 +25,8 @@ class PageContentValidator
     public function validate(array $document, Closure $can): array
     {
         $errors = [];
-        $limits = config('modules.pages.limits');
 
-        if (strlen((string) json_encode($document)) > $limits['max_document_bytes']) {
-            $errors['content'] = __('pages.errors.content_too_large');
-        }
-
-        if (($document['version'] ?? null) !== PageContentDocument::VERSION) {
-            $errors['content.version'] = __('pages.errors.content_version_unsupported');
-        }
+        $this->validateDocumentLimits($document, $errors);
 
         $sections = $document['sections'] ?? null;
 
@@ -43,10 +36,42 @@ class PageContentValidator
             return ['document' => $document, 'errors' => $errors];
         }
 
-        if (count($sections) > $limits['max_sections']) {
+        if (count($sections) > config('modules.pages.limits.max_sections')) {
             $errors['content.sections'] = __('pages.errors.content_too_many_sections');
         }
 
+        $document['sections'] = $this->validateSections($sections, $can, $errors);
+
+        return ['document' => $document, 'errors' => $errors];
+    }
+
+    /**
+     * The byte size of the whole document and its version.
+     *
+     * @param  array<string, mixed>  $document
+     * @param  array<string, array<array-key, mixed>|string>  $errors
+     */
+    private function validateDocumentLimits(array $document, array &$errors): void
+    {
+        if (strlen((string) json_encode($document)) > config('modules.pages.limits.max_document_bytes')) {
+            $errors['content'] = __('pages.errors.content_too_large');
+        }
+
+        if (($document['version'] ?? null) !== PageContentDocument::VERSION) {
+            $errors['content.version'] = __('pages.errors.content_version_unsupported');
+        }
+    }
+
+    /**
+     * Validates each section in turn. One id set is shared by all sections and
+     * elements, so a repeated id is caught wherever it appears.
+     *
+     * @param  list<mixed>  $sections
+     * @param  array<string, array<array-key, mixed>|string>  $errors
+     * @return list<mixed>
+     */
+    private function validateSections(array $sections, Closure $can, array &$errors): array
+    {
         $seenIds = [];
 
         foreach ($sections as $sectionIndex => $section) {
@@ -59,14 +84,10 @@ class PageContentValidator
             }
 
             $section['id'] = $this->identifier($section['id'] ?? null, "{$path}.id", $seenIds, $errors);
-            $section = $this->validateSection($section, $path, $can, $seenIds, $errors);
-
-            $sections[$sectionIndex] = $section;
+            $sections[$sectionIndex] = $this->validateSection($section, $path, $can, $seenIds, $errors);
         }
 
-        $document['sections'] = $sections;
-
-        return ['document' => $document, 'errors' => $errors];
+        return $sections;
     }
 
     /**
