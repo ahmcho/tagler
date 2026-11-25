@@ -454,6 +454,10 @@ type DataTableToolbarProps<Row> = {
     bulkActions: DataTableBulkAction[];
 };
 
+function hasHeading(title: ReactNode, subtitle: ReactNode): boolean {
+    return title !== undefined || subtitle !== undefined;
+}
+
 /** Heading, search, filter and batch menu. The row above the table. */
 function DataTableToolbar<Row>({
     title,
@@ -468,7 +472,7 @@ function DataTableToolbar<Row>({
 }: DataTableToolbarProps<Row>) {
     return (
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            {(title !== undefined || subtitle !== undefined) && (
+            {hasHeading(title, subtitle) && (
                 <DataTableHeading title={title} subtitle={subtitle} />
             )}
 
@@ -744,16 +748,15 @@ function DataTableBody<Row>({
     rowActions,
     can,
 }: DataTableBodyProps<Row>) {
-    const showSkeleton = isLoading && rows.length === 0;
-
     return (
         <TableBody
             aria-busy={isLoading}
             className={cn(
-                isLoading && rows.length > 0 && 'opacity-50 transition-opacity',
+                isRefreshingRows(isLoading, rows.length) &&
+                    'opacity-50 transition-opacity',
             )}
         >
-            {showSkeleton && (
+            {isInitialLoading(isLoading, rows.length) && (
                 <LoadingRows
                     count={loadingRowCount}
                     columns={columns}
@@ -762,7 +765,7 @@ function DataTableBody<Row>({
                 />
             )}
 
-            {!isLoading && rows.length === 0 && (
+            {showsEmptyState(isLoading, rows.length) && (
                 <TableRow>
                     <TableCell colSpan={columnCount} className="text-center">
                         {emptyState}
@@ -792,6 +795,19 @@ function DataTableBody<Row>({
     );
 }
 
+function isInitialLoading(isLoading: boolean, rowCount: number): boolean {
+    return isLoading && rowCount === 0;
+}
+
+/** Rows stay on screen and dim while the next page loads. */
+function isRefreshingRows(isLoading: boolean, rowCount: number): boolean {
+    return isLoading && rowCount > 0;
+}
+
+function showsEmptyState(isLoading: boolean, rowCount: number): boolean {
+    return !isLoading && rowCount === 0;
+}
+
 /** True when the toolbar has something to show: a heading, search, filter or a visible batch action. */
 function hasToolbarContent(
     title: ReactNode,
@@ -805,6 +821,34 @@ function hasToolbarContent(
     );
 
     return hasHeadingOrControls || visibleBulkActionCount > 0;
+}
+
+/** Columns in the table, plus one for the checkbox and one for the row actions. */
+function countRenderedColumns(
+    columnCount: number,
+    hasSelection: boolean,
+    hasActions: boolean,
+): number {
+    return columnCount + Number(hasSelection) + Number(hasActions);
+}
+
+/** Rows that can be checked. A row is skipped when `isRowDisabled` returns true. */
+function getSelectableRows<Row>(
+    rows: Row[],
+    selection: DataTableSelection<Row> | undefined,
+): Row[] {
+    if (!selection) {
+        return [];
+    }
+
+    return rows.filter((row) => !selection.isRowDisabled?.(row));
+}
+
+function getVisibleBulkActions(
+    bulkActions: DataTableBulkAction[] | undefined,
+    can: ((permission: string) => boolean) | undefined,
+): DataTableBulkAction[] {
+    return (bulkActions ?? []).filter((action) => isPermitted(action, can));
 }
 
 /** True when every selectable row on the page is selected. */
@@ -873,21 +917,20 @@ export function DataTable<Row>({
 
     const hasSelection = selection !== undefined;
     const hasActions = rowActions !== undefined;
-    const columnCount =
-        columns.length + (hasSelection ? 1 : 0) + (hasActions ? 1 : 0);
+    const columnCount = countRenderedColumns(
+        columns.length,
+        hasSelection,
+        hasActions,
+    );
 
-    const selectableRows = selection
-        ? rows.filter((row) => !selection.isRowDisabled?.(row))
-        : [];
+    const selectableRows = getSelectableRows(rows, selection);
     const areAllSelected = areAllRowsSelected(
         selectableRows,
         selection,
         getRowId,
     );
 
-    const visibleBulkActions = (bulkActions ?? []).filter((action) =>
-        isPermitted(action, can),
-    );
+    const visibleBulkActions = getVisibleBulkActions(bulkActions, can);
     const hasToolbar = hasToolbarContent(
         title,
         subtitle,

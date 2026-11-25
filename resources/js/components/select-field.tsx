@@ -18,6 +18,28 @@ const ALL_OPTION_KEY = '__all__';
 /** A plain string is both the value and the label. Use `{ value, label }` when they differ. */
 export type SelectFieldOption = string | { value: string; label: string };
 
+function getSelectedKey(
+    value: string,
+    allOptionLabel: string | undefined,
+): string | null {
+    if (value !== '') {
+        return value;
+    }
+
+    return allOptionLabel ? ALL_OPTION_KEY : null;
+}
+
+function toOptionEntry(option: SelectFieldOption): {
+    value: string;
+    label: string;
+} {
+    if (typeof option === 'string') {
+        return { value: option, label: option };
+    }
+
+    return option;
+}
+
 type SelectFieldProps = {
     label: string;
     value: string;
@@ -39,8 +61,7 @@ export function SelectField({
     startIcon,
     hideLabel,
 }: SelectFieldProps) {
-    const selectedKey =
-        value !== '' ? value : allOptionLabel ? ALL_OPTION_KEY : null;
+    const selectedKey = getSelectedKey(value, allOptionLabel);
 
     const trigger = (
         <SelectTrigger
@@ -83,9 +104,7 @@ export function SelectField({
                 )}
                 {options.map((option) => {
                     const { value: optionValue, label: optionLabel } =
-                        typeof option === 'string'
-                            ? { value: option, label: option }
-                            : option;
+                        toOptionEntry(option);
 
                     return (
                         <SelectItem key={optionValue} id={optionValue}>

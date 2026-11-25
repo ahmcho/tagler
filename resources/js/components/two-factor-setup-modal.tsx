@@ -24,6 +24,57 @@ import { useClipboard } from '@/hooks/use-clipboard';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
 import { confirm } from '@/routes/two-factor';
 
+function QrCodeFrame({ qrCodeSvg }: { qrCodeSvg: string | null }) {
+    const { resolvedAppearance } = useAppearance();
+
+    return (
+        <div className="mx-auto aspect-square w-64 rounded-lg border border-gray-200 p-5 dark:border-gray-800">
+            {qrCodeSvg ? (
+                <div
+                    className="aspect-square w-full rounded-lg bg-white p-2 [&_svg]:size-full"
+                    dangerouslySetInnerHTML={{ __html: qrCodeSvg }}
+                    style={{
+                        filter:
+                            resolvedAppearance === 'dark'
+                                ? 'invert(1) brightness(1.5)'
+                                : undefined,
+                    }}
+                />
+            ) : (
+                <div className="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+                    Loading…
+                </div>
+            )}
+        </div>
+    );
+}
+
+function SetupKeyField({ manualSetupKey }: { manualSetupKey: string | null }) {
+    const [copiedText, copy] = useClipboard();
+    const CopyIcon = copiedText === manualSetupKey ? Check : Copy;
+
+    return (
+        <div className="flex w-full items-center gap-2 rounded-lg border border-gray-200 pr-2 dark:border-gray-800">
+            <input
+                type="text"
+                readOnly
+                value={manualSetupKey ?? 'Loading…'}
+                className="w-full bg-transparent p-3 text-sm text-gray-800 outline-none dark:text-white/90"
+            />
+            {manualSetupKey && (
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Copy setup key"
+                    onPress={() => copy(manualSetupKey)}
+                >
+                    <CopyIcon size={18} />
+                </Button>
+            )}
+        </div>
+    );
+}
+
 function TwoFactorSetupStep({
     qrCodeSvg,
     manualSetupKey,
@@ -37,10 +88,6 @@ function TwoFactorSetupStep({
     onNextStep: () => void;
     errors: string[];
 }) {
-    const { resolvedAppearance } = useAppearance();
-    const [copiedText, copy] = useClipboard();
-    const CopyIcon = copiedText === manualSetupKey ? Check : Copy;
-
     if (errors.length) {
         return (
             <>
@@ -58,24 +105,7 @@ function TwoFactorSetupStep({
 
     return (
         <>
-            <div className="mx-auto aspect-square w-64 rounded-lg border border-gray-200 p-5 dark:border-gray-800">
-                {qrCodeSvg ? (
-                    <div
-                        className="aspect-square w-full rounded-lg bg-white p-2 [&_svg]:size-full"
-                        dangerouslySetInnerHTML={{ __html: qrCodeSvg }}
-                        style={{
-                            filter:
-                                resolvedAppearance === 'dark'
-                                    ? 'invert(1) brightness(1.5)'
-                                    : undefined,
-                        }}
-                    />
-                ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">
-                        Loading…
-                    </div>
-                )}
-            </div>
+            <QrCodeFrame qrCodeSvg={qrCodeSvg} />
 
             <Button className="w-full" onPress={onNextStep}>
                 {buttonText}
@@ -85,24 +115,7 @@ function TwoFactorSetupStep({
                 or, enter the code manually
             </p>
 
-            <div className="flex w-full items-center gap-2 rounded-lg border border-gray-200 pr-2 dark:border-gray-800">
-                <input
-                    type="text"
-                    readOnly
-                    value={manualSetupKey ?? 'Loading…'}
-                    className="w-full bg-transparent p-3 text-sm text-gray-800 outline-none dark:text-white/90"
-                />
-                {manualSetupKey && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        aria-label="Copy setup key"
-                        onPress={() => copy(manualSetupKey)}
-                    >
-                        <CopyIcon size={18} />
-                    </Button>
-                )}
-            </div>
+            <SetupKeyField manualSetupKey={manualSetupKey} />
         </>
     );
 }

@@ -3,8 +3,10 @@ import { useState } from 'react';
 import type {
     DataTableBulkAction,
     DataTableColumn,
+    DataTableFilter,
     DataTableRowAction,
     DataTableRowId,
+    DataTableSearch,
 } from '@/components/data-table';
 import { DataTable } from '@/components/data-table';
 import { Card, CardContent } from '@/components/tailgrids/core/card';
@@ -46,6 +48,87 @@ type ResourceIndexContentProps<Row> = {
 };
 
 const noop = () => {};
+
+type ResourceIndex = ReturnType<typeof useResourceIndex>;
+
+function toDataTableSearch(
+    search: ResourceSearch | undefined,
+    index: ResourceIndex,
+): DataTableSearch | undefined {
+    if (!search) {
+        return undefined;
+    }
+
+    return {
+        value: index.searchValue,
+        onChange: index.setSearchValue,
+        onSubmit: index.applyFilters,
+        placeholder: search.placeholder,
+        label: search.label,
+    };
+}
+
+function toDataTableFilter(
+    filters: ResourceFilters | undefined,
+    index: ResourceIndex,
+): DataTableFilter | undefined {
+    if (!filters) {
+        return undefined;
+    }
+
+    return {
+        title: filters.title,
+        description: filters.description,
+        activeCount: index.activeFilterCount,
+        onApply: index.applyFilters,
+        onReset: index.resetFilters,
+        children: (
+            <ResourceFilterFields
+                fields={filters.fields}
+                textValues={index.textValues}
+                optionValues={index.optionValues}
+                onTextChange={index.setTextValue}
+                onOptionChange={index.setOptionValue}
+            />
+        ),
+    };
+}
+
+function toDataTableRowActions<Row>(
+    rowActions: ((row: Row) => ResourceRowAction<Row>[]) | undefined,
+    requestRowAction: (row: Row, action: ResourceRowAction<Row>) => void,
+): ((row: Row) => DataTableRowAction[]) | undefined {
+    if (!rowActions) {
+        return undefined;
+    }
+
+    return (row: Row) =>
+        rowActions(row).map((action) => ({
+            key: action.key,
+            label: action.label,
+            icon: action.icon,
+            permission: action.permission,
+            tone: action.tone,
+            onAction: () => requestRowAction(row, action),
+        }));
+}
+
+function toDataTableBulkActions(
+    bulkActions: ResourceBulkAction[] | undefined,
+    requestBulkAction: (
+        ids: DataTableRowId[],
+        action: ResourceBulkAction,
+    ) => void,
+): DataTableBulkAction[] | undefined {
+    return bulkActions?.map((action) => ({
+        key: action.key,
+        label: action.label,
+        icon: action.icon,
+        permission: action.permission,
+        onAction: (selectedRowIds) =>
+            requestBulkAction([...selectedRowIds], action),
+    }));
+}
 
 /**
  * The list part of a resource page: the card, the table with its search,
@@ -123,27 +206,13 @@ export function ResourceIndexContent<Row>({
         });
     };
 
-    const dataTableRowActions = rowActions
-        ? (row: Row): DataTableRowAction[] =>
-              rowActions(row).map((action) => ({
-                  key: action.key,
-                  label: action.label,
-                  icon: action.icon,
-                  permission: action.permission,
-                  tone: action.tone,
-                  onAction: () => requestRowAction(row, action),
-              }))
-        : undefined;
-
-    const dataTableBulkActions = bulkActions?.map(
-        (action): DataTableBulkAction => ({
-            key: action.key,
-            label: action.label,
-            icon: action.icon,
-            permission: action.permission,
-            onAction: (selectedRowIds) =>
-                requestBulkAction([...selectedRowIds], action),
-        }),
+    const dataTableRowActions = toDataTableRowActions(
+        rowActions,
+        requestRowAction,
+    );
+    const dataTableBulkActions = toDataTableBulkActions(
+        bulkActions,
+        requestBulkAction,
     );
 
     return (
@@ -153,39 +222,8 @@ export function ResourceIndexContent<Row>({
                     <DataTable
                         caption={caption}
                         subtitle={subtitle}
-                        search={
-                            search
-                                ? {
-                                      value: index.searchValue,
-                                      onChange: index.setSearchValue,
-                                      onSubmit: index.applyFilters,
-                                      placeholder: search.placeholder,
-                                      label: search.label,
-                                  }
-                                : undefined
-                        }
-                        filter={
-                            filters
-                                ? {
-                                      title: filters.title,
-                                      description: filters.description,
-                                      activeCount: index.activeFilterCount,
-                                      onApply: index.applyFilters,
-                                      onReset: index.resetFilters,
-                                      children: (
-                                          <ResourceFilterFields
-                                              fields={filters.fields}
-                                              textValues={index.textValues}
-                                              optionValues={index.optionValues}
-                                              onTextChange={index.setTextValue}
-                                              onOptionChange={
-                                                  index.setOptionValue
-                                              }
-                                          />
-                                      ),
-                                  }
-                                : undefined
-                        }
+                        search={toDataTableSearch(search, index)}
+                        filter={toDataTableFilter(filters, index)}
                         bulkActions={dataTableBulkActions}
                         selection={
                             bulkActions

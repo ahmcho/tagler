@@ -35,6 +35,15 @@ export function createPendingConfirm<Target>(
     };
 }
 
+/** The content shown while the dialog is closed, so the close animation keeps its layout. */
+const CLOSED_CONFIRM: Omit<PendingConfirm, 'run'> = {
+    title: '',
+    description: '',
+    confirmLabel: '',
+    icon: null,
+    tone: 'default',
+};
+
 type ResourceConfirmDialogProps = {
     pending: PendingConfirm | null;
     onClose: () => void;
@@ -46,7 +55,8 @@ export function ResourceConfirmDialog({
     onClose,
     onConfirm,
 }: ResourceConfirmDialogProps) {
-    const isDanger = pending?.tone === 'danger';
+    const shownConfirm = pending ?? CLOSED_CONFIRM;
+    const isDanger = shownConfirm.tone === 'danger';
 
     return (
         <Dialog
@@ -61,11 +71,13 @@ export function ResourceConfirmDialog({
             <DialogHeader>
                 {pending && (
                     <DialogIcon tone={isDanger ? 'danger' : 'success'}>
-                        {pending.icon}
+                        {shownConfirm.icon}
                     </DialogIcon>
                 )}
-                <DialogTitle>{pending?.title}</DialogTitle>
-                <DialogDescription>{pending?.description}</DialogDescription>
+                <DialogTitle>{shownConfirm.title}</DialogTitle>
+                <DialogDescription>
+                    {shownConfirm.description}
+                </DialogDescription>
             </DialogHeader>
 
             <DialogFooter>
@@ -76,7 +88,7 @@ export function ResourceConfirmDialog({
                     variant={isDanger ? 'danger' : 'primary'}
                     onPress={onConfirm}
                 >
-                    {pending?.confirmLabel}
+                    {shownConfirm.confirmLabel}
                 </Button>
             </DialogFooter>
         </Dialog>
