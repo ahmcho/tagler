@@ -103,7 +103,7 @@ export function libraryUrl(query: MediaLibraryQuery): string {
         search: query.search.trim(),
         folder: query.folder === 'all' ? null : query.folder,
         sort: query.sort,
-        trashed: query.trashed,
+        trashed: query.trashed ? 1 : null,
         page: query.page,
         per_page: query.perPage,
     });

@@ -193,3 +193,14 @@ test('category enum maps each documented MIME family', function (): void {
         ->and(MediaCategory::fromMimeType('text/plain'))->toBe(MediaCategory::Documents)
         ->and(MediaCategory::fromMimeType('application/octet-stream'))->toBe(MediaCategory::Other);
 });
+
+test('the trash filter returns only trashed files when sent as 1', function (): void {
+    Media::factory()->create(['original_name' => 'live.jpg']);
+    Media::factory()->create(['original_name' => 'gone.jpg'])->delete();
+
+    $this->actingAs($this->admin)
+        ->getJson(route('media.files.index', ['trashed' => 1]))
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.name', 'gone.jpg');
+});
