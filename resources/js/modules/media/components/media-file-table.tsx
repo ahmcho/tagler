@@ -1,18 +1,13 @@
 import {
+    Eye,
     File,
     FileAudio,
     FileImage,
     FileText,
     FileVideo,
-    MoreHorizontal,
 } from 'lucide-react';
+import { RowActionsMenu } from '@/components/data-table-menu';
 import { Badge } from '@/components/tailgrids/core/badge';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/tailgrids/core/dropdown';
 import {
     TableBody,
     TableCell,
@@ -61,8 +56,8 @@ export function MediaFileTable({ files, onOpen }: Props) {
                     <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
                         Date Modified
                     </TableHead>
-                    <TableHead className="h-11 px-4 py-3 text-center text-text-100 last:pr-6">
-                        Action
+                    <TableHead className="h-11 px-4 py-3 text-right text-text-100 last:pr-6">
+                        Actions
                     </TableHead>
                 </TableRow>
             </TableHeader>
@@ -118,22 +113,20 @@ export function MediaFileTable({ files, onOpen }: Props) {
                             <TableCell className="px-4 py-3 text-sm text-text-50">
                                 {formatDate(file.created_at)}
                             </TableCell>
-                            <TableCell className="py-3 pr-6 text-center">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger
-                                        aria-label={`Actions for ${file.name}`}
-                                        className="mx-auto flex size-10 items-center justify-center rounded-[10px] text-text-100 hover:bg-background-soft-50"
-                                    >
-                                        <MoreHorizontal className="size-5" />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                            onAction={() => onOpen(file)}
-                                        >
-                                            View details
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                            <TableCell className="py-3 pr-6 text-right">
+                                <RowActionsMenu
+                                    row={file}
+                                    rowId={file.id}
+                                    rowActions={() => [
+                                        {
+                                            key: 'details',
+                                            label: 'Details',
+                                            icon: <Eye className="size-4" />,
+                                            tone: 'primary',
+                                            onAction: () => onOpen(file),
+                                        },
+                                    ]}
+                                />
                             </TableCell>
                         </TableRow>
                     );
