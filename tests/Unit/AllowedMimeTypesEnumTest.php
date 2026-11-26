@@ -20,3 +20,15 @@ test('each mime type maps to its file extension', function (AllowedMimeTypesEnum
     [AllowedMimeTypesEnum::Pdf, 'pdf'],
     [AllowedMimeTypesEnum::PlainText, 'txt'],
 ]);
+
+test('each mime type maps to its lucide icon name', function (AllowedMimeTypesEnum $case, string $icon): void {
+    expect($case->icon())->toBe($icon);
+})->with([
+    [AllowedMimeTypesEnum::Jpeg, 'file-image'],
+    [AllowedMimeTypesEnum::Bmp, 'file-image'],
+    [AllowedMimeTypesEnum::Mov, 'file-video'],
+    [AllowedMimeTypesEnum::Wav, 'file-audio'],
+    [AllowedMimeTypesEnum::Zip, 'file-archive'],
+    [AllowedMimeTypesEnum::Pdf, 'file-text'],
+    [AllowedMimeTypesEnum::PlainText, 'file-type'],
+]);

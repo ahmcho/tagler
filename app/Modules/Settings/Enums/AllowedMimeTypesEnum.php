@@ -41,4 +41,19 @@ enum AllowedMimeTypesEnum: string
             self::PlainText => 'txt',
         };
     }
+
+    /**
+     * Returns the lucide icon name shown for this MIME type.
+     */
+    public function icon(): string
+    {
+        return match ($this) {
+            self::Jpeg, self::Png, self::Webp, self::Gif, self::Bmp => 'file-image',
+            self::Mpeg4, self::Webm, self::Mov => 'file-video',
+            self::Mp3, self::Wav, self::Ogg => 'file-audio',
+            self::Zip => 'file-archive',
+            self::Pdf => 'file-text',
+            self::PlainText => 'file-type',
+        };
+    }
 }

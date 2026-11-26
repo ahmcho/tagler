@@ -4,6 +4,7 @@ namespace App\Modules\Media\Resources;
 
 use App\Modules\Media\Models\Media;
 use App\Modules\Media\Services\MediaUrlService;
+use App\Modules\Settings\Enums\AllowedMimeTypesEnum;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,6 +24,7 @@ class MediaResource extends JsonResource
             'id' => $this->uuid,
             'name' => $this->original_name,
             'mime_type' => $this->mime_type,
+            'mime_icon' => AllowedMimeTypesEnum::tryFrom($this->mime_type)?->icon() ?? 'file',
             'extension' => $this->extension,
             'size' => $this->size,
             'category' => $this->category->value,
@@ -33,6 +35,7 @@ class MediaResource extends JsonResource
             'visibility' => $this->visibility->value,
             'link_ttl_minutes' => $this->link_ttl_minutes,
             'processing_status' => $this->processing_status->value,
+            'processing_color' => $this->processing_status->color(),
             'processing_error' => $this->processing_error,
             'dimensions' => $this->when(
                 isset($this->metadata['width'], $this->metadata['height']),
