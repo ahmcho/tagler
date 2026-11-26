@@ -34,7 +34,7 @@ type SearchProps = {
 /** Search field in an input group, 44px high and 300px wide, as in the design. */
 export function MediaSearchField({ search, onSearch, onSubmit }: SearchProps) {
     return (
-        <div className="w-full sm:w-[300px]">
+        <div className="min-w-0 flex-1 xl:w-[300px] xl:flex-none">
             <TextField
                 aria-label="Search"
                 value={search}
@@ -112,7 +112,7 @@ export function MediaLibraryTools({
 }: ToolsProps) {
     return (
         <>
-            <div className="w-44">
+            <div className="w-full md:w-44">
                 <SelectField
                     label="Type"
                     hideLabel
@@ -127,7 +127,7 @@ export function MediaLibraryTools({
                     allOptionLabel="All types"
                 />
             </div>
-            <div className="w-52">
+            <div className="w-full md:w-52">
                 <SelectField
                     label="Sort by"
                     hideLabel

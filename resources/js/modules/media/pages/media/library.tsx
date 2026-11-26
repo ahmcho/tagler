@@ -328,39 +328,45 @@ export default function MediaLibrary({ upload }: Props) {
                             path={path}
                             onOpen={(folder) => library.update({ folder })}
                         />
-                        <div className="flex flex-wrap items-end gap-3">
-                            <MediaSearchField
-                                search={query.search}
-                                onSearch={(search) =>
-                                    library.update({ search })
-                                }
-                            />
-                            <MediaUploadAction
-                                limits={upload}
-                                folder={query.folder}
-                                canUpload={
-                                    ability('media.store') && !query.trashed
-                                }
-                                onUploaded={() => library.refresh()}
-                            />
-                            <MediaLibraryTools
-                                sort={query.sort}
-                                category={query.category}
-                                trashed={query.trashed}
-                                canCreateFolder={canManageFolders}
-                                onSort={(sort: MediaSort) =>
-                                    library.update({ sort })
-                                }
-                                onCategory={(category: MediaCategory | null) =>
-                                    library.update({ category })
-                                }
-                                onToggleTrash={() =>
-                                    library.update({ trashed: !query.trashed })
-                                }
-                                onNewFolder={() =>
-                                    setFolderDialog({ mode: 'create' })
-                                }
-                            />
+                        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                            <div className="flex shrink-0 items-center gap-3">
+                                <MediaSearchField
+                                    search={query.search}
+                                    onSearch={(search) =>
+                                        library.update({ search })
+                                    }
+                                />
+                                <MediaUploadAction
+                                    limits={upload}
+                                    folder={query.folder}
+                                    canUpload={
+                                        ability('media.store') && !query.trashed
+                                    }
+                                    onUploaded={() => library.refresh()}
+                                />
+                            </div>
+                            <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center xl:justify-end">
+                                <MediaLibraryTools
+                                    sort={query.sort}
+                                    category={query.category}
+                                    trashed={query.trashed}
+                                    canCreateFolder={canManageFolders}
+                                    onSort={(sort: MediaSort) =>
+                                        library.update({ sort })
+                                    }
+                                    onCategory={(
+                                        category: MediaCategory | null,
+                                    ) => library.update({ category })}
+                                    onToggleTrash={() =>
+                                        library.update({
+                                            trashed: !query.trashed,
+                                        })
+                                    }
+                                    onNewFolder={() =>
+                                        setFolderDialog({ mode: 'create' })
+                                    }
+                                />
+                            </div>
                         </div>
                     </CardHeader>
 
