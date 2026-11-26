@@ -16,6 +16,8 @@ The UI comes from TailGrids (https://tailgrids.com). Its source is copied into `
 - `input.tsx`: `ref` is added to the props type.
 - `sidebar.tsx`: `useIsMobile` uses `useSyncExternalStore`.
 - `tooltip.tsx`: the `react-hooks/refs` lint rule is disabled for the file.
+- `toast.tsx`: `AvatarToast` and its avatar import are removed, because `avatar.tsx` is not installed. `Toast` uses the project `Button`.
+- `overlay.tsx`, `separator.tsx`: the empty `interface ... extends` declarations are `type` aliases, to pass lint.
 - `text-field.tsx`: `validationBehavior` defaults to `'aria'`. React Aria's default is `'native'`, which sets a custom validity message from the `invalid` prop. The browser then blocks submit, and the server error is never cleared. With `'aria'`, server errors show on the field without blocking the next submit. Server validation is the only validation, so `required` does not block submit either.
 - `time-picker.tsx`: the popover keeps the TailGrids docs look. The `hourCycle` prop (`12`, the default, or `24`) sets the hour columns. `12` shows an AM/PM column, and `24` shows hours 00 to 23 with no AM/PM column. It is rebuilt on react-aria-components `DialogTrigger`, `Popover` and `Dialog`, so it no longer imports `react-stately`. Its value is `HH:mm` (24-hour) through `value` and `onChange`. The trigger is `TimePickerTrigger`, the outline button. The upstream column buttons had no `type="button"`, so clicks submitted the form.
 - `pagination.tsx`: the page list logic is in `getPaginationItems`. The optional `summary` prop renders a line above the bar. `DataTable` passes it through `pagination.summary` and shows the bar when there is more than one page or a summary.

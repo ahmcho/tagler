@@ -5,12 +5,16 @@ paths:
 
 # Backed enums
 
+## Naming
+
+Every enum class name ends with `Enum`, in every module, for example `PageStatusEnum` or `MediaVisibilityEnum`. The suffix makes enums easy to spot when you scan the code.
+
 ## Pass the enum case to queries
 
 Laravel converts a backed enum to its value in query bindings. Pass the case itself to `where`, `whereIn`, `orWhere` and similar methods:
 
 ```php
-->whereIn('status', [PageStatus::Published, PageStatus::Scheduled])
+->whereIn('status', [PageStatusEnum::Published, PageStatusEnum::Scheduled])
 ```
 
 Do not write `->value` in those calls. The conversion happens in `Query\Builder::castBinding()`, which calls `enum_value()`.
@@ -19,7 +23,7 @@ Do not write `->value` in those calls. The conversion happens in `Query\Builder:
 
 Call `->value` only where PHP needs a string, for example:
 
-- validation rule strings, such as `'required_if:status,'.PageStatus::Scheduled->value`
+- validation rule strings, such as `'required_if:status,'.PageStatusEnum::Scheduled->value`
 - string concatenation or interpolation
 - arrays that are compared with plain strings
 

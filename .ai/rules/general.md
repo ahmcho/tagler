@@ -1,6 +1,6 @@
 ---
 paths:
-  - '**'
+    - '**'
 ---
 
 # General
@@ -61,3 +61,14 @@ Ask the user before you:
 ## Boost guideline overrides go in `.ai/guidelines/`
 
 `boost.json` enables guidelines, and Boost reads `.ai/guidelines/`. To change a built-in Boost guideline, copy its source from `vendor/laravel/boost/.ai/` to the same relative path under `.ai/guidelines/`, keep the `.blade.php` extension, and edit the copy. Do not hand-edit the Boost block in `CLAUDE.md`, because `boost:update` rebuilds it. Run `boost:update` only with the user's approval, then run `git diff CLAUDE.md .ai boost.json` to check the result.
+
+# Methods
+
+In any file - controller, form request, service, repository, class and etc. the order of the methods by their visibility should be as follows - public methods, protected methods, private methods.
+
+Why this order?
+
+- Public methods first: These define the class's public API. Someone reading the class should understand what it can do without digging into implementation details.
+- Protected methods second: These expose behavior to child classes. They are part of the inheritance contract.
+- Private methods last: These are internal implementation details. Readers generally need them only when investigating how something works.
+
