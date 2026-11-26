@@ -1,3 +1,4 @@
+import { Close } from '@tailgrids/icons';
 import {
     Calendar,
     Copy,
@@ -10,6 +11,7 @@ import { DynamicIcon } from 'lucide-react/dynamic';
 import type { IconName } from 'lucide-react/dynamic';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { Button as AriaButton } from 'react-aria-components';
 import { showToast } from '@/components/flash-toaster';
 import { SelectField } from '@/components/select-field';
 import {
@@ -646,13 +648,28 @@ export function MediaDetailsSheet(props: Props) {
             onOpenChange={(open) => !open && onClose()}
         >
             <SheetOverlay>
-                <SheetContent modalProps={{ className: 'w-full sm:w-96' }}>
-                    {shownFile && (
-                        <MediaDetailsBody
-                            {...props}
-                            key={shownFile.id}
-                            file={shownFile}
-                        />
+                <SheetContent
+                    modalProps={{ className: 'w-full sm:w-96' }}
+                    showCloseButton={false}
+                >
+                    {({ close }) => (
+                        <>
+                            {shownFile && (
+                                <MediaDetailsBody
+                                    {...props}
+                                    key={shownFile.id}
+                                    file={shownFile}
+                                />
+                            )}
+                            <AriaButton
+                                onPress={close}
+                                aria-label="Close"
+                                className="absolute top-4 right-4 flex size-7 items-center justify-center rounded-md text-text-100 opacity-70 transition-opacity outline-none hover:opacity-100 focus-visible:ring-2 focus-visible:ring-primary-500 [&>svg]:size-5"
+                            >
+                                <Close />
+                                <span className="sr-only">Close</span>
+                            </AriaButton>
+                        </>
                     )}
                 </SheetContent>
             </SheetOverlay>
