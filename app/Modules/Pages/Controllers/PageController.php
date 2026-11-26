@@ -30,22 +30,6 @@ class PageController extends Controller
         $this->authorizeResource(Page::class, 'page');
     }
 
-    /**
-     * The custom actions use the same policy checks as the resource actions. The
-     * `can` middleware runs before each method, so the methods do not check again.
-     *
-     * @return array<string, string>
-     */
-    protected function resourceAbilityMap(): array
-    {
-        return array_merge(parent::resourceAbilityMap(), [
-            'publish' => 'publish',
-            'unpublish' => 'publish',
-            'setHomepage' => 'setHomepage',
-            'preview' => 'update',
-        ]);
-    }
-
     public function index(PageRequest $request): Response
     {
         $paginator = $this->service->getAllPaginated(
@@ -109,37 +93,6 @@ class PageController extends Controller
         ]);
     }
 
-    /**
-     * The revision named in the request. It must belong to this page, or the request gets a 404.
-     */
-    private function requestedRevision(Request $request, Page $page): ?PageRevision
-    {
-        if (! $request->filled('revision')) {
-            return null;
-        }
-
-        $revision = $this->service->findRevision($page, $request->integer('revision'));
-
-        abort_if($revision === null, HttpResponse::HTTP_NOT_FOUND);
-
-        return $revision;
-    }
-
-    /**
-     * @return array<int, array{id: int, created_at: string, user: string|null}>
-     */
-    private function revisionOptions(Page $page): array
-    {
-        return $this->service->revisions($page)
-            ->map(fn (PageRevision $revision): array => [
-                'id' => $revision->id,
-                'created_at' => $revision->created_at->format('Y-m-d H:i'),
-                'user' => $revision->user?->name,
-            ])
-            ->values()
-            ->all();
-    }
-
     public function update(PageRequest $request, Page $page): RedirectResponse
     {
         $this->service->update($page, $request->validated());
@@ -189,5 +142,52 @@ class PageController extends Controller
         $this->service->assignHomepage($page);
 
         return back()->with('status', __('pages.messages.homepage_assigned'));
+    }
+
+    /**
+     * The custom actions use the same policy checks as the resource actions. The
+     * `can` middleware runs before each method, so the methods do not check again.
+     *
+     * @return array<string, string>
+     */
+    protected function resourceAbilityMap(): array
+    {
+        return array_merge(parent::resourceAbilityMap(), [
+            'publish' => 'publish',
+            'unpublish' => 'publish',
+            'setHomepage' => 'setHomepage',
+            'preview' => 'update',
+        ]);
+    }
+
+    /**
+     * The revision named in the request. It must belong to this page, or the request gets a 404.
+     */
+    private function requestedRevision(Request $request, Page $page): ?PageRevision
+    {
+        if (! $request->filled('revision')) {
+            return null;
+        }
+
+        $revision = $this->service->findRevision($page, $request->integer('revision'));
+
+        abort_if($revision === null, HttpResponse::HTTP_NOT_FOUND);
+
+        return $revision;
+    }
+
+    /**
+     * @return array<int, array{id: int, created_at: string, user: string|null}>
+     */
+    private function revisionOptions(Page $page): array
+    {
+        return $this->service->revisions($page)
+            ->map(fn (PageRevision $revision): array => [
+                'id' => $revision->id,
+                'created_at' => $revision->created_at->format('Y-m-d H:i'),
+                'user' => $revision->user?->name,
+            ])
+            ->values()
+            ->all();
     }
 }

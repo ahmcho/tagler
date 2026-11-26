@@ -157,16 +157,6 @@ abstract class EloquentRepository implements EloquentRepositoryContract
         return true;
     }
 
-    /**
-     * SQLSTATE class 23 (integrity constraint violation) covers MySQL/SQLite
-     * '23000' and PostgreSQL '23503'. Other failures, such as a lost
-     * connection, are real errors and must not be mapped.
-     */
-    private function isForeignKeyViolation(QueryException $exception): bool
-    {
-        return str_starts_with((string) $exception->getCode(), '23');
-    }
-
     public function restoreById(int $modelId): bool
     {
         return $this->findOnlyTrashedById($modelId)->restore();
@@ -283,6 +273,16 @@ abstract class EloquentRepository implements EloquentRepositoryContract
         [$attr, $direction] = $this->splitSortingDirective($sorting);
 
         $query->orderBy($this->model->getTable().".{$attr}", $direction);
+    }
+
+    /**
+     * SQLSTATE class 23 (integrity constraint violation) covers MySQL/SQLite
+     * '23000' and PostgreSQL '23503'. Other failures, such as a lost
+     * connection, are real errors and must not be mapped.
+     */
+    private function isForeignKeyViolation(QueryException $exception): bool
+    {
+        return str_starts_with((string) $exception->getCode(), '23');
     }
 
     /**

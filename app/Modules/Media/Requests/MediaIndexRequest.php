@@ -46,6 +46,11 @@ class MediaIndexRequest extends AppFormRequest
         return $filters;
     }
 
+    public function resultsPerPage(): int
+    {
+        return (int) ($this->validated('per_page') ?? 40);
+    }
+
     /**
      * The nullable filters that narrow the library by content, owner or date.
      *
@@ -82,10 +87,5 @@ class MediaIndexRequest extends AppFormRequest
     private function folderFilter(mixed $folder): ?int
     {
         return $folder === 'root' ? null : (int) $folder;
-    }
-
-    public function resultsPerPage(): int
-    {
-        return (int) ($this->validated('per_page') ?? 40);
     }
 }

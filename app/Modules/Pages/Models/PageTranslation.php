@@ -55,18 +55,18 @@ class PageTranslation extends Model
             : $this->body;
     }
 
-    protected function casts(): array
-    {
-        return [
-            'body_format' => BodyFormatEnum::class,
-        ];
-    }
-
     /**
      * @return BelongsTo<Page, $this>
      */
     public function page(): BelongsTo
     {
         return $this->belongsTo(Page::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'body_format' => BodyFormatEnum::class,
+        ];
     }
 }

@@ -23,16 +23,6 @@ class Setting extends Model
     use HasActivityLogs, HasLocalDates;
 
     /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'type' => InputValueTypeEnum::class,
-        ];
-    }
-
-    /**
      * Casts the stored value to its declared PHP type. A File value is resolved to a root-relative URL,
      * unless it is a bundled public asset path that starts with "/".
      *
@@ -49,5 +39,15 @@ class Setting extends Model
                 ? $this->value
                 : '/storage/'.$this->value,
         };
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'type' => InputValueTypeEnum::class,
+        ];
     }
 }

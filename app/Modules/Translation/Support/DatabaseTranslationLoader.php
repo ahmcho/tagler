@@ -40,6 +40,24 @@ class DatabaseTranslationLoader implements Loader
         return array_replace_recursive($fileTranslations, $dbTranslations);
     }
 
+    public function addNamespace($namespace, $hint): void
+    {
+        $this->fileLoader->addNamespace($namespace, $hint);
+    }
+
+    public function addJsonPath($path): void
+    {
+        $this->fileLoader->addJsonPath($path);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function namespaces(): array
+    {
+        return $this->fileLoader->namespaces();
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -90,23 +108,5 @@ class DatabaseTranslationLoader implements Loader
         }
 
         return $translations;
-    }
-
-    public function addNamespace($namespace, $hint): void
-    {
-        $this->fileLoader->addNamespace($namespace, $hint);
-    }
-
-    public function addJsonPath($path): void
-    {
-        $this->fileLoader->addJsonPath($path);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function namespaces(): array
-    {
-        return $this->fileLoader->namespaces();
     }
 }

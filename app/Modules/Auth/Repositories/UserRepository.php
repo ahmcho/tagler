@@ -14,16 +14,6 @@ class UserRepository extends EloquentRepository implements UserRepositoryContrac
         parent::__construct($model);
     }
 
-    /**
-     * Users that hold the given role.
-     *
-     * @param  Builder<User>  $query
-     */
-    protected function addRoleCondition(Builder $query, mixed $roleId): void
-    {
-        $query->whereHas('roles', fn (Builder $roles) => $roles->where('roles.id', (int) $roleId));
-    }
-
     public function countWithRole(string $roleName): int
     {
         return $this->model->newQuery()->role($roleName)->count();
@@ -35,5 +25,15 @@ class UserRepository extends EloquentRepository implements UserRepositoryContrac
         $user = $this->model->newQuery()->where('email', $email)->first();
 
         return $user;
+    }
+
+    /**
+     * Users that hold the given role.
+     *
+     * @param  Builder<User>  $query
+     */
+    protected function addRoleCondition(Builder $query, mixed $roleId): void
+    {
+        $query->whereHas('roles', fn (Builder $roles) => $roles->where('roles.id', (int) $roleId));
     }
 }

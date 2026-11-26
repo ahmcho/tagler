@@ -33,6 +33,15 @@ class ActivityLogRepository implements ActivityLogRepositoryContract
         return $paginator;
     }
 
+    public function findOrFail(string $id): ActivityLog
+    {
+        $log = ActivityLog::query()->findOrFail($id);
+
+        $this->attachCausers(collect([$log]));
+
+        return $log;
+    }
+
     /**
      * A filter with a falsy value adds no condition.
      *
@@ -58,15 +67,6 @@ class ActivityLogRepository implements ActivityLogRepositoryContract
         $direction = ($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
 
         $query->orderBy($sortColumn, $direction);
-    }
-
-    public function findOrFail(string $id): ActivityLog
-    {
-        $log = ActivityLog::query()->findOrFail($id);
-
-        $this->attachCausers(collect([$log]));
-
-        return $log;
     }
 
     /**

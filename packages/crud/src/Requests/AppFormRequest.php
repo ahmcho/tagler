@@ -115,64 +115,6 @@ abstract class AppFormRequest extends FormRequest
         return $autoFilters;
     }
 
-    /**
-     * The validation rules without the keys that are read verbatim as custom filters.
-     *
-     * @return array<string, mixed>
-     */
-    private function autoFilterableRules(): array
-    {
-        return collect($this->rules())
-            ->forget($this->customFilters)
-            ->toArray();
-    }
-
-    /**
-     * Null means the attribute gets no automatic condition.
-     *
-     * @param  array<string, mixed>  $values
-     * @return array{0: string, 1: string, 2: mixed}|null
-     */
-    private function autoFilterFor(int|string $attr, mixed $rule, array $values): ?array
-    {
-        if (! is_array($rule) && ! is_string($rule)) {
-            return null;
-        }
-
-        $ruleNames = is_string($rule) ? explode('|', $rule) : $rule;
-
-        if ($this->isLikeFilterable($attr, $ruleNames, $values)) {
-            return [$attr, 'LIKE', "%{$values[$attr]}%"];
-        }
-
-        if ($this->isExactFilterable($attr, $values)) {
-            return [$attr, '=', $values[$attr]];
-        }
-
-        return null;
-    }
-
-    /**
-     * A string rule with a non-empty value becomes a LIKE condition.
-     *
-     * @param  array<int|string, mixed>  $ruleNames
-     * @param  array<string, mixed>  $values
-     */
-    private function isLikeFilterable(int|string $attr, array $ruleNames, array $values): bool
-    {
-        return in_array('string', $ruleNames) && ! empty($values[$attr]);
-    }
-
-    /**
-     * Any other set, non-null value becomes an exact-match condition.
-     *
-     * @param  array<string, mixed>  $values
-     */
-    private function isExactFilterable(int|string $attr, array $values): bool
-    {
-        return isset($values[$attr]) && $values[$attr] != null;
-    }
-
     final protected function customFilters(): array
     {
         return $this->only($this->customFilters);
@@ -230,6 +172,64 @@ abstract class AppFormRequest extends FormRequest
         return $this->requestedExpand()
             ->intersect($this->customExpandable)
             ->toArray();
+    }
+
+    /**
+     * The validation rules without the keys that are read verbatim as custom filters.
+     *
+     * @return array<string, mixed>
+     */
+    private function autoFilterableRules(): array
+    {
+        return collect($this->rules())
+            ->forget($this->customFilters)
+            ->toArray();
+    }
+
+    /**
+     * Null means the attribute gets no automatic condition.
+     *
+     * @param  array<string, mixed>  $values
+     * @return array{0: string, 1: string, 2: mixed}|null
+     */
+    private function autoFilterFor(int|string $attr, mixed $rule, array $values): ?array
+    {
+        if (! is_array($rule) && ! is_string($rule)) {
+            return null;
+        }
+
+        $ruleNames = is_string($rule) ? explode('|', $rule) : $rule;
+
+        if ($this->isLikeFilterable($attr, $ruleNames, $values)) {
+            return [$attr, 'LIKE', "%{$values[$attr]}%"];
+        }
+
+        if ($this->isExactFilterable($attr, $values)) {
+            return [$attr, '=', $values[$attr]];
+        }
+
+        return null;
+    }
+
+    /**
+     * A string rule with a non-empty value becomes a LIKE condition.
+     *
+     * @param  array<int|string, mixed>  $ruleNames
+     * @param  array<string, mixed>  $values
+     */
+    private function isLikeFilterable(int|string $attr, array $ruleNames, array $values): bool
+    {
+        return in_array('string', $ruleNames) && ! empty($values[$attr]);
+    }
+
+    /**
+     * Any other set, non-null value becomes an exact-match condition.
+     *
+     * @param  array<string, mixed>  $values
+     */
+    private function isExactFilterable(int|string $attr, array $values): bool
+    {
+        return isset($values[$attr]) && $values[$attr] != null;
     }
 
     private function requestedExpand(): Collection

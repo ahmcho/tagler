@@ -63,6 +63,43 @@ class PageRequest extends AppFormRequest
     }
 
     /**
+     * Checks what depends on the page itself: the slug format, the path it
+     * produces in each locale, reserved names, and whether another page holds the path.
+     *
+     * @return array<int, callable(Validator): void>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if (! in_array($this->scenario, [self::SCENARIO_INSERT, self::SCENARIO_UPDATE], true)) {
+                    return;
+                }
+
+                $this->checkUnsupportedLocales($validator);
+                $this->checkEachLocale($validator);
+                $this->checkScheduledInFuture($validator);
+            },
+        ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function sortable(): array
+    {
+        return ['id', 'status', 'updated_at'];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function customSortable(): array
+    {
+        return ['title'];
+    }
+
+    /**
      * A `from,to` pair of real `YYYY-MM-DD` dates, with `from` not after `to`.
      */
     private function isValidPublishDateRange(string $range): bool
@@ -108,27 +145,6 @@ class PageRequest extends AppFormRequest
         }
 
         return $rules;
-    }
-
-    /**
-     * Checks what depends on the page itself: the slug format, the path it
-     * produces in each locale, reserved names, and whether another page holds the path.
-     *
-     * @return array<int, callable(Validator): void>
-     */
-    public function after(): array
-    {
-        return [
-            function (Validator $validator): void {
-                if (! in_array($this->scenario, [self::SCENARIO_INSERT, self::SCENARIO_UPDATE], true)) {
-                    return;
-                }
-
-                $this->checkUnsupportedLocales($validator);
-                $this->checkEachLocale($validator);
-                $this->checkScheduledInFuture($validator);
-            },
-        ];
     }
 
     /**
@@ -225,21 +241,5 @@ class PageRequest extends AppFormRequest
         unset($translation['body_format']);
 
         return collect($translation)->contains(fn (mixed $value): bool => filled($value));
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function sortable(): array
-    {
-        return ['id', 'status', 'updated_at'];
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function customSortable(): array
-    {
-        return ['title'];
     }
 }

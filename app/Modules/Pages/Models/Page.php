@@ -43,31 +43,6 @@ class Page extends Model
     use HasActivityLogs, HasFactory, HasLocalDates;
 
     /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'status' => PageStatusEnum::class,
-            'is_homepage' => 'boolean',
-            'theme_layout' => 'boolean',
-            'publish_date' => 'date',
-        ];
-    }
-
-    /**
-     * The time is stored as `HH:MM:SS`. The form and the snapshots use `HH:MM`.
-     *
-     * @return Attribute<string|null, string|null>
-     */
-    protected function publishTime(): Attribute
-    {
-        return Attribute::make(
-            get: fn (?string $value): ?string => $value === null ? null : substr($value, 0, 5),
-        );
-    }
-
-    /**
      * The moment the page goes live, from its date and time. Null when the page
      * has no publish date, which means it is live as soon as its status allows.
      */
@@ -127,5 +102,30 @@ class Page extends Model
     public function translations(): HasMany
     {
         return $this->hasMany(PageTranslation::class);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'status' => PageStatusEnum::class,
+            'is_homepage' => 'boolean',
+            'theme_layout' => 'boolean',
+            'publish_date' => 'date',
+        ];
+    }
+
+    /**
+     * The time is stored as `HH:MM:SS`. The form and the snapshots use `HH:MM`.
+     *
+     * @return Attribute<string|null, string|null>
+     */
+    protected function publishTime(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value): ?string => $value === null ? null : substr($value, 0, 5),
+        );
     }
 }

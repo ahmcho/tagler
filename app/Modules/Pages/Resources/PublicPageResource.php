@@ -34,14 +34,6 @@ class PublicPageResource extends JsonResource
     }
 
     /**
-     * The Open Graph locale, language and territory, for example en_GB. The territory comes from the locale country config.
-     */
-    private function ogLocale(): string
-    {
-        return self::ogLocaleFor($this->locale);
-    }
-
-    /**
      * The Open Graph locale for a locale code, for example en_GB. Also used for the not-found page.
      */
     public static function ogLocaleFor(string $locale): string
@@ -49,6 +41,14 @@ class PublicPageResource extends JsonResource
         $country = config("modules.pages.locale_countries.{$locale}");
 
         return is_string($country) ? "{$locale}_{$country}" : $locale;
+    }
+
+    /**
+     * The Open Graph locale, language and territory, for example en_GB. The territory comes from the locale country config.
+     */
+    private function ogLocale(): string
+    {
+        return self::ogLocaleFor($this->locale);
     }
 
     /**

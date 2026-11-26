@@ -136,50 +136,6 @@ class PageService extends BaseCrudService implements PageServiceContract
         return $page;
     }
 
-    /**
-     * Saves the page as it is now, after an explicit create or update. Publish and homepage changes are not saves.
-     */
-    private function recordRevision(Page $page): void
-    {
-        $page->load('translations');
-
-        $this->revisionRepository->create([
-            'page_id' => $page->id,
-            'user_id' => Auth::id(),
-            'snapshot' => $this->snapshotOf($page),
-        ]);
-
-        $this->revisionRepository->pruneForPage($page, (int) config('modules.pages.revisions.keep'));
-    }
-
-    /**
-     * The page in the same shape as a save payload, so a revision can be loaded back into the form.
-     *
-     * @return array<string, mixed>
-     */
-    private function snapshotOf(Page $page): array
-    {
-        return [
-            'status' => $page->status,
-            'parent_id' => $page->parent_id,
-            'publish_date' => $page->publish_date?->toDateString(),
-            'publish_time' => $page->publish_time,
-            'layout' => $page->layout,
-            'theme_layout' => $page->theme_layout,
-            'translations' => $page->translations
-                ->mapWithKeys(fn (PageTranslation $translation): array => [$translation->locale => [
-                    'title' => $translation->title,
-                    'subtitle' => $translation->subtitle,
-                    'slug' => $translation->slug,
-                    'seo_title' => $translation->seo_title,
-                    'seo_description' => $translation->seo_description,
-                    'body' => $translation->body,
-                    'body_format' => $translation->body_format,
-                ]])
-                ->all(),
-        ];
-    }
-
     public function revisions(Page $page): Collection
     {
         return $this->revisionRepository->latestForPage($page, (int) config('modules.pages.revisions.keep'));
@@ -234,6 +190,50 @@ class PageService extends BaseCrudService implements PageServiceContract
     public function pathIsTaken(string $locale, PagePath $path, ?int $ignorePageId = null): bool
     {
         return $this->translationRepository->pathIsTaken($locale, $path->value, $ignorePageId);
+    }
+
+    /**
+     * Saves the page as it is now, after an explicit create or update. Publish and homepage changes are not saves.
+     */
+    private function recordRevision(Page $page): void
+    {
+        $page->load('translations');
+
+        $this->revisionRepository->create([
+            'page_id' => $page->id,
+            'user_id' => Auth::id(),
+            'snapshot' => $this->snapshotOf($page),
+        ]);
+
+        $this->revisionRepository->pruneForPage($page, (int) config('modules.pages.revisions.keep'));
+    }
+
+    /**
+     * The page in the same shape as a save payload, so a revision can be loaded back into the form.
+     *
+     * @return array<string, mixed>
+     */
+    private function snapshotOf(Page $page): array
+    {
+        return [
+            'status' => $page->status,
+            'parent_id' => $page->parent_id,
+            'publish_date' => $page->publish_date?->toDateString(),
+            'publish_time' => $page->publish_time,
+            'layout' => $page->layout,
+            'theme_layout' => $page->theme_layout,
+            'translations' => $page->translations
+                ->mapWithKeys(fn (PageTranslation $translation): array => [$translation->locale => [
+                    'title' => $translation->title,
+                    'subtitle' => $translation->subtitle,
+                    'slug' => $translation->slug,
+                    'seo_title' => $translation->seo_title,
+                    'seo_description' => $translation->seo_description,
+                    'body' => $translation->body,
+                    'body_format' => $translation->body_format,
+                ]])
+                ->all(),
+        ];
     }
 
     /**

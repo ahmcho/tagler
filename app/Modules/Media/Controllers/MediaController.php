@@ -30,31 +30,6 @@ class MediaController extends Controller
         $this->authorizeResource(Media::class, 'file');
     }
 
-    /**
-     * @return array<string, string>
-     */
-    protected function resourceAbilityMap(): array
-    {
-        return array_merge(parent::resourceAbilityMap(), [
-            'move' => 'update',
-            'visibility' => 'visibility',
-            'restore' => 'restore',
-            'purge' => 'forceDelete',
-            'download' => 'view',
-            'url' => 'view',
-            'references' => 'view',
-            'conversion' => 'view',
-        ]);
-    }
-
-    /**
-     * @return list<string>
-     */
-    protected function resourceMethodsWithoutModels(): array
-    {
-        return array_merge(parent::resourceMethodsWithoutModels(), ['stats']);
-    }
-
     public function index(MediaIndexRequest $request): JsonResponse
     {
         $paginator = $this->service->paginateLibrary($request->filters(), $request->resultsPerPage());
@@ -202,5 +177,30 @@ class MediaController extends Controller
                 'quota_bytes' => config('modules.media.storage_quota_bytes'),
             ],
         ]);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function resourceAbilityMap(): array
+    {
+        return array_merge(parent::resourceAbilityMap(), [
+            'move' => 'update',
+            'visibility' => 'visibility',
+            'restore' => 'restore',
+            'purge' => 'forceDelete',
+            'download' => 'view',
+            'url' => 'view',
+            'references' => 'view',
+            'conversion' => 'view',
+        ]);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function resourceMethodsWithoutModels(): array
+    {
+        return array_merge(parent::resourceMethodsWithoutModels(), ['stats']);
     }
 }

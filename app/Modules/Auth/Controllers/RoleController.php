@@ -30,25 +30,6 @@ class RoleController extends Controller
         $this->authorizeResource(Role::class, 'role');
     }
 
-    /**
-     * @return array<string, string>
-     */
-    protected function resourceAbilityMap(): array
-    {
-        return array_merge(parent::resourceAbilityMap(), [
-            'search' => 'viewAny',
-            'permissionsSearch' => 'searchPermissions',
-        ]);
-    }
-
-    /**
-     * @return list<string>
-     */
-    protected function resourceMethodsWithoutModels(): array
-    {
-        return array_merge(parent::resourceMethodsWithoutModels(), ['search', 'permissionsSearch']);
-    }
-
     public function index(RoleRequest $request): Response
     {
         $paginator = $this->service->getAllPaginated(
@@ -88,27 +69,6 @@ class RoleController extends Controller
         $permissions = $this->permissionService->search(term: (string) $request->query('q', ''));
 
         return $this->searchResponse(paginator: $permissions, resource: PermissionSearchResource::class);
-    }
-
-    /**
-     * @param  callable(int): mixed  $resolve
-     * @return array<string, mixed>|null
-     */
-    private function selectedOption(?int $id, callable $resolve): ?array
-    {
-        return $id === null ? null : $resolve($id)->resolve();
-    }
-
-    /**
-     * Every permission, sorted by name, for the role form's dual listbox.
-     *
-     * @return array<int, array{id: int, name: string, description: string|null}>
-     */
-    private function permissionOptions(): array
-    {
-        return PermissionSearchResource::collection(
-            $this->permissionService->getAll(columns: ['id', 'name', 'description'])->sortBy('name')->values(),
-        )->resolve();
     }
 
     public function create(): Response
@@ -156,5 +116,45 @@ class RoleController extends Controller
         $this->service->delete($role);
 
         return Redirect::route('roles.index')->with('status', __('translations.common.operation_success'));
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function resourceAbilityMap(): array
+    {
+        return array_merge(parent::resourceAbilityMap(), [
+            'search' => 'viewAny',
+            'permissionsSearch' => 'searchPermissions',
+        ]);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function resourceMethodsWithoutModels(): array
+    {
+        return array_merge(parent::resourceMethodsWithoutModels(), ['search', 'permissionsSearch']);
+    }
+
+    /**
+     * @param  callable(int): mixed  $resolve
+     * @return array<string, mixed>|null
+     */
+    private function selectedOption(?int $id, callable $resolve): ?array
+    {
+        return $id === null ? null : $resolve($id)->resolve();
+    }
+
+    /**
+     * Every permission, sorted by name, for the role form's dual listbox.
+     *
+     * @return array<int, array{id: int, name: string, description: string|null}>
+     */
+    private function permissionOptions(): array
+    {
+        return PermissionSearchResource::collection(
+            $this->permissionService->getAll(columns: ['id', 'name', 'description'])->sortBy('name')->values(),
+        )->resolve();
     }
 }

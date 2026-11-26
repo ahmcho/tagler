@@ -20,16 +20,6 @@ class MediaFolderController extends Controller
         $this->authorizeResource(MediaFolder::class, 'folder');
     }
 
-    /**
-     * @return array<string, string>
-     */
-    protected function resourceAbilityMap(): array
-    {
-        return array_merge(parent::resourceAbilityMap(), [
-            'move' => 'update',
-        ]);
-    }
-
     public function index(): JsonResponse
     {
         return MediaFolderResource::collection($this->service->allFolders())->response();
@@ -74,5 +64,15 @@ class MediaFolderController extends Controller
         $this->service->delete($folder);
 
         return response()->noContent();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function resourceAbilityMap(): array
+    {
+        return array_merge(parent::resourceAbilityMap(), [
+            'move' => 'update',
+        ]);
     }
 }

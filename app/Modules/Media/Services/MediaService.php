@@ -60,39 +60,6 @@ class MediaService implements MediaServiceContract
         return $media;
     }
 
-    /**
-     * Saves the file row. When the save fails, the stored file is deleted and the error is rethrown.
-     *
-     * @param  array{disk: string, path: string}  $stored
-     * @param  array<string, mixed>  $attributes
-     */
-    private function persistUpload(array $stored, array $attributes): Media
-    {
-        try {
-            return DB::transaction(fn (): Media => $this->repository->createFromUpload($attributes));
-        } catch (Throwable $exception) {
-            $this->storage->delete($stored['disk'], $stored['path']);
-
-            throw $exception;
-        }
-    }
-
-    /**
-     * The optional library fields of an upload. Each one defaults to null.
-     *
-     * @param  array<string, mixed>  $payload
-     * @return array{folder_id: mixed, title: mixed, alt_text: mixed, description: mixed}
-     */
-    private function metadataAttributes(array $payload): array
-    {
-        return [
-            'folder_id' => $payload['folder_id'] ?? null,
-            'title' => $payload['title'] ?? null,
-            'alt_text' => $payload['alt_text'] ?? null,
-            'description' => $payload['description'] ?? null,
-        ];
-    }
-
     public function update(Media $media, array $payload): Media
     {
         return $this->repository->update($media, $payload);
@@ -178,6 +145,39 @@ class MediaService implements MediaServiceContract
                     'bytes' => $row->bytes,
                 ]])
                 ->all(),
+        ];
+    }
+
+    /**
+     * Saves the file row. When the save fails, the stored file is deleted and the error is rethrown.
+     *
+     * @param  array{disk: string, path: string}  $stored
+     * @param  array<string, mixed>  $attributes
+     */
+    private function persistUpload(array $stored, array $attributes): Media
+    {
+        try {
+            return DB::transaction(fn (): Media => $this->repository->createFromUpload($attributes));
+        } catch (Throwable $exception) {
+            $this->storage->delete($stored['disk'], $stored['path']);
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * The optional library fields of an upload. Each one defaults to null.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{folder_id: mixed, title: mixed, alt_text: mixed, description: mixed}
+     */
+    private function metadataAttributes(array $payload): array
+    {
+        return [
+            'folder_id' => $payload['folder_id'] ?? null,
+            'title' => $payload['title'] ?? null,
+            'alt_text' => $payload['alt_text'] ?? null,
+            'description' => $payload['description'] ?? null,
         ];
     }
 

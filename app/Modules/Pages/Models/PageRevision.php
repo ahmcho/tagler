@@ -32,17 +32,6 @@ class PageRevision extends Model
     public const UPDATED_AT = null;
 
     /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'snapshot' => 'array',
-            'created_at' => 'datetime',
-        ];
-    }
-
-    /**
      * @return BelongsTo<Page, $this>
      */
     public function page(): BelongsTo
@@ -56,5 +45,16 @@ class PageRevision extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'snapshot' => 'array',
+            'created_at' => 'datetime',
+        ];
     }
 }

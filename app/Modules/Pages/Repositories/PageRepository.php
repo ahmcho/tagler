@@ -89,19 +89,6 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
     }
 
     /**
-     * A page with no publish date is live at once. Otherwise its date and time
-     * (time defaults to midnight) must not be after `$now`, the same rule as `Page::publishAt()`.
-     *
-     * @param  Builder<Page>  $query
-     */
-    private function whereLiveAt(Builder $query, CarbonInterface $now): void
-    {
-        $query->where(fn (Builder $live) => $live
-            ->whereNull('publish_date')
-            ->orWhereRaw("(publish_date + COALESCE(publish_time, time '00:00')) <= ?", [$now->format('Y-m-d H:i:s')]));
-    }
-
-    /**
      * @param  Builder<Page>  $query
      */
     protected function addStatusCondition(Builder $query, mixed $status): void
@@ -134,15 +121,6 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
         }
 
         $query->whereNot($isLive);
-    }
-
-    /**
-     * @param  Builder<Page>  $query
-     */
-    private function whereStatusIsLive(Builder $query, CarbonInterface $now): void
-    {
-        $query->whereIn('pages.status', [PageStatusEnum::Published, PageStatusEnum::Scheduled])
-            ->tap(fn (Builder $live) => $this->whereLiveAt($live, $now));
     }
 
     /**
@@ -210,6 +188,43 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
     }
 
     /**
+     * Sorts by the title in the default locale. Pages with no title in that locale sort first.
+     *
+     * @param  Builder<Page>  $query
+     */
+    protected function addTitleSorting(Builder $query, string $direction): void
+    {
+        $direction = strtolower($direction) === 'desc' ? 'desc' : 'asc';
+
+        $query->orderByRaw(
+            '(select title from page_translations where page_translations.page_id = pages.id and page_translations.locale = ? limit 1) '.$direction,
+            [LocaleEnum::default()],
+        );
+    }
+
+    /**
+     * A page with no publish date is live at once. Otherwise its date and time
+     * (time defaults to midnight) must not be after `$now`, the same rule as `Page::publishAt()`.
+     *
+     * @param  Builder<Page>  $query
+     */
+    private function whereLiveAt(Builder $query, CarbonInterface $now): void
+    {
+        $query->where(fn (Builder $live) => $live
+            ->whereNull('publish_date')
+            ->orWhereRaw("(publish_date + COALESCE(publish_time, time '00:00')) <= ?", [$now->format('Y-m-d H:i:s')]));
+    }
+
+    /**
+     * @param  Builder<Page>  $query
+     */
+    private function whereStatusIsLive(Builder $query, CarbonInterface $now): void
+    {
+        $query->whereIn('pages.status', [PageStatusEnum::Published, PageStatusEnum::Scheduled])
+            ->tap(fn (Builder $live) => $this->whereLiveAt($live, $now));
+    }
+
+    /**
      * Matches the default locale only, the locale the list shows. Case-insensitive.
      *
      * @param  Builder<Page>  $query
@@ -225,20 +240,5 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
         $query->whereHas('translations', fn (Builder $translations) => $translations
             ->where('locale', LocaleEnum::default())
             ->whereLike($column, "%{$term}%"));
-    }
-
-    /**
-     * Sorts by the title in the default locale. Pages with no title in that locale sort first.
-     *
-     * @param  Builder<Page>  $query
-     */
-    protected function addTitleSorting(Builder $query, string $direction): void
-    {
-        $direction = strtolower($direction) === 'desc' ? 'desc' : 'asc';
-
-        $query->orderByRaw(
-            '(select title from page_translations where page_translations.page_id = pages.id and page_translations.locale = ? limit 1) '.$direction,
-            [LocaleEnum::default()],
-        );
     }
 }

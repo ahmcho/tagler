@@ -1,3 +1,21 @@
 {
-    "preset": "laravel"
+    "preset": "laravel",
+    "rules": {
+        "ordered_class_elements": {
+            "order": [
+                "use_trait",
+                "case",
+                "constant",
+                "property",
+                "construct",
+                "destruct",
+                "magic",
+                "method_public",
+                "phpunit",
+                "method_protected",
+                "method_private"
+            ],
+            "sort_algorithm": "none"
+        }
+    }
 }

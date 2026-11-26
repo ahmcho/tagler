@@ -56,20 +56,6 @@ class Media extends Model
     }
 
     /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'size' => 'integer',
-            'link_ttl_minutes' => 'integer',
-            'metadata' => 'array',
-            'visibility' => MediaVisibilityEnum::class,
-            'processing_status' => MediaProcessingStatusEnum::class,
-        ];
-    }
-
-    /**
      * @return BelongsTo<MediaFolder, $this>
      */
     public function folder(): BelongsTo
@@ -83,6 +69,20 @@ class Media extends Model
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'size' => 'integer',
+            'link_ttl_minutes' => 'integer',
+            'metadata' => 'array',
+            'visibility' => MediaVisibilityEnum::class,
+            'processing_status' => MediaProcessingStatusEnum::class,
+        ];
     }
 
     /**
