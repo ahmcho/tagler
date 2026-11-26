@@ -1,4 +1,13 @@
-import { Copy, Download, RotateCcw, Trash2 } from 'lucide-react';
+import {
+    Calendar,
+    Copy,
+    Download,
+    RotateCcw,
+    Save,
+    Trash2,
+} from 'lucide-react';
+import { DynamicIcon } from 'lucide-react/dynamic';
+import type { IconName } from 'lucide-react/dynamic';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { showToast } from '@/components/flash-toaster';
@@ -9,6 +18,7 @@ import {
     AlertIndicator,
     AlertTitle,
 } from '@/components/tailgrids/core/alert';
+import { Badge } from '@/components/tailgrids/core/badge';
 import { Button } from '@/components/tailgrids/core/button';
 import {
     Sheet,
@@ -104,7 +114,11 @@ function MediaFileMetadata({ file }: { file: MediaRecord }) {
                     </>
                 )}
                 <dt className="text-text-100">Processing</dt>
-                <dd className="text-text-50">{file.processing_status}</dd>
+                <dd>
+                    <Badge color={file.processing_color} size="sm">
+                        {file.processing_status}
+                    </Badge>
+                </dd>
             </dl>
         </>
     );
@@ -240,6 +254,7 @@ function MediaDetailsForm({
                     variant="primary"
                     disabled={busy || !canSave}
                 >
+                    <Save className="size-4" />
                     Save details
                 </Button>
             </div>
@@ -452,11 +467,18 @@ function MediaDetailsBody({
 
     return (
         <>
-            <SheetHeader>
-                <SheetTitle>{file.name}</SheetTitle>
-                <SheetDescription>
-                    {file.mime_type} · {formatBytes(file.size)} ·{' '}
-                    {formatDate(file.created_at)}
+            <SheetHeader className="pr-10">
+                <SheetTitle className="break-all">{file.name}</SheetTitle>
+                <SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <ActionTooltip label={file.mime_type}>
+                        <DynamicIcon
+                            name={file.mime_icon as IconName}
+                            className="size-4"
+                        />
+                    </ActionTooltip>
+                    <span>· {formatBytes(file.size)} ·</span>
+                    <Calendar className="size-4" />
+                    <span>{formatDate(file.created_at)}</span>
                 </SheetDescription>
             </SheetHeader>
 
@@ -493,7 +515,7 @@ function MediaDetailsBody({
                         <a
                             href={file.download_url}
                             aria-label="Download"
-                            className="inline-flex size-10 items-center justify-center rounded-lg border border-base-200 text-text-50"
+                            className="inline-flex size-10 items-center justify-center rounded-lg border border-button-outline-border bg-button-outline-background text-button-outline-text transition outline-none hover:bg-button-outline-hover-background hover:text-button-outline-hover-text focus:ring-3 focus:ring-button-outline-focus-ring"
                         >
                             <Download className="size-4" />
                         </a>

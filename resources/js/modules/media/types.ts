@@ -1,3 +1,18 @@
+export type BadgeColor =
+    | 'gray'
+    | 'primary'
+    | 'error'
+    | 'warning'
+    | 'success'
+    | 'cyan'
+    | 'sky'
+    | 'blue'
+    | 'violet'
+    | 'purple'
+    | 'pink'
+    | 'rose'
+    | 'orange';
+
 export type MediaCategory =
     | 'pictures'
     | 'videos'
@@ -17,6 +32,8 @@ export type MediaRecord = {
     id: string;
     name: string;
     mime_type: string;
+    /** Lucide icon name for the MIME type. */
+    mime_icon: string;
     extension: string;
     size: number;
     category: MediaCategory;
@@ -28,6 +45,8 @@ export type MediaRecord = {
     /** Lifetime of signed links in minutes. Null uses the global setting. */
     link_ttl_minutes: number | null;
     processing_status: MediaProcessingStatus;
+    /** Badge color for the processing status. */
+    processing_color: BadgeColor;
     processing_error: string | null;
     dimensions?: { width: number; height: number };
     url: string | null;
