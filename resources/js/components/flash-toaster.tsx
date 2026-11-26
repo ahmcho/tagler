@@ -76,3 +76,13 @@ export function FlashToaster() {
         />
     );
 }
+
+/** Shows a toast from client code, in the same style as the flash messages. */
+export function showToast({ status, message }: FlashMessage): void {
+    toast.custom(
+        (id) => <FlashToast id={id} status={status} message={message} />,
+        {
+            duration: TOAST_DURATION_MS,
+        },
+    );
+}
