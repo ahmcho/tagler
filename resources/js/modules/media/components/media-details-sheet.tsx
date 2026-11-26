@@ -265,60 +265,6 @@ function ActionTooltip({
     );
 }
 
-type MediaTrashActionsProps = {
-    abilities: Abilities;
-    inTrash: boolean;
-    busy: boolean;
-    confirmPurge: boolean;
-    onRestore: () => void;
-    onRequestPurge: () => void;
-    onPurge: () => void;
-};
-
-/** Restore, and the two-step permanent delete. Move to trash is in the file action group. */
-function MediaTrashActions({
-    abilities,
-    inTrash,
-    busy,
-    confirmPurge,
-    onRestore,
-    onRequestPurge,
-    onPurge,
-}: MediaTrashActionsProps) {
-    return (
-        <>
-            {inTrash && abilities.destroy && (
-                <Button variant="primary" disabled={busy} onPress={onRestore}>
-                    <RotateCcw className="size-4" />
-                    Restore
-                </Button>
-            )}
-
-            {inTrash && abilities.purge && (
-                <div className="space-y-2">
-                    {confirmPurge ? (
-                        <Button
-                            variant="danger"
-                            disabled={busy}
-                            onPress={onPurge}
-                        >
-                            Confirm permanent delete
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="danger"
-                            disabled={busy}
-                            onPress={onRequestPurge}
-                        >
-                            Delete permanently
-                        </Button>
-                    )}
-                </div>
-            )}
-        </>
-    );
-}
-
 /** Preview, metadata, actions and the details form for one file. The sheet keys it per file. */
 function MediaDetailsBody({
     file,
@@ -567,6 +513,50 @@ function MediaDetailsBody({
                             </Button>
                         </ActionTooltip>
                     )}
+
+                    {inTrash && abilities.destroy && (
+                        <ActionTooltip label="Restore">
+                            <Button
+                                variant="primary"
+                                appearance="outline"
+                                iconOnly
+                                aria-label="Restore"
+                                disabled={busy}
+                                onPress={restoreFile}
+                            >
+                                <RotateCcw className="size-4" />
+                            </Button>
+                        </ActionTooltip>
+                    )}
+
+                    {inTrash && abilities.purge && (
+                        <ActionTooltip
+                            label={
+                                confirmPurge
+                                    ? 'Confirm permanent delete'
+                                    : 'Delete permanently'
+                            }
+                        >
+                            <Button
+                                variant="danger"
+                                appearance={confirmPurge ? 'fill' : 'outline'}
+                                iconOnly
+                                aria-label={
+                                    confirmPurge
+                                        ? 'Confirm permanent delete'
+                                        : 'Delete permanently'
+                                }
+                                disabled={busy}
+                                onPress={
+                                    confirmPurge
+                                        ? purgeFile
+                                        : () => setConfirmPurge(true)
+                                }
+                            >
+                                <Trash2 className="size-4" />
+                            </Button>
+                        </ActionTooltip>
+                    )}
                 </div>
 
                 {inUse && abilities.destroy && !inTrash && (
@@ -584,16 +574,6 @@ function MediaDetailsBody({
                             : 'Delete anyway'}
                     </Button>
                 )}
-
-                <MediaTrashActions
-                    abilities={abilities}
-                    inTrash={inTrash}
-                    busy={busy}
-                    confirmPurge={confirmPurge}
-                    onRestore={restoreFile}
-                    onRequestPurge={() => setConfirmPurge(true)}
-                    onPurge={purgeFile}
-                />
 
                 {(abilities.visibility || abilities.update) && (
                     <MediaDetailsForm
