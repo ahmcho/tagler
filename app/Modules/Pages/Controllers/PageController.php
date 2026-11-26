@@ -137,6 +137,25 @@ class PageController extends Controller
         ));
     }
 
+    /**
+     * The target of the "View online" button. A live page redirects to its public address. Any other page
+     * redirects to its preview.
+     */
+    public function viewOnline(Page $page): RedirectResponse
+    {
+        $page->load('translations');
+
+        $translation = $page->translationFor(LocaleEnum::default());
+
+        abort_if($translation === null, HttpResponse::HTTP_NOT_FOUND);
+
+        if ($page->isLive(now())) {
+            return redirect()->to($translation->publicUrl());
+        }
+
+        return $this->preview($page, LocaleEnum::default());
+    }
+
     public function setHomepage(Page $page): RedirectResponse
     {
         $this->service->assignHomepage($page);
@@ -157,6 +176,7 @@ class PageController extends Controller
             'unpublish' => 'publish',
             'setHomepage' => 'setHomepage',
             'preview' => 'update',
+            'viewOnline' => 'update',
         ]);
     }
 

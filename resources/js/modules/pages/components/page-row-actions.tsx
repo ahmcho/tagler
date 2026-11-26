@@ -11,7 +11,14 @@ import type {
     ResourceActionOptions,
     ResourceRowAction,
 } from '@/components/resource/types';
-import { destroy, edit, homepage, publish, unpublish } from '@/routes/pages';
+import {
+    destroy,
+    edit,
+    homepage,
+    publish,
+    unpublish,
+    viewOnline,
+} from '@/routes/pages';
 
 export type PageRecord = {
     id: number;
@@ -48,7 +55,7 @@ export function pageRowActions(
                       tone: 'primary' as const,
                       onAction: () =>
                           window.open(
-                              page.public_url ?? '/',
+                              viewOnline.url(page.id),
                               '_blank',
                               'noopener,noreferrer',
                           ),

@@ -16,4 +16,5 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function (): voi
     Route::get('pages/{page}/preview/{locale}', [PageController::class, 'preview'])
         ->where('locale', implode('|', LocaleEnum::codes()))
         ->name('pages.preview');
+    Route::get('pages/{page}/view-online', [PageController::class, 'viewOnline'])->name('pages.view-online');
 });

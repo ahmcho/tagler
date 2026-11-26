@@ -4,7 +4,6 @@ namespace App\Modules\Pages\Resources;
 
 use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Models\Page;
-use App\Modules\Pages\Support\PagePath;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
@@ -29,7 +28,7 @@ class PageResource extends JsonResource
             'parent_id' => $this->parent_id,
             'title' => $defaultTranslation?->title,
             'path' => $defaultTranslation?->path,
-            'public_url' => $defaultTranslation === null ? null : $this->publicUrl($defaultTranslation->path),
+            'public_url' => $defaultTranslation?->publicUrl(),
             'status' => $this->status,
             'is_homepage' => $this->is_homepage,
             'is_live' => $isLive,
@@ -46,15 +45,5 @@ class PageResource extends JsonResource
                 'setHomepage' => ($request->user()?->can('setHomepage', $this->resource) ?? false) && $isLive,
             ],
         ];
-    }
-
-    /**
-     * The URL a visitor uses for this page in the default locale. The homepage has no path segment.
-     */
-    private function publicUrl(string $path): string
-    {
-        $locale = LocaleEnum::default();
-
-        return $path === PagePath::HOMEPAGE ? "/{$locale}" : "/{$locale}/{$path}";
     }
 }

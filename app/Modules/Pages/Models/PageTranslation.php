@@ -6,6 +6,7 @@ use App\Modules\Auth\Concerns\HasActivityLogs;
 use App\Modules\Pages\Database\Factories\PageTranslationFactory;
 use App\Modules\Pages\Enums\BodyFormatEnum;
 use App\Modules\Pages\Support\MarkdownRenderer;
+use App\Modules\Pages\Support\PagePath;
 use App\Modules\Settings\Concerns\HasLocalDates;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -53,6 +54,14 @@ class PageTranslation extends Model
         return $this->body_format === BodyFormatEnum::Markdown
             ? app(MarkdownRenderer::class)->render($this->body)
             : $this->body;
+    }
+
+    /**
+     * The address a visitor uses for this translation, for example `/en/about`. The homepage has no path segment.
+     */
+    public function publicUrl(): string
+    {
+        return $this->path === PagePath::HOMEPAGE ? "/{$this->locale}" : "/{$this->locale}/{$this->path}";
     }
 
     /**
