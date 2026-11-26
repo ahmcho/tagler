@@ -14,6 +14,7 @@ type Props = {
     initialName: string;
     onSubmit: (name: string) => Promise<void>;
     onClose: () => void;
+    submitLabel?: string;
 };
 
 /**
@@ -24,6 +25,7 @@ export function MediaFolderDialog({
     initialName,
     onSubmit,
     onClose,
+    submitLabel = 'Save',
 }: Props) {
     const [name, setName] = useState(initialName);
     const [error, setError] = useState<string | null>(null);
@@ -78,7 +80,7 @@ export function MediaFolderDialog({
                         type="submit"
                         disabled={busy || name.trim() === ''}
                     >
-                        Save
+                        {submitLabel}
                     </Button>
                 </DialogFooter>
             </form>

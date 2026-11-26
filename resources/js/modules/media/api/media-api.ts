@@ -100,6 +100,7 @@ function withQuery(
 export function libraryUrl(query: MediaLibraryQuery): string {
     return withQuery(mediaFiles.index.url(), {
         category: query.category,
+        visibility: query.visibility ?? null,
         search: query.search.trim(),
         folder: query.folder === 'all' ? null : query.folder,
         sort: query.sort,
@@ -160,7 +161,12 @@ export const mediaApi = {
 
     updateFile: (
         uuid: string,
-        payload: Pick<MediaRecord, 'title' | 'alt_text' | 'description'>,
+        payload: Partial<
+            Pick<
+                MediaRecord,
+                'title' | 'alt_text' | 'description' | 'link_ttl_minutes'
+            >
+        >,
     ) =>
         request<{ data: MediaRecord }>(
             mediaFiles.update.url({ file: uuid }),
@@ -186,8 +192,12 @@ export const mediaApi = {
             },
         ).then((body) => body.data),
 
-    trashFile: (uuid: string) =>
-        request<void>(mediaFiles.destroy.url({ file: uuid }), 'DELETE'),
+    trashFile: (uuid: string, force = false) =>
+        request<void>(
+            mediaFiles.destroy.url({ file: uuid }),
+            'DELETE',
+            force ? { force: true } : undefined,
+        ),
 
     restoreFile: (uuid: string) =>
         request<{ data: MediaRecord }>(
@@ -199,6 +209,12 @@ export const mediaApi = {
         request<void>(mediaFiles.purge.url({ file: uuid }), 'POST', {
             force: true,
         }),
+
+    showFile: (uuid: string) =>
+        request<{ data: MediaRecord }>(
+            mediaFiles.show.url({ file: uuid }),
+            'GET',
+        ).then((body) => body.data),
 
     fileUrl: (uuid: string) =>
         request<{ url: string; temporary: boolean }>(

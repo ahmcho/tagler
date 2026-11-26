@@ -25,6 +25,8 @@ export type MediaRecord = {
     description: string | null;
     folder_id: number | null;
     visibility: MediaVisibility;
+    /** Lifetime of signed links in minutes. Null uses the global setting. */
+    link_ttl_minutes: number | null;
     processing_status: MediaProcessingStatus;
     processing_error: string | null;
     dimensions?: { width: number; height: number };
@@ -65,6 +67,7 @@ export type MediaFolderFilter = 'root' | 'all' | number;
 
 export type MediaLibraryQuery = {
     category: MediaCategory | null;
+    visibility?: MediaVisibility | null;
     search: string;
     folder: MediaFolderFilter;
     sort: MediaSort;
