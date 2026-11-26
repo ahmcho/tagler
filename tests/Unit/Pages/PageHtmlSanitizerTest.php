@@ -38,3 +38,17 @@ test('a link keeps its target and still gets a safe rel', function (): void {
         ->and($clean)->toContain('target="_self"')
         ->and($clean)->toContain('rel="noopener noreferrer"');
 });
+
+test('an image width is kept as an inline width on the image and its figure', function (): void {
+    $sanitizer = new PageHtmlSanitizer;
+
+    $kept = $sanitizer->sanitize('<figure data-position="full"><img src="https://cdn.example.com/a.jpg" alt="A" data-width="42" style="position: fixed"></figure>');
+    $dropped = $sanitizer->sanitize('<figure data-position="full"><img src="https://cdn.example.com/a.jpg" alt="A" data-width="250"></figure>');
+
+    expect($kept)->toContain('<figure data-position="full" style="width: 42%">')
+        ->and($kept)->toContain('data-width="42" style="width: 100%"')
+        ->and($kept)->not->toContain('position: fixed')
+        ->and($dropped)->not->toContain('style=')
+        ->and($dropped)->not->toContain('data-width')
+        ->and($dropped)->toContain('<figure data-position="full">');
+});

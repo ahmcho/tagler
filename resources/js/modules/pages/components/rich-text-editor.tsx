@@ -110,12 +110,14 @@ import {
     InlineImageNode,
 } from './inline-image-node';
 import type { InlineImagePosition } from './inline-image-node';
+import { IMAGE_WIDTHS, normalizeImageWidth } from './inline-image-width';
 
 type ImageDraft = {
     src: string;
     altText: string;
     caption: string;
     position: InlineImagePosition;
+    width: number;
 };
 
 /** Link target choices. `true` opens the link in a new tab. */
@@ -439,6 +441,7 @@ function Toolbar() {
                 altText: file.alt_text ?? '',
                 caption: '',
                 position: 'left',
+                width: 100,
             });
         } catch {
             setMediaError('The image could not be loaded.');
@@ -447,7 +450,12 @@ function Toolbar() {
 
     const insertImage = (draft: ImageDraft) => {
         editor.update(() => {
-            $insertNodeToNearestRoot($createInlineImageNode(draft));
+            $insertNodeToNearestRoot(
+                $createInlineImageNode({
+                    ...draft,
+                    width: normalizeImageWidth(draft.width),
+                }),
+            );
         });
         setImageDraft(null);
         editor.focus();
@@ -678,6 +686,26 @@ function Toolbar() {
                             className="w-full"
                         />
                     </div>
+                    {IMAGE_WIDTHS.map((value) => (
+                        <Button
+                            key={value}
+                            type="button"
+                            variant={
+                                imageDraft.width === value ? 'primary' : 'ghost'
+                            }
+                            appearance={
+                                imageDraft.width === value ? 'fill' : 'outline'
+                            }
+                            aria-pressed={imageDraft.width === value}
+                            onPress={() =>
+                                setImageDraft((draft) =>
+                                    draft ? { ...draft, width: value } : draft,
+                                )
+                            }
+                        >
+                            {value}%
+                        </Button>
+                    ))}
                     {IMAGE_POSITIONS.map(([value, label]) => (
                         <Button
                             key={value}

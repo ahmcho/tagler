@@ -16,8 +16,11 @@ import type {
     SerializedLexicalNode,
     Spread,
 } from 'lexical';
-import { DecoratorNode } from 'lexical';
+import { $getNodeByKey, DecoratorNode } from 'lexical';
 import type { ReactElement } from 'react';
+
+import { InlineImageView } from './inline-image-view';
+import { normalizeImageWidth, readImageWidth } from './inline-image-width';
 
 export type InlineImagePosition = 'left' | 'right' | 'full';
 
@@ -26,6 +29,7 @@ export type InlineImagePayload = {
     altText: string;
     caption: string;
     position: InlineImagePosition;
+    width: number;
 };
 
 type SerializedInlineImageNode = Spread<
@@ -34,12 +38,6 @@ type SerializedInlineImageNode = Spread<
 >;
 
 const POSITIONS: readonly InlineImagePosition[] = ['left', 'right', 'full'];
-
-const POSITION_CLASSES: Record<InlineImagePosition, string> = {
-    left: 'my-2 mr-4 float-left max-w-[50%]',
-    right: 'my-2 ml-4 float-right max-w-[50%]',
-    full: 'my-4 w-full',
-};
 
 /** Reads the position from `data-position`. Anything unknown falls back to `full`. */
 function readPosition(value: string | null): InlineImagePosition {
@@ -59,6 +57,7 @@ function convertFigure(figure: HTMLElement): DOMConversionOutput | null {
         altText: img.getAttribute('alt') ?? '',
         caption: figure.querySelector('figcaption')?.textContent ?? '',
         position: readPosition(figure.getAttribute('data-position')),
+        width: readImageWidth(img.getAttribute('data-width')),
     });
 
     // The figure's children are already read into the node, so drop them.
@@ -73,8 +72,27 @@ function convertImage(element: HTMLElement): DOMConversionOutput {
             altText: element.getAttribute('alt') ?? '',
             caption: '',
             position: 'full',
+            width: readImageWidth(element.getAttribute('data-width')),
         }),
     };
+}
+
+/** Sets the width of the image node with this key. Call it inside an editor update. */
+function $setImageWidth(key: NodeKey, width: number): void {
+    const node = $getNodeByKey(key);
+
+    if ($isInlineImageNode(node)) {
+        node.setWidth(width);
+    }
+}
+
+/** Sets the position of the image node with this key. Call it inside an editor update. */
+function $setImagePosition(key: NodeKey, position: InlineImagePosition): void {
+    const node = $getNodeByKey(key);
+
+    if ($isInlineImageNode(node)) {
+        node.setPosition(position);
+    }
 }
 
 /**
@@ -86,6 +104,7 @@ export class InlineImageNode extends DecoratorNode<ReactElement> {
     __altText: string;
     __caption: string;
     __position: InlineImagePosition;
+    __width: number;
 
     static getType(): string {
         return 'inline-image';
@@ -97,12 +116,16 @@ export class InlineImageNode extends DecoratorNode<ReactElement> {
             node.__altText,
             node.__caption,
             node.__position,
+            node.__width,
             node.__key,
         );
     }
 
     static importJSON(serialized: SerializedInlineImageNode): InlineImageNode {
-        return $createInlineImageNode(serialized);
+        return $createInlineImageNode({
+            ...serialized,
+            width: normalizeImageWidth(serialized.width ?? 100),
+        });
     }
 
     static importDOM(): DOMConversionMap | null {
@@ -117,6 +140,7 @@ export class InlineImageNode extends DecoratorNode<ReactElement> {
         altText: string,
         caption: string,
         position: InlineImagePosition,
+        width: number,
         key?: NodeKey,
     ) {
         super(key);
@@ -124,6 +148,7 @@ export class InlineImageNode extends DecoratorNode<ReactElement> {
         this.__altText = altText;
         this.__caption = caption;
         this.__position = position;
+        this.__width = width;
     }
 
     exportDOM(): DOMExportOutput {
@@ -131,8 +156,11 @@ export class InlineImageNode extends DecoratorNode<ReactElement> {
         const img = document.createElement('img');
 
         figure.setAttribute('data-position', this.__position);
+        figure.style.width = `${this.__width}%`;
         img.setAttribute('src', this.__src);
         img.setAttribute('alt', this.__altText);
+        img.setAttribute('data-width', String(this.__width));
+        img.style.width = '100%';
         figure.append(img);
 
         if (this.__caption !== '') {
@@ -153,6 +181,7 @@ export class InlineImageNode extends DecoratorNode<ReactElement> {
             altText: this.__altText,
             caption: this.__caption,
             position: this.__position,
+            width: this.__width,
         };
     }
 
@@ -176,6 +205,18 @@ export class InlineImageNode extends DecoratorNode<ReactElement> {
         return this.__position;
     }
 
+    getWidth(): number {
+        return this.__width;
+    }
+
+    setWidth(width: number): void {
+        this.getWritable().__width = normalizeImageWidth(width);
+    }
+
+    setPosition(position: InlineImagePosition): void {
+        this.getWritable().__position = position;
+    }
+
     createDOM(): HTMLElement {
         return document.createElement('div');
     }
@@ -185,22 +226,21 @@ export class InlineImageNode extends DecoratorNode<ReactElement> {
     }
 
     decorate(): ReactElement {
+        const key = this.getKey();
+
         return (
-            <figure
-                data-position={this.__position}
-                className={POSITION_CLASSES[this.__position]}
-            >
-                <img
-                    src={this.__src}
-                    alt={this.__altText}
-                    className="h-auto max-w-full rounded-md"
-                />
-                {this.__caption !== '' && (
-                    <figcaption className="text-base-500 mt-1 text-sm">
-                        {this.__caption}
-                    </figcaption>
-                )}
-            </figure>
+            <InlineImageView
+                nodeKey={key}
+                src={this.__src}
+                altText={this.__altText}
+                caption={this.__caption}
+                position={this.__position}
+                width={this.__width}
+                onCommitWidth={(width) => $setImageWidth(key, width)}
+                onCommitPosition={(position) =>
+                    $setImagePosition(key, position)
+                }
+            />
         );
     }
 }
@@ -210,9 +250,10 @@ export function $createInlineImageNode({
     altText,
     caption,
     position,
+    width,
     key,
 }: InlineImagePayload & { key?: NodeKey }): InlineImageNode {
-    return new InlineImageNode(src, altText, caption, position, key);
+    return new InlineImageNode(src, altText, caption, position, width, key);
 }
 
 export function $isInlineImageNode(
@@ -221,7 +262,7 @@ export function $isInlineImageNode(
     return node instanceof InlineImageNode;
 }
 
-/** An image on its own line, written as `![alt](src)`. Caption and position are not kept in Markdown. */
+/** An image on its own line, written as `![alt](src)`. Caption, position and width are not kept in Markdown. */
 export const INLINE_IMAGE_MARKDOWN: ElementTransformer = {
     type: 'element',
     dependencies: [InlineImageNode],
@@ -235,6 +276,7 @@ export const INLINE_IMAGE_MARKDOWN: ElementTransformer = {
                 altText,
                 caption: '',
                 position: 'full',
+                width: 100,
             }),
         );
 
