@@ -2,7 +2,7 @@
 
 namespace App\Modules\Settings\Rules;
 
-use App\Modules\Settings\Enums\AllowedMimeTypes;
+use App\Modules\Settings\Enums\AllowedMimeTypesEnum;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\UploadedFile;
@@ -16,24 +16,17 @@ use Illuminate\Support\Str;
 class FileUploadRule implements ValidationRule
 {
     /**
-     * @param  array<int, AllowedMimeTypes>  $mimeTypes
+     * @param  array<int, AllowedMimeTypesEnum>  $mimeTypes
      */
     public function __construct(
         protected array $mimeTypes = [
-            AllowedMimeTypes::Png,
-            AllowedMimeTypes::Jpeg,
-            AllowedMimeTypes::Webp,
-            AllowedMimeTypes::Gif,
-            AllowedMimeTypes::Bmp,
+            AllowedMimeTypesEnum::Png,
+            AllowedMimeTypesEnum::Jpeg,
+            AllowedMimeTypesEnum::Webp,
+            AllowedMimeTypesEnum::Gif,
+            AllowedMimeTypesEnum::Bmp,
         ],
     ) {}
-
-    /**
-     * Server-side script extensions that must never appear in an uploaded file name.
-     *
-     * @var array<int, string>
-     */
-    protected const FORBIDDEN_EXTENSIONS = ['php', 'phtml', 'phar', 'pht', 'phps', 'pgif', 'shtml', 'inc'];
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -43,24 +36,14 @@ class FileUploadRule implements ValidationRule
             return;
         }
 
-        if ($this->hasForbiddenExtension($value->getClientOriginalName())) {
+        if (ExecutableUploadRule::isExecutable($value)) {
             $fail(__('translations.common.validation.file_type', ['attribute' => Str::afterLast($attribute, '.')]));
 
             return;
         }
 
-        if (! in_array(AllowedMimeTypes::tryFrom((string) $value->getMimeType()), $this->mimeTypes, true)) {
+        if (! in_array(AllowedMimeTypesEnum::tryFrom((string) $value->getMimeType()), $this->mimeTypes, true)) {
             $fail(__('translations.common.validation.file_type', ['attribute' => Str::afterLast($attribute, '.')]));
         }
-    }
-
-    /**
-     * Checks every dot-separated segment after the base name, so `shell.php.png` and `shell.PHP` are both caught.
-     */
-    protected function hasForbiddenExtension(string $fileName): bool
-    {
-        $segments = array_slice(explode('.', strtolower(trim($fileName))), 1);
-
-        return array_any($segments, fn ($segment) => in_array(preg_replace('/\d+$/', '', $segment), self::FORBIDDEN_EXTENSIONS, true));
     }
 }

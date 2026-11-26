@@ -19,7 +19,7 @@ import {
     SelectValue,
 } from '@/components/tailgrids/core/select';
 import { TextField } from '@/components/tailgrids/core/text-field';
-import { AllowedMimeTypes, SettingInputEnum } from '@/types/generated';
+import { AllowedMimeTypesEnum, SettingInputEnum } from '@/types/generated';
 
 export type SettingOption = {
     value: string;
@@ -64,6 +64,29 @@ function TextSettingControl({
         >
             <FieldLabel>{field.label}</FieldLabel>
             <Input className="w-full" />
+            <FieldDescription>{field.description}</FieldDescription>
+            <FieldError>{error}</FieldError>
+        </TextField>
+    );
+}
+
+function NumberSettingControl({
+    field,
+    value,
+    error,
+    onChange,
+}: SettingControlProps) {
+    return (
+        <TextField
+            name={`settings.${field.key}`}
+            value={typeof value === 'string' ? value : ''}
+            onChange={onChange}
+            required={field.required}
+            invalid={Boolean(error)}
+            className="flex w-full flex-col gap-1.5"
+        >
+            <FieldLabel>{field.label}</FieldLabel>
+            <Input type="number" min={1} step={1} className="w-full" />
             <FieldDescription>{field.description}</FieldDescription>
             <FieldError>{error}</FieldError>
         </TextField>
@@ -134,7 +157,7 @@ function FileSettingControl({
                 <input
                     type="file"
                     name={`settings.${field.key}`}
-                    accept={AllowedMimeTypes.Png}
+                    accept={AllowedMimeTypesEnum.Png}
                     onChange={(event) =>
                         onChange(event.target.files?.[0] ?? null)
                     }
@@ -182,6 +205,7 @@ const SETTING_CONTROLS: Record<
     [SettingInputEnum.Text]: TextSettingControl,
     [SettingInputEnum.File]: FileSettingControl,
     [SettingInputEnum.Select]: SelectSettingControl,
+    [SettingInputEnum.Number]: NumberSettingControl,
 };
 
 export function SettingFieldControl(props: SettingControlProps) {

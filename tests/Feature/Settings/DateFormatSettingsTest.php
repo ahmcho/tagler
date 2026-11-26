@@ -43,6 +43,7 @@ test('an Admin can save a date and datetime format from the list', function (): 
                 'date_format' => DateFormatVariantEnum::YearMonthDayDash->value,
                 'datetime_format' => DateTimeFormatVariantEnum::DayMonthYearSlashTime->value,
                 'time_format' => TimeFormatVariantEnum::TwelveHour->value,
+                'media_link_ttl_minutes' => '15',
             ],
         ])
         ->assertSessionHasNoErrors();

@@ -12,6 +12,7 @@ enum SettingKeyEnum: string
     case DateFormat = 'date_format';
     case DateTimeFormat = 'datetime_format';
     case TimeFormat = 'time_format';
+    case MediaLinkTtlMinutes = 'media_link_ttl_minutes';
 
     /**
      * How this setting's stored value should be cast and validated.
@@ -22,6 +23,7 @@ enum SettingKeyEnum: string
             self::AppName => InputValueTypeEnum::String,
             self::Favicon => InputValueTypeEnum::File,
             self::DateFormat, self::DateTimeFormat, self::TimeFormat => InputValueTypeEnum::String,
+            self::MediaLinkTtlMinutes => InputValueTypeEnum::Integer,
         };
     }
 
@@ -34,6 +36,7 @@ enum SettingKeyEnum: string
             self::AppName => SettingInputEnum::Text,
             self::Favicon => SettingInputEnum::File,
             self::DateFormat, self::DateTimeFormat, self::TimeFormat => SettingInputEnum::Select,
+            self::MediaLinkTtlMinutes => SettingInputEnum::Number,
         };
     }
 
@@ -46,6 +49,7 @@ enum SettingKeyEnum: string
             self::AppName => 'general',
             self::Favicon => 'general',
             self::DateFormat, self::DateTimeFormat, self::TimeFormat => 'general',
+            self::MediaLinkTtlMinutes => 'security',
         };
     }
 
@@ -58,6 +62,7 @@ enum SettingKeyEnum: string
             self::AppName => 'settings',
             self::Favicon => 'settings',
             self::DateFormat, self::DateTimeFormat, self::TimeFormat => 'settings',
+            self::MediaLinkTtlMinutes => 'shield-check',
         };
     }
 
@@ -72,6 +77,7 @@ enum SettingKeyEnum: string
             self::DateFormat => DateFormatVariantEnum::DayMonthYearDot->value,
             self::DateTimeFormat => DateTimeFormatVariantEnum::DayMonthYearDotTimeWithSeconds->value,
             self::TimeFormat => TimeFormatVariantEnum::TwelveHour->value,
+            self::MediaLinkTtlMinutes => '15',
         };
     }
 
@@ -124,7 +130,8 @@ enum SettingKeyEnum: string
 
         return match ($this->type()) {
             InputValueTypeEnum::String => ['required', 'string', 'max:255'],
-            InputValueTypeEnum::File => ['nullable', 'file', new FileUploadRule([AllowedMimeTypes::Png]), 'max:1024'],
+            InputValueTypeEnum::File => ['nullable', 'file', new FileUploadRule([AllowedMimeTypesEnum::Png]), 'max:1024'],
+            InputValueTypeEnum::Integer => ['required', 'integer', 'min:1'],
             default => ['nullable'],
         };
     }

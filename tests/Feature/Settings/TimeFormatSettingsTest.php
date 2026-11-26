@@ -44,6 +44,7 @@ test('an Admin can save the 24-hour time format', function (): void {
                 'date_format' => 'd.m.Y',
                 'datetime_format' => 'd.m.Y H:i:s',
                 'time_format' => TimeFormatVariantEnum::TwentyFourHour->value,
+                'media_link_ttl_minutes' => '15',
             ],
         ])
         ->assertSessionHasNoErrors();
@@ -60,6 +61,7 @@ test('a time format outside the enum list is rejected', function (): void {
                 'date_format' => 'd.m.Y',
                 'datetime_format' => 'd.m.Y H:i:s',
                 'time_format' => 'Y.m.d',
+                'media_link_ttl_minutes' => '15',
             ],
         ])
         ->assertSessionHasErrors('settings.time_format');
