@@ -19,6 +19,6 @@ enum DateFormatVariantEnum: string
      */
     public function label(): string
     {
-        return CarbonImmutable::parse('2026-11-20 13:45:30')->format($this->value);
+        return CarbonImmutable::parse(now())->format($this->value);
     }
 }
