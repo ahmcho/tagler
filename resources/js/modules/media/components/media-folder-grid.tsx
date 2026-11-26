@@ -1,10 +1,6 @@
-import { Folder, MoreHorizontal } from 'lucide-react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/tailgrids/core/dropdown';
+import { ExternalLink, Folder } from 'lucide-react';
+import { RowActionsMenu } from '@/components/data-table-menu';
+import type { DataTableRowAction } from '@/components/data-table-types';
 import { formatBytes } from '../lib/format';
 import type { MediaFolder } from '../types';
 
@@ -49,21 +45,31 @@ export function MediaFolderGrid({ folders, onOpen }: Props) {
                         <span>{formatBytes(folder.bytes)}</span>
                     </span>
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            aria-label={`Actions for ${folder.name}`}
-                            className="absolute top-4 right-4 flex size-10 items-center justify-center rounded-[10px] text-text-100 hover:bg-background-soft-100"
-                        >
-                            <MoreHorizontal className="size-5" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem onAction={() => onOpen(folder)}>
-                                Open in library
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="absolute top-4 right-4">
+                        <RowActionsMenu
+                            row={folder}
+                            rowId={folder.id}
+                            rowActions={(row) => folderRowActions(row, onOpen)}
+                        />
+                    </div>
                 </li>
             ))}
         </ul>
     );
+}
+
+/** Row actions for a folder card, shared with the data table menu. */
+function folderRowActions(
+    folder: MediaFolder,
+    onOpen: (folder: MediaFolder) => void,
+): DataTableRowAction[] {
+    return [
+        {
+            key: 'open-in-library',
+            label: 'Open in library',
+            icon: <ExternalLink className="size-4" />,
+            tone: 'primary',
+            onAction: () => onOpen(folder),
+        },
+    ];
 }
