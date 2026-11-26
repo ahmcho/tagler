@@ -2,7 +2,7 @@
 
 namespace App\Modules\Media\Jobs;
 
-use App\Modules\Media\Enums\MediaProcessingStatus;
+use App\Modules\Media\Enums\MediaProcessingStatusEnum;
 use App\Modules\Media\Repositories\Contracts\MediaRepositoryContract;
 use App\Modules\Media\Services\MediaProcessingService;
 use Illuminate\Bus\Queueable;
@@ -33,7 +33,7 @@ class ProcessMedia implements ShouldQueue
     {
         $media = $repository->findIncludingTrashed($this->mediaId);
 
-        if ($media === null || $media->trashed() || $media->processing_status === MediaProcessingStatus::Ready) {
+        if ($media === null || $media->trashed() || $media->processing_status === MediaProcessingStatusEnum::Ready) {
             return;
         }
 

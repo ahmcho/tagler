@@ -40,25 +40,31 @@ class MediaFolderController extends Controller
         /** @var User $user */
         $user = $request->user();
 
+        $payload = $request->validated();
+
         $folder = $this->service->create(
-            $request->validated('name'),
-            $request->validated('parent_id'),
+            $payload['name'],
+            $payload['parent_id'] ?? null,
             $user,
         );
 
-        return MediaFolderResource::make($folder)->response()->setStatusCode(201);
+        return MediaFolderResource::make($folder)->response()->setStatusCode(Response::HTTP_CREATED);
     }
 
     public function update(MediaFolderRequest $request, MediaFolder $folder): JsonResponse
     {
-        $folder = $this->service->rename($folder, $request->validated('name'));
+        $payload = $request->validated();
+
+        $folder = $this->service->rename($folder, $payload['name']);
 
         return MediaFolderResource::make($folder)->response();
     }
 
     public function move(MediaFolderMoveRequest $request, MediaFolder $folder): JsonResponse
     {
-        $folder = $this->service->move($folder, $request->validated('parent_id'));
+        $payload = $request->validated();
+
+        $folder = $this->service->move($folder, $payload['parent_id']);
 
         return MediaFolderResource::make($folder)->response();
     }

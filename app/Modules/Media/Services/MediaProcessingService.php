@@ -2,7 +2,7 @@
 
 namespace App\Modules\Media\Services;
 
-use App\Modules\Media\Enums\MediaProcessingStatus;
+use App\Modules\Media\Enums\MediaProcessingStatusEnum;
 use App\Modules\Media\Models\Media;
 use App\Modules\Media\Repositories\Contracts\MediaRepositoryContract;
 use App\Modules\Media\Support\Processing\MediaProcessorContract;
@@ -19,14 +19,14 @@ class MediaProcessingService
     public function process(Media $media): void
     {
         $this->repository->updateSystemFields($media, [
-            'processing_status' => MediaProcessingStatus::Processing,
+            'processing_status' => MediaProcessingStatusEnum::Processing,
             'processing_error' => null,
         ]);
 
         $metadata = $this->processorFor($media)->process($media);
 
         $this->repository->updateSystemFields($media, [
-            'processing_status' => MediaProcessingStatus::Ready,
+            'processing_status' => MediaProcessingStatusEnum::Ready,
             'metadata' => array_merge($media->metadata ?? [], $metadata),
         ]);
     }
@@ -37,7 +37,7 @@ class MediaProcessingService
     public function markFailed(Media $media): void
     {
         $this->repository->updateSystemFields($media, [
-            'processing_status' => MediaProcessingStatus::Failed,
+            'processing_status' => MediaProcessingStatusEnum::Failed,
             'processing_error' => 'Processing failed. Try again later.',
         ]);
     }

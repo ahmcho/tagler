@@ -4,7 +4,7 @@ namespace App\Modules\Media\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Modules\Media\Enums\MediaVisibility;
+use App\Modules\Media\Enums\MediaVisibilityEnum;
 use App\Modules\Media\Models\Media;
 use App\Modules\Media\Requests\MediaForceRequest;
 use App\Modules\Media\Requests\MediaIndexRequest;
@@ -67,7 +67,9 @@ class MediaController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        $media = $this->service->upload($request->file('file'), $request->validated(), $user);
+        $payload = $request->validated();
+
+        $media = $this->service->upload($request->file('file'), $payload, $user);
 
         return MediaResource::make($media->load('uploader'))->response()->setStatusCode(201);
     }
@@ -79,30 +81,40 @@ class MediaController extends Controller
 
     public function update(MediaUpdateRequest $request, Media $file): JsonResponse
     {
-        $media = $this->service->update($file, $request->validated());
+        $payload = $request->validated();
+
+        $media = $this->service->update(media: $file, payload: $payload);
 
         return MediaResource::make($media->load('uploader'))->response();
     }
 
     public function destroy(MediaForceRequest $request, Media $file): Response
     {
-        $this->service->trash($file, (bool) $request->validated('force'));
+        $payload = $request->validated();
+        $force = (bool) ($payload['force'] ?? false);
+
+        $this->service->trash(media: $file, force: $force);
 
         return response()->noContent();
     }
 
     public function move(MediaMoveRequest $request, Media $file): JsonResponse
     {
-        $media = $this->service->move($file, $request->validated('folder_id'));
+        $payload = $request->validated();
+        $folderId = $payload['folder_id'];
+
+        $media = $this->service->move($file, $folderId);
 
         return MediaResource::make($media->load('uploader'))->response();
     }
 
     public function visibility(MediaVisibilityRequest $request, Media $file): JsonResponse
     {
+        $payload = $request->validated();
+
         $media = $this->service->changeVisibility(
             $file,
-            MediaVisibility::from($request->validated('visibility')),
+            MediaVisibilityEnum::from($payload['visibility']),
         );
 
         return MediaResource::make($media->load('uploader'))->response();
@@ -115,7 +127,10 @@ class MediaController extends Controller
 
     public function purge(MediaForceRequest $request, Media $file): Response
     {
-        $this->service->purge($file, (bool) $request->validated('force'));
+        $payload = $request->validated();
+        $force = (bool) ($payload['force'] ?? false);
+
+        $this->service->purge(media: $file, force: $force);
 
         return response()->noContent();
     }
@@ -127,7 +142,7 @@ class MediaController extends Controller
     public function download(Request $request, Media $file): HttpResponse
     {
         $disposition = $request->query('disposition') === 'inline' ? 'inline' : 'attachment';
-        $cacheControl = $file->visibility === MediaVisibility::Public ? 'public, max-age=3600' : 'private, no-store';
+        $cacheControl = $file->visibility === MediaVisibilityEnum::Public ? 'public, max-age=3600' : 'private, no-store';
 
         return Storage::disk($file->disk)->response($file->path, $file->original_name, [
             'Content-Type' => $file->mime_type,
@@ -144,9 +159,9 @@ class MediaController extends Controller
     {
         $data = $file->metadata['conversions'][$conversion] ?? null;
 
-        abort_if($data === null, 404);
+        abort_if($data === null, Response::HTTP_NOT_FOUND);
 
-        $cacheControl = $file->visibility === MediaVisibility::Public ? 'public, max-age=3600' : 'private, max-age=300';
+        $cacheControl = $file->visibility === MediaVisibilityEnum::Public ? 'public, max-age=3600' : 'private, max-age=300';
 
         return Storage::disk($file->disk)->response($data['path'], null, [
             'Content-Type' => $data['mime_type'],
@@ -157,7 +172,7 @@ class MediaController extends Controller
 
     public function url(Media $file): JsonResponse
     {
-        $isPublic = $file->visibility === MediaVisibility::Public;
+        $isPublic = $file->visibility === MediaVisibilityEnum::Public;
 
         return response()->json([
             'url' => $isPublic ? $this->urls->publicUrl($file) : $this->urls->temporaryUrl($file),

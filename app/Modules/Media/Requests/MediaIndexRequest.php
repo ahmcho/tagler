@@ -2,29 +2,27 @@
 
 namespace App\Modules\Media\Requests;
 
-use App\Modules\Media\Enums\MediaCategory;
-use App\Modules\Media\Enums\MediaVisibility;
+use App\Modules\Media\Enums\MediaCategoryEnum;
+use App\Modules\Media\Enums\MediaVisibilityEnum;
 use Crud\Requests\AppFormRequest;
 use Illuminate\Validation\Rule;
 
 class MediaIndexRequest extends AppFormRequest
 {
-    public const array SORTS = ['created_desc', 'created_asc', 'name_asc', 'name_desc', 'size_desc', 'size_asc'];
-
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
-            'category' => ['nullable', Rule::enum(MediaCategory::class)],
+            'category' => ['nullable', Rule::enum(MediaCategoryEnum::class)],
             'search' => ['nullable', 'string', 'max:200'],
             'folder' => ['nullable', 'string', 'regex:/^(root|\d+)$/'],
-            'visibility' => ['nullable', Rule::enum(MediaVisibility::class)],
+            'visibility' => ['nullable', Rule::enum(MediaVisibilityEnum::class)],
             'uploaded_by' => ['nullable', 'integer', 'exists:users,id'],
             'created_from' => ['nullable', 'date_format:Y-m-d'],
             'created_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:created_from'],
-            'sort' => ['nullable', Rule::in(self::SORTS)],
+            'sort' => ['nullable', Rule::in(['created_desc', 'created_asc', 'name_asc', 'name_desc', 'size_desc', 'size_asc'])],
             'trashed' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
         ];

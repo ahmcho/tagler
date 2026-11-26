@@ -2,7 +2,7 @@
 
 namespace App\Modules\Media\Enums;
 
-enum MediaProcessingStatus: string
+enum MediaProcessingStatusEnum: string
 {
     case Pending = 'pending';
     case Processing = 'processing';

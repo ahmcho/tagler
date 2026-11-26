@@ -2,10 +2,9 @@
 
 namespace App\Modules\Media\Services;
 
-use App\Modules\Media\Enums\MediaVisibility;
+use App\Modules\Media\Enums\MediaVisibilityEnum;
 use App\Modules\Media\Models\Media;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -18,14 +17,12 @@ class MediaStorageService
     /**
      * @return array{disk: string, path: string}
      */
-    public function store(UploadedFile $file, MediaVisibility $visibility, string $uuid, string $extension): array
+    public function store(UploadedFile $file, MediaVisibilityEnum $visibility, string $uuid, string $extension): array
     {
         $disk = $this->diskFor($visibility);
         $path = sprintf(
-            '%s/%s/%s/%s.%s',
+            '%s/%s.%s',
             config('modules.media.path_prefix'),
-            Carbon::now()->format('Y'),
-            Carbon::now()->format('m'),
             $uuid,
             $extension,
         );
@@ -61,7 +58,7 @@ class MediaStorageService
      *
      * @return array{disk: string, path: string}
      */
-    public function copyForVisibility(Media $media, MediaVisibility $target): array
+    public function copyForVisibility(Media $media, MediaVisibilityEnum $target): array
     {
         $targetDisk = $this->diskFor($target);
 
@@ -106,11 +103,11 @@ class MediaStorageService
         return Storage::disk($disk)->exists($path);
     }
 
-    public function diskFor(MediaVisibility $visibility): string
+    public function diskFor(MediaVisibilityEnum $visibility): string
     {
         return match ($visibility) {
-            MediaVisibility::Public => config('modules.media.public_disk'),
-            MediaVisibility::Private => config('modules.media.private_disk'),
+            MediaVisibilityEnum::Public => config('modules.media.public_disk'),
+            MediaVisibilityEnum::Private => config('modules.media.private_disk'),
         };
     }
 

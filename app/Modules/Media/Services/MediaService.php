@@ -3,8 +3,8 @@
 namespace App\Modules\Media\Services;
 
 use App\Models\User;
-use App\Modules\Media\Enums\MediaProcessingStatus;
-use App\Modules\Media\Enums\MediaVisibility;
+use App\Modules\Media\Enums\MediaProcessingStatusEnum;
+use App\Modules\Media\Enums\MediaVisibilityEnum;
 use App\Modules\Media\Exceptions\MediaInUseException;
 use App\Modules\Media\Jobs\ProcessMedia;
 use App\Modules\Media\Models\Media;
@@ -33,7 +33,7 @@ class MediaService implements MediaServiceContract
     {
         $mimeType = (string) $file->getMimeType();
         $extension = $this->extensionFor($mimeType);
-        $visibility = MediaVisibility::from($payload['visibility'] ?? config('modules.media.default_visibility'));
+        $visibility = MediaVisibilityEnum::from($payload['visibility'] ?? config('modules.media.default_visibility'));
         $uuid = $this->storage->newUuid();
         $checksum = hash_file('sha256', $file->getRealPath());
 
@@ -51,7 +51,7 @@ class MediaService implements MediaServiceContract
             'checksum' => $checksum,
             ...$this->metadataAttributes($payload),
             'visibility' => $visibility,
-            'processing_status' => MediaProcessingStatus::Pending,
+            'processing_status' => MediaProcessingStatusEnum::Pending,
             'uploaded_by' => $uploader->getKey(),
         ]);
 
@@ -103,7 +103,7 @@ class MediaService implements MediaServiceContract
         return $this->repository->relocate($media, ['folder_id' => $folderId]);
     }
 
-    public function changeVisibility(Media $media, MediaVisibility $visibility): Media
+    public function changeVisibility(Media $media, MediaVisibilityEnum $visibility): Media
     {
         if ($media->visibility === $visibility) {
             return $media;

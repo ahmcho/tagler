@@ -2,7 +2,9 @@
 
 namespace App\Modules\Media\Enums;
 
-enum MediaCategory: string
+use App\Modules\Settings\Enums\AllowedMimeTypesEnum;
+
+enum MediaCategoryEnum: string
 {
     case Pictures = 'pictures';
     case Videos = 'videos';
@@ -30,12 +32,8 @@ enum MediaCategory: string
     public static function documentMimeTypes(): array
     {
         return [
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'text/plain',
+            AllowedMimeTypesEnum::Pdf->value,
+            AllowedMimeTypesEnum::PlainText->value,
         ];
     }
 }

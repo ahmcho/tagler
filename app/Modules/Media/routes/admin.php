@@ -3,6 +3,7 @@
 use App\Modules\Media\Controllers\MediaController;
 use App\Modules\Media\Controllers\MediaFolderController;
 use App\Modules\Media\Controllers\MediaLibraryController;
+use App\Modules\Media\Enums\MediaConversionEnum;
 use App\Modules\Media\Models\Media;
 use Illuminate\Support\Facades\Route;
 
@@ -40,7 +41,7 @@ Route::prefix('admin/media')->middleware(['auth', 'verified'])->group(function (
         ->name('media.files.purge');
     Route::get('files/{file}/url', [MediaController::class, 'url'])->name('media.files.url');
     Route::get('files/{file}/conversions/{conversion}', [MediaController::class, 'conversion'])
-        ->where('conversion', 'thumbnail|medium|large')
+        ->where('conversion', implode('|', array_column(MediaConversionEnum::cases(), 'value')))
         ->name('media.files.conversion');
     Route::get('files/{file}/download', [MediaController::class, 'download'])->name('media.files.download');
     Route::get('files/{file}/temporary', [MediaController::class, 'download'])

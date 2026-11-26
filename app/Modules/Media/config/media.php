@@ -2,6 +2,7 @@
 
 use App\Modules\Media\Support\Processing\FallbackProcessor;
 use App\Modules\Media\Support\Processing\ImageProcessor;
+use App\Modules\Settings\Enums\AllowedMimeTypesEnum;
 
 return [
 
@@ -27,8 +28,6 @@ return [
     */
     'storage_quota_bytes' => env('MEDIA_STORAGE_QUOTA_BYTES') !== null ? (int) env('MEDIA_STORAGE_QUOTA_BYTES') : null,
 
-    'temporary_url_minutes' => (int) env('MEDIA_TEMPORARY_URL_MINUTES', 15),
-
     'purge_after_days' => (int) env('MEDIA_PURGE_AFTER_DAYS', 30),
 
     /*
@@ -41,22 +40,20 @@ return [
     | The MIME type comes from server-side inspection, never from the browser.
     */
     'allowed_mime_types' => [
-        'image/jpeg' => 'jpg',
-        'image/png' => 'png',
-        'image/webp' => 'webp',
-        'image/gif' => 'gif',
-        'video/mp4' => 'mp4',
-        'video/webm' => 'webm',
-        'video/quicktime' => 'mov',
-        'audio/mpeg' => 'mp3',
-        'audio/wav' => 'wav',
-        'audio/ogg' => 'ogg',
-        'application/pdf' => 'pdf',
-        'application/msword' => 'doc',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
-        'application/vnd.ms-excel' => 'xls',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
-        'text/plain' => 'txt',
+        AllowedMimeTypesEnum::Jpeg->value => AllowedMimeTypesEnum::Jpeg->extension(),
+        AllowedMimeTypesEnum::Png->value => AllowedMimeTypesEnum::Png->extension(),
+        AllowedMimeTypesEnum::Webp->value => AllowedMimeTypesEnum::Webp->extension(),
+        AllowedMimeTypesEnum::Gif->value => AllowedMimeTypesEnum::Gif->extension(),
+        AllowedMimeTypesEnum::Mpeg4->value => AllowedMimeTypesEnum::Mpeg4->extension(),
+        AllowedMimeTypesEnum::Webm->value => AllowedMimeTypesEnum::Webm->extension(),
+        AllowedMimeTypesEnum::Mov->value => AllowedMimeTypesEnum::Mov->extension(),
+        AllowedMimeTypesEnum::Mp3->value => AllowedMimeTypesEnum::Mp3->extension(),
+        AllowedMimeTypesEnum::Wav->value => AllowedMimeTypesEnum::Wav->extension(),
+        AllowedMimeTypesEnum::Ogg->value => AllowedMimeTypesEnum::Ogg->extension(),
+        AllowedMimeTypesEnum::Bmp->value => AllowedMimeTypesEnum::Bmp->extension(),
+        AllowedMimeTypesEnum::Zip->value => AllowedMimeTypesEnum::Zip->extension(),
+        AllowedMimeTypesEnum::Pdf->value => AllowedMimeTypesEnum::Pdf->extension(),
+        AllowedMimeTypesEnum::PlainText->value => AllowedMimeTypesEnum::PlainText->extension(),
     ],
 
     /*

@@ -3,7 +3,7 @@
 namespace App\Modules\Media\Services\Contracts;
 
 use App\Models\User;
-use App\Modules\Media\Enums\MediaVisibility;
+use App\Modules\Media\Enums\MediaVisibilityEnum;
 use App\Modules\Media\Models\Media;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
@@ -29,7 +29,7 @@ interface MediaServiceContract
 
     public function move(Media $media, ?int $folderId): Media;
 
-    public function changeVisibility(Media $media, MediaVisibility $visibility): Media;
+    public function changeVisibility(Media $media, MediaVisibilityEnum $visibility): Media;
 
     /**
      * Moves the file to the trash. Referenced files need `$force`.

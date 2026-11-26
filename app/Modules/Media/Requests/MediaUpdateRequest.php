@@ -15,6 +15,7 @@ class MediaUpdateRequest extends AppFormRequest
             'title' => ['nullable', 'string', 'max:255'],
             'alt_text' => ['nullable', 'string', 'max:500'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'link_ttl_minutes' => ['nullable', 'integer', 'min:1', 'max:4294967295'],
         ];
     }
 }

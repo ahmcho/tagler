@@ -31,6 +31,7 @@ class MediaResource extends JsonResource
             'description' => $this->description,
             'folder_id' => $this->folder_id,
             'visibility' => $this->visibility->value,
+            'link_ttl_minutes' => $this->link_ttl_minutes,
             'processing_status' => $this->processing_status->value,
             'processing_error' => $this->processing_error,
             'dimensions' => $this->when(

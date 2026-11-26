@@ -5,9 +5,9 @@ namespace App\Modules\Media\Models;
 use App\Models\User;
 use App\Modules\Auth\Concerns\HasActivityLogs;
 use App\Modules\Media\Database\Factories\MediaFactory;
-use App\Modules\Media\Enums\MediaCategory;
-use App\Modules\Media\Enums\MediaProcessingStatus;
-use App\Modules\Media\Enums\MediaVisibility;
+use App\Modules\Media\Enums\MediaCategoryEnum;
+use App\Modules\Media\Enums\MediaProcessingStatusEnum;
+use App\Modules\Media\Enums\MediaVisibilityEnum;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -36,14 +36,15 @@ use Illuminate\Database\Eloquent\SoftDeletes as HasSoftDeletes;
  * @property string|null $alt_text
  * @property string|null $description
  * @property array<string, mixed> $metadata
- * @property MediaVisibility $visibility
- * @property MediaProcessingStatus $processing_status
+ * @property MediaVisibilityEnum $visibility
+ * @property int|null $link_ttl_minutes Lifetime of signed links in minutes. Null uses the global setting.
+ * @property MediaProcessingStatusEnum $processing_status
  * @property string|null $processing_error
  * @property int|null $uploaded_by
  */
 #[Table(name: 'media')]
 #[UseFactory(MediaFactory::class)]
-#[Fillable(['title', 'alt_text', 'description', 'folder_id', 'visibility'])]
+#[Fillable(['title', 'alt_text', 'description', 'folder_id', 'visibility', 'link_ttl_minutes'])]
 class Media extends Model
 {
     /** @use HasFactory<MediaFactory> */
@@ -61,9 +62,10 @@ class Media extends Model
     {
         return [
             'size' => 'integer',
+            'link_ttl_minutes' => 'integer',
             'metadata' => 'array',
-            'visibility' => MediaVisibility::class,
-            'processing_status' => MediaProcessingStatus::class,
+            'visibility' => MediaVisibilityEnum::class,
+            'processing_status' => MediaProcessingStatusEnum::class,
         ];
     }
 
@@ -84,10 +86,10 @@ class Media extends Model
     }
 
     /**
-     * @return Attribute<MediaCategory, never>
+     * @return Attribute<MediaCategoryEnum, never>
      */
     protected function category(): Attribute
     {
-        return Attribute::get(fn (): MediaCategory => MediaCategory::fromMimeType($this->mime_type));
+        return Attribute::get(fn (): MediaCategoryEnum => MediaCategoryEnum::fromMimeType($this->mime_type));
     }
 }

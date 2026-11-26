@@ -2,7 +2,7 @@
 
 use App\Models\User;
 use App\Modules\Auth\Database\Seeders\RolesAndPermissionsSeeder;
-use App\Modules\Media\Enums\MediaCategory;
+use App\Modules\Media\Enums\MediaCategoryEnum;
 use App\Modules\Media\Models\Media;
 use App\Modules\Media\Models\MediaFolder;
 use Illuminate\Support\Facades\DB;
@@ -188,10 +188,10 @@ test('a user without the index permission cannot browse the library', function (
 });
 
 test('category enum maps each documented MIME family', function (): void {
-    expect(MediaCategory::fromMimeType('image/webp'))->toBe(MediaCategory::Pictures)
-        ->and(MediaCategory::fromMimeType('audio/ogg'))->toBe(MediaCategory::Audio)
-        ->and(MediaCategory::fromMimeType('text/plain'))->toBe(MediaCategory::Documents)
-        ->and(MediaCategory::fromMimeType('application/octet-stream'))->toBe(MediaCategory::Other);
+    expect(MediaCategoryEnum::fromMimeType('image/webp'))->toBe(MediaCategoryEnum::Pictures)
+        ->and(MediaCategoryEnum::fromMimeType('audio/ogg'))->toBe(MediaCategoryEnum::Audio)
+        ->and(MediaCategoryEnum::fromMimeType('text/plain'))->toBe(MediaCategoryEnum::Documents)
+        ->and(MediaCategoryEnum::fromMimeType('application/octet-stream'))->toBe(MediaCategoryEnum::Other);
 });
 
 test('the trash filter returns only trashed files when sent as 1', function (): void {

@@ -3,6 +3,8 @@
 namespace App\Modules\Media\Support\Processing;
 
 use App\Modules\Media\Models\Media;
+use App\Modules\Settings\Enums\AllowedMimeTypesEnum;
+use GdImage;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -12,16 +14,13 @@ use RuntimeException;
  */
 class ImageProcessor implements MediaProcessorContract
 {
-    /** @var array<string, string> */
-    private const array DECODABLE = [
-        'image/jpeg' => 'jpg',
-        'image/png' => 'png',
-        'image/gif' => 'gif',
-    ];
-
     public function supports(Media $media): bool
     {
-        return array_key_exists($media->mime_type, self::DECODABLE) && function_exists('imagecreatefromstring');
+        return array_key_exists($media->mime_type, [
+            AllowedMimeTypesEnum::Jpeg->value => AllowedMimeTypesEnum::Jpeg->extension(),
+            AllowedMimeTypesEnum::Png->value => AllowedMimeTypesEnum::Png->extension(),
+            AllowedMimeTypesEnum::Gif->value => AllowedMimeTypesEnum::Gif->extension(),
+        ]) && function_exists('imagecreatefromstring');
     }
 
     /**
@@ -54,7 +53,7 @@ class ImageProcessor implements MediaProcessorContract
      *
      * @return array{path: string, mime_type: string, width: int, height: int}
      */
-    private function writeConversion(Media $media, \GdImage $source, int $width, int $height, string $name, int $maxSide): array
+    private function writeConversion(Media $media, GdImage $source, int $width, int $height, string $name, int $maxSide): array
     {
         $scale = min(1, $maxSide / max($width, $height));
         $targetWidth = max(1, (int) round($width * $scale));
@@ -67,9 +66,9 @@ class ImageProcessor implements MediaProcessorContract
         imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
 
         // GIF is re-encoded as PNG because GD writes only single-frame GIFs.
-        $isJpeg = $media->mime_type === 'image/jpeg';
-        $mimeType = $isJpeg ? 'image/jpeg' : 'image/png';
-        $extension = $isJpeg ? 'jpg' : 'png';
+        $isJpeg = $media->mime_type === AllowedMimeTypesEnum::Jpeg->value;
+        $mimeType = $isJpeg ? AllowedMimeTypesEnum::Jpeg->value : AllowedMimeTypesEnum::Png->value;
+        $extension = $isJpeg ? AllowedMimeTypesEnum::Jpeg->extension() : AllowedMimeTypesEnum::Png->extension();
 
         ob_start();
 

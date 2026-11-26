@@ -2,7 +2,7 @@
 
 namespace App\Modules\Media\Requests;
 
-use App\Modules\Media\Enums\MediaVisibility;
+use App\Modules\Media\Enums\MediaVisibilityEnum;
 use Crud\Requests\AppFormRequest;
 use Illuminate\Validation\Rule;
 
@@ -14,7 +14,7 @@ class MediaVisibilityRequest extends AppFormRequest
     public function rules(): array
     {
         return [
-            'visibility' => ['required', Rule::enum(MediaVisibility::class)],
+            'visibility' => ['required', Rule::enum(MediaVisibilityEnum::class)],
         ];
     }
 }

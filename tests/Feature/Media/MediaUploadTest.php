@@ -3,7 +3,7 @@
 use App\Models\User;
 use App\Modules\Auth\Database\Seeders\RolesAndPermissionsSeeder;
 use App\Modules\Auth\Models\Role;
-use App\Modules\Media\Enums\MediaVisibility;
+use App\Modules\Media\Enums\MediaVisibilityEnum;
 use App\Modules\Media\Models\Media;
 use App\Modules\Media\Repositories\Contracts\MediaRepositoryContract;
 use Illuminate\Http\UploadedFile;
@@ -131,11 +131,11 @@ test('changing visibility moves the file to the disk for the new visibility', fu
         ->postJson(route('media.files.visibility', $media), ['visibility' => 'public'])
         ->assertOk()
         ->assertJsonPath('data.visibility', 'public')
-        ->assertJsonPath('data.url', fn (string $url): bool => str_contains($url, $oldPath));
+        ->assertJsonPath('data.url', route('media.public', ['file' => $media->uuid]));
 
     $media->refresh();
 
-    expect($media->visibility)->toBe(MediaVisibility::Public)
+    expect($media->visibility)->toBe(MediaVisibilityEnum::Public)
         ->and($media->disk)->toBe('public');
     Storage::disk('public')->assertExists($oldPath);
     Storage::disk('local')->assertMissing($oldPath);
@@ -171,7 +171,7 @@ test('private files get a signed temporary URL and public files get a permanent 
 
     $this->actingAs($this->admin)->getJson(route('media.files.url', $public))
         ->assertOk()->assertJsonPath('temporary', false)
-        ->assertJsonPath('url', fn (string $url): bool => str_contains($url, 'media/q.jpg'));
+        ->assertJsonPath('url', route('media.public', ['file' => $public->uuid]));
 });
 
 test('the signed download link works without a session only while the signature is valid', function (): void {
@@ -197,3 +197,78 @@ test('a private file is not downloadable by a user without the index permission'
 
     $this->actingAs($outsider)->get(route('media.files.download', $media))->assertForbidden();
 });
+
+test('bmp and zip uploads are accepted and keep their extension', function (string $name, string $bytes, string $extension): void {
+    $file = UploadedFile::fake()->createWithContent($name, $bytes);
+
+    $this->actingAs($this->admin)->postJson(route('media.files.store'), [
+        'file' => $file,
+        'visibility' => 'private',
+    ])->assertCreated();
+
+    expect(Media::query()->firstOrFail()->file_name)->toEndWith('.'.$extension);
+})->with([
+    'bmp' => ['picture.bmp', "BM\x1e\x00\x00\x00\x00\x00\x00\x00\x1a\x00\x00\x00\x0c\x00\x00\x00\x01\x00\x01\x00\x01\x00\x18\x00\xff\xff\xff\x00", 'bmp'],
+    'zip' => ['archive.zip', "PK\x05\x06".str_repeat("\x00", 18), 'zip'],
+]);
+
+function uploadTestZipBytes(array $entries): string
+{
+    $path = tempnam(sys_get_temp_dir(), 'zip');
+    $archive = new ZipArchive;
+    $archive->open($path, ZipArchive::OVERWRITE);
+
+    foreach ($entries as $name => $content) {
+        $archive->addFromString($name, $content);
+    }
+
+    $archive->close();
+    $bytes = (string) file_get_contents($path);
+    unlink($path);
+
+    return $bytes;
+}
+
+test('executable or script uploads are rejected even when they are disguised', function (string $name, string $bytes): void {
+    $this->actingAs($this->admin)->postJson(route('media.files.store'), [
+        'file' => UploadedFile::fake()->createWithContent($name, $bytes),
+        'visibility' => 'private',
+    ])->assertUnprocessable()->assertJsonValidationErrors('file');
+
+    expect(Media::query()->count())->toBe(0);
+})->with([
+    'exe with text content' => ['bad.exe', 'plain text'],
+    'php inside a jpg name' => ['shell.php.jpg', 'plain text'],
+    'upper case php' => ['shell.PHP', 'plain text'],
+    'php with trailing dot' => ['shell.php.', 'plain text'],
+    'php with trailing space' => ['shell.php ', 'plain text'],
+    'php5 variant' => ['legacy.php5', 'plain text'],
+    'htaccess' => ['.htaccess', 'Options +ExecCGI'],
+    'html page' => ['page.html', '<html></html>'],
+    'php tag appended to a png' => ['photo.png', UploadedFile::fake()->image('a.png', 20, 20)->getContent().'<?php echo 1; ?>'],
+    'php tag appended to a jpg' => ['photo.jpg', UploadedFile::fake()->image('a.jpg', 20, 20)->getContent().'<?php echo 1; ?>'],
+    'php tag in a txt file' => ['notes.txt', 'hello <?php echo 1; ?>'],
+    'php tag split across a chunk boundary' => ['split.txt', str_repeat('a', 65534).'<?php echo 1;'],
+    'short echo tag in a txt file' => ['notes.txt', 'hello <?= 1 ?>'],
+    'shebang script' => ['run.txt', "#!/bin/sh\necho 1"],
+    'dos header named txt' => ['mz.txt', 'MZ'.str_repeat("\x00", 20)],
+    'elf header named txt' => ['elf.txt', "\x7FELF".str_repeat("\x00", 20)],
+    'zip with an exe entry' => ['archive.zip', uploadTestZipBytes(['readme.txt' => 'hi', 'evil.exe' => 'MZ'])],
+    'zip with a php entry' => ['archive.zip', uploadTestZipBytes(['x.php' => '<?php echo 1;'])],
+    'docx' => ['report.docx', uploadTestZipBytes(['[Content_Types].xml' => '<Types/>', 'word/document.xml' => '<w:document/>'])],
+    'xlsx' => ['sheet.xlsx', uploadTestZipBytes(['[Content_Types].xml' => '<Types/>', 'xl/workbook.xml' => '<workbook/>'])],
+    'legacy doc' => ['old.doc', "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1".str_repeat("\x00", 512)],
+    'legacy xls' => ['old.xls', "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1".str_repeat("\x00", 512)],
+]);
+
+test('ordinary documents and images are still accepted', function (string $name, string $bytes): void {
+    $this->actingAs($this->admin)->postJson(route('media.files.store'), [
+        'file' => UploadedFile::fake()->createWithContent($name, $bytes),
+        'visibility' => 'private',
+    ])->assertCreated();
+})->with([
+    'plain text' => ['notes.txt', 'hello world'],
+    'clean zip' => ['archive.zip', uploadTestZipBytes(['readme.txt' => 'hi', 'docs/guide.md' => '# guide'])],
+    'jpg' => ['photo.jpg', UploadedFile::fake()->image('photo.jpg', 20, 20)->getContent()],
+    'png' => ['photo.png', UploadedFile::fake()->image('photo.png', 20, 20)->getContent()],
+]);

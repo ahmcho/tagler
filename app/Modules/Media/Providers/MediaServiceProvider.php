@@ -5,6 +5,7 @@ namespace App\Modules\Media\Providers;
 use App\Modules\Auth\Support\AbilityRegistry;
 use App\Modules\Auth\Support\PermissionRegistry;
 use App\Modules\Media\Models\Media;
+use App\Modules\Media\Models\MediaFolder;
 use App\Modules\Media\Policies\MediaFolderPolicy;
 use App\Modules\Media\Policies\MediaPolicy;
 use App\Modules\Media\Repositories\Contracts\MediaFolderRepositoryContract;

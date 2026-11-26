@@ -2,7 +2,7 @@
 
 namespace App\Modules\Media\Enums;
 
-enum MediaVisibility: string
+enum MediaVisibilityEnum: string
 {
     case Public = 'public';
     case Private = 'private';

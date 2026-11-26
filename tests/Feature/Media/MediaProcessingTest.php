@@ -2,7 +2,7 @@
 
 use App\Models\User;
 use App\Modules\Auth\Database\Seeders\RolesAndPermissionsSeeder;
-use App\Modules\Media\Enums\MediaProcessingStatus;
+use App\Modules\Media\Enums\MediaProcessingStatusEnum;
 use App\Modules\Media\Jobs\ProcessMedia;
 use App\Modules\Media\Models\Media;
 use App\Modules\Media\Repositories\Contracts\MediaRepositoryContract;
@@ -28,7 +28,7 @@ test('an uploaded image becomes ready with dimensions and resized copies, and th
 
     $media = Media::query()->firstOrFail()->refresh();
 
-    expect($media->processing_status)->toBe(MediaProcessingStatus::Ready)
+    expect($media->processing_status)->toBe(MediaProcessingStatusEnum::Ready)
         ->and($media->metadata['width'])->toBe(800)
         ->and($media->metadata['height'])->toBe(400)
         ->and($media->metadata['conversions'])->toHaveKeys(['thumbnail', 'medium', 'large'])
@@ -47,7 +47,7 @@ test('a file with no specific processor becomes ready without metadata', functio
 
     $media = Media::query()->firstOrFail()->refresh();
 
-    expect($media->processing_status)->toBe(MediaProcessingStatus::Ready)
+    expect($media->processing_status)->toBe(MediaProcessingStatusEnum::Ready)
         ->and($media->metadata)->toBe([]);
 });
 
@@ -90,7 +90,7 @@ test('an unknown conversion name is not found', function (): void {
 test('processing a ready file again changes nothing', function (): void {
     $media = Media::factory()->create([
         'metadata' => ['width' => 10, 'height' => 10],
-        'processing_status' => MediaProcessingStatus::Ready,
+        'processing_status' => MediaProcessingStatusEnum::Ready,
     ]);
 
     (new ProcessMedia($media->id))->handle(app(MediaRepositoryContract::class), app(MediaProcessingService::class));
@@ -107,7 +107,7 @@ test('a file that cannot be decoded fails, keeps the original, and records a gen
         'path' => 'media/broken.jpg',
         'mime_type' => 'image/jpeg',
         'extension' => 'jpg',
-        'processing_status' => MediaProcessingStatus::Pending,
+        'processing_status' => MediaProcessingStatusEnum::Pending,
     ]);
 
     $job = new ProcessMedia($media->id);
@@ -119,17 +119,17 @@ test('a file that cannot be decoded fails, keeps the original, and records a gen
 
     $media->refresh();
 
-    expect($media->processing_status)->toBe(MediaProcessingStatus::Failed)
+    expect($media->processing_status)->toBe(MediaProcessingStatusEnum::Failed)
         ->and($media->processing_error)->toBe('Processing failed. Try again later.')
         ->and($media->processing_error)->not->toContain('media/broken.jpg');
     Storage::disk('local')->assertExists('media/broken.jpg');
 });
 
 test('a trashed file is skipped by the processing job', function (): void {
-    $media = Media::factory()->create(['processing_status' => MediaProcessingStatus::Pending]);
+    $media = Media::factory()->create(['processing_status' => MediaProcessingStatusEnum::Pending]);
     $media->delete();
 
     (new ProcessMedia($media->id))->handle(app(MediaRepositoryContract::class), app(MediaProcessingService::class));
 
-    expect($media->fresh()->processing_status)->toBe(MediaProcessingStatus::Pending);
+    expect($media->fresh()->processing_status)->toBe(MediaProcessingStatusEnum::Pending);
 });

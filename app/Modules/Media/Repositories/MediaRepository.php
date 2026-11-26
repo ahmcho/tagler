@@ -2,7 +2,7 @@
 
 namespace App\Modules\Media\Repositories;
 
-use App\Modules\Media\Enums\MediaCategory;
+use App\Modules\Media\Enums\MediaCategoryEnum;
 use App\Modules\Media\Models\Media;
 use App\Modules\Media\Repositories\Contracts\MediaRepositoryContract;
 use Crud\Repositories\EloquentRepository;
@@ -38,7 +38,7 @@ class MediaRepository extends EloquentRepository implements MediaRepositoryContr
             ->select(['mime_type', DB::raw('COUNT(*) as files'), DB::raw('COALESCE(SUM(size), 0) as bytes')])
             ->groupBy('mime_type')
             ->get()
-            ->groupBy(fn (object $row): string => MediaCategory::fromMimeType($row->mime_type)->value)
+            ->groupBy(fn (object $row): string => MediaCategoryEnum::fromMimeType($row->mime_type)->value)
             ->map(fn (Collection $rows, string $category): object => (object) [
                 'category' => $category,
                 'files' => (int) $rows->sum('files'),
@@ -113,7 +113,7 @@ class MediaRepository extends EloquentRepository implements MediaRepositoryContr
     private function applyCategoryFilter(Builder $query, array $filters): void
     {
         if (($filters['category'] ?? null) !== null) {
-            $this->applyCategory($query, MediaCategory::from($filters['category']));
+            $this->applyCategory($query, MediaCategoryEnum::from($filters['category']));
         }
     }
 
@@ -189,18 +189,18 @@ class MediaRepository extends EloquentRepository implements MediaRepositoryContr
         }
     }
 
-    private function applyCategory(Builder $query, MediaCategory $category): void
+    private function applyCategory(Builder $query, MediaCategoryEnum $category): void
     {
         match ($category) {
-            MediaCategory::Pictures => $query->where('mime_type', 'like', 'image/%'),
-            MediaCategory::Videos => $query->where('mime_type', 'like', 'video/%'),
-            MediaCategory::Audio => $query->where('mime_type', 'like', 'audio/%'),
-            MediaCategory::Documents => $query->whereIn('mime_type', MediaCategory::documentMimeTypes()),
-            MediaCategory::Other => $query
+            MediaCategoryEnum::Pictures => $query->where('mime_type', 'like', 'image/%'),
+            MediaCategoryEnum::Videos => $query->where('mime_type', 'like', 'video/%'),
+            MediaCategoryEnum::Audio => $query->where('mime_type', 'like', 'audio/%'),
+            MediaCategoryEnum::Documents => $query->whereIn('mime_type', MediaCategoryEnum::documentMimeTypes()),
+            MediaCategoryEnum::Other => $query
                 ->where('mime_type', 'not like', 'image/%')
                 ->where('mime_type', 'not like', 'video/%')
                 ->where('mime_type', 'not like', 'audio/%')
-                ->whereNotIn('mime_type', MediaCategory::documentMimeTypes()),
+                ->whereNotIn('mime_type', MediaCategoryEnum::documentMimeTypes()),
         };
     }
 

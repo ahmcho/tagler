@@ -2,9 +2,10 @@
 
 namespace App\Modules\Media\Database\Factories;
 
-use App\Modules\Media\Enums\MediaProcessingStatus;
-use App\Modules\Media\Enums\MediaVisibility;
+use App\Modules\Media\Enums\MediaProcessingStatusEnum;
+use App\Modules\Media\Enums\MediaVisibilityEnum;
 use App\Modules\Media\Models\Media;
+use App\Modules\Settings\Enums\AllowedMimeTypesEnum;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -25,31 +26,31 @@ class MediaFactory extends Factory
         return [
             'uuid' => $uuid,
             'disk' => 'local',
-            'path' => 'media/'.$uuid.'.jpg',
-            'original_name' => fake()->word().'.jpg',
-            'file_name' => $uuid.'.jpg',
-            'mime_type' => 'image/jpeg',
-            'extension' => 'jpg',
+            'path' => 'media/'.$uuid.'.'.AllowedMimeTypesEnum::Jpeg->extension(),
+            'original_name' => fake()->word().'.'.AllowedMimeTypesEnum::Jpeg->extension(),
+            'file_name' => $uuid.'.'.AllowedMimeTypesEnum::Jpeg->extension(),
+            'mime_type' => AllowedMimeTypesEnum::Jpeg->value,
+            'extension' => AllowedMimeTypesEnum::Jpeg->extension(),
             'size' => fake()->numberBetween(1_000, 5_000_000),
             'checksum' => hash('sha256', $uuid),
             'metadata' => [],
-            'visibility' => MediaVisibility::Private,
-            'processing_status' => MediaProcessingStatus::Ready,
+            'visibility' => MediaVisibilityEnum::Private,
+            'processing_status' => MediaProcessingStatusEnum::Ready,
             'uploaded_by' => null,
         ];
     }
 
     public function public(): static
     {
-        return $this->state(fn (): array => ['visibility' => MediaVisibility::Public]);
+        return $this->state(fn (): array => ['visibility' => MediaVisibilityEnum::Public]);
     }
 
     public function pdf(): static
     {
         return $this->state(fn (): array => [
-            'mime_type' => 'application/pdf',
-            'extension' => 'pdf',
-            'original_name' => fake()->word().'.pdf',
+            'mime_type' => AllowedMimeTypesEnum::Pdf->value,
+            'extension' => AllowedMimeTypesEnum::Pdf->extension(),
+            'original_name' => fake()->word().'.'.AllowedMimeTypesEnum::Pdf->extension(),
         ]);
     }
 }
