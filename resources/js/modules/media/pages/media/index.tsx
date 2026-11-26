@@ -19,12 +19,8 @@ import { libraryPageUrl } from '@/modules/media/api/media-api';
 import { MediaDetailsSheet } from '@/modules/media/components/media-details-sheet';
 import { MediaFileTable } from '@/modules/media/components/media-file-table';
 import { MediaFolderGrid } from '@/modules/media/components/media-folder-grid';
-import { MediaStatTiles } from '@/modules/media/components/media-stat-tiles';
 import { MediaStorageDonut } from '@/modules/media/components/media-storage-donut';
-import {
-    MediaSearchField,
-    MediaUploadAction,
-} from '@/modules/media/components/media-toolbar';
+import { MediaUploadAction } from '@/modules/media/components/media-toolbar';
 import { useMediaLibrary } from '@/modules/media/hooks/use-media-library';
 import { childFolders } from '@/modules/media/lib/format';
 import type { MediaUploadLimits } from '@/modules/media/types';
@@ -48,7 +44,6 @@ export default function MediaIndex({ upload }: Props) {
         perPage: RECENT_LIMIT,
     });
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [search, setSearch] = useState('');
 
     const { files, folders, usage } = library;
     const selected = files?.data.find((file) => file.id === selectedId) ?? null;
@@ -64,9 +59,17 @@ export default function MediaIndex({ upload }: Props) {
     return (
         <ResourcePage title="File Manager">
             <div className="space-y-6">
-                <h1 className="text-xl font-semibold text-title-50">
-                    File Manager
-                </h1>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h1 className="text-xl font-semibold text-title-50">
+                        File Manager
+                    </h1>
+                    <MediaUploadAction
+                        limits={upload}
+                        folder="root"
+                        canUpload={ability('media.store')}
+                        onUploaded={() => library.refresh()}
+                    />
+                </div>
 
                 {library.error && (
                     <Alert status="error" className="max-w-none">
@@ -76,36 +79,6 @@ export default function MediaIndex({ upload }: Props) {
                         </AlertContent>
                     </Alert>
                 )}
-
-                <Card className="gap-0 rounded-2xl border border-base-200 bg-card-background-50">
-                    <CardHeader className="flex flex-col gap-3 border-b border-base-100/60 p-6 sm:flex-row sm:items-center sm:justify-between">
-                        <CardTitle className="text-lg md:text-lg">
-                            All Media
-                        </CardTitle>
-                        <div className="flex flex-wrap items-center gap-3">
-                            <MediaSearchField
-                                search={search}
-                                onSearch={setSearch}
-                                onSubmit={() =>
-                                    window.open(
-                                        libraryPageUrl({ search }),
-                                        '_blank',
-                                        'noopener,noreferrer',
-                                    )
-                                }
-                            />
-                            <MediaUploadAction
-                                limits={upload}
-                                folder="root"
-                                canUpload={ability('media.store')}
-                                onUploaded={() => library.refresh()}
-                            />
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-6">
-                        <MediaStatTiles usage={usage} />
-                    </CardContent>
-                </Card>
 
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                     <Card className="gap-0 rounded-2xl border border-base-200 bg-card-background-50 xl:col-span-2">
