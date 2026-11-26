@@ -38,7 +38,11 @@ import {
 } from '@lexical/markdown';
 
 /** Markdown transformers with task lists, which the default list leaves out. Checklist goes first, so it wins over the plain list. */
-const MARKDOWN_TRANSFORMERS = [CHECK_LIST, ...TRANSFORMERS];
+const MARKDOWN_TRANSFORMERS = [
+    CHECK_LIST,
+    INLINE_IMAGE_MARKDOWN,
+    ...TRANSFORMERS,
+];
 import { OverflowExtension } from '@lexical/overflow';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -51,12 +55,13 @@ import { $setBlocksType } from '@lexical/selection';
 import { INSERT_TABLE_COMMAND, TableExtension } from '@lexical/table';
 import { TailwindExtension } from '@lexical/tailwind';
 import { $isRootTextContentEmpty } from '@lexical/text';
-import { $findMatchingParent } from '@lexical/utils';
+import { $findMatchingParent, $insertNodeToNearestRoot } from '@lexical/utils';
 import {
     $createParagraphNode,
     $getSelection,
     $isRangeSelection,
     $getRoot,
+    $isDecoratorNode,
     $isElementNode,
     CAN_REDO_COMMAND,
     CAN_UNDO_COMMAND,
@@ -73,6 +78,8 @@ import {
     Code,
     Download,
     Grid3x3,
+    ImagePlus,
+    Images,
     Italic,
     Link2,
     Link2Off,
@@ -89,7 +96,39 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import type { MutableRefObject } from 'react';
 import { Button } from '@/components/tailgrids/core/button';
 import { Input } from '@/components/tailgrids/core/input';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/tailgrids/core/tooltip';
+import { mediaApi } from '@/modules/media/api/media-api';
+import { MediaLibraryPicker } from '@/modules/media/picker';
 import { cn } from '@/utils/cn';
+import {
+    $createInlineImageNode,
+    INLINE_IMAGE_MARKDOWN,
+    InlineImageNode,
+} from './inline-image-node';
+import type { InlineImagePosition } from './inline-image-node';
+
+type ImageDraft = {
+    src: string;
+    altText: string;
+    caption: string;
+    position: InlineImagePosition;
+};
+
+/** Link target choices. `true` opens the link in a new tab. */
+const LINK_TARGETS: [boolean, string][] = [
+    [false, 'Same tab'],
+    [true, 'New tab'],
+];
+
+const IMAGE_POSITIONS: [InlineImagePosition, string][] = [
+    ['left', 'Left'],
+    ['right', 'Right'],
+    ['full', 'Full width'],
+];
 
 /** Link targets the editor accepts. The server applies the same rules again on save. */
 function isAllowedLink(url: string): boolean {
@@ -134,7 +173,9 @@ function loadMarkdown(markdown: string): void {
 function loadHtml(editor: LexicalEditor, html: string): void {
     const dom = new DOMParser().parseFromString(html, 'text/html');
     const nodes = $generateNodesFromDOM(editor, dom).map((node) =>
-        $isElementNode(node) ? node : $createParagraphNode().append(node),
+        $isElementNode(node) || $isDecoratorNode(node)
+            ? node
+            : $createParagraphNode().append(node),
     );
     const root = $getRoot();
 
@@ -166,6 +207,7 @@ function buildEditorExtension(
     return defineExtension({
         name: '[page-body]',
         namespace: 'PageBody',
+        nodes: [InlineImageNode],
         $initialEditorState: (editor: LexicalEditor) =>
             initialFormat === 'markdown'
                 ? loadMarkdown(initialValue)
@@ -231,7 +273,12 @@ function Toolbar() {
     const [canRedo, setCanRedo] = useState(false);
     const [linkOpen, setLinkOpen] = useState(false);
     const [linkUrl, setLinkUrl] = useState('');
+    const [linkNewTab, setLinkNewTab] = useState(true);
     const [linkError, setLinkError] = useState<string | null>(null);
+    const [mediaOpen, setMediaOpen] = useState(false);
+    const [mediaError, setMediaError] = useState<string | null>(null);
+    const [imageOpen, setImageOpen] = useState(false);
+    const [imageDraft, setImageDraft] = useState<ImageDraft | null>(null);
 
     useEffect(
         () =>
@@ -306,22 +353,26 @@ function Toolbar() {
         });
 
     const openLinkForm = () => {
-        setLinkUrl(
-            editor.getEditorState().read(() => {
-                const selection = $getSelection();
+        const existing = editor.getEditorState().read(() => {
+            const selection = $getSelection();
 
-                if (!$isRangeSelection(selection)) {
-                    return '';
-                }
+            if (!$isRangeSelection(selection)) {
+                return null;
+            }
 
-                const link = $findMatchingParent(
-                    selection.anchor.getNode(),
-                    $isLinkNode,
-                );
+            const link = $findMatchingParent(
+                selection.anchor.getNode(),
+                $isLinkNode,
+            );
 
-                return $isLinkNode(link) ? link.getURL() : '';
-            }),
-        );
+            return $isLinkNode(link)
+                ? { url: link.getURL(), target: link.getTarget() }
+                : null;
+        });
+
+        setLinkUrl(existing?.url ?? '');
+        // A new link opens in a new tab. An existing link keeps its own target.
+        setLinkNewTab(existing ? existing.target === '_blank' : true);
         setLinkError(null);
         setLinkOpen(true);
     };
@@ -339,9 +390,67 @@ function Toolbar() {
         editor.dispatchCommand(TOGGLE_LINK_COMMAND, {
             url: linkUrl.trim(),
             rel: 'noopener noreferrer',
-            target: '_blank',
+            target: linkNewTab ? '_blank' : undefined,
         });
         setLinkOpen(false);
+    };
+
+    /** Inserts the public URL of the chosen file as plain text. The editor adds no link tag. */
+    const insertMediaUrl = async (uuid: string) => {
+        try {
+            const { url } = await mediaApi.fileUrl(uuid);
+
+            editor.update(() => {
+                let selection = $getSelection();
+
+                if (!$isRangeSelection(selection)) {
+                    selection = $getRoot().selectEnd();
+                }
+
+                selection.insertText(url);
+            });
+            setMediaError(null);
+        } catch {
+            setMediaError('The file link could not be loaded.');
+        }
+
+        editor.focus();
+    };
+
+    /** Reads the picked image. Private files get signed links that expire, so they are refused. */
+    const prepareImage = async (uuid: string) => {
+        try {
+            const [{ url, temporary }, file] = await Promise.all([
+                mediaApi.fileUrl(uuid),
+                mediaApi.showFile(uuid),
+            ]);
+
+            if (temporary) {
+                setMediaError(
+                    'Only public files can be inserted as images. Set the file to public in the media library.',
+                );
+
+                return;
+            }
+
+            setMediaError(null);
+            setImageDraft({
+                src: url,
+                altText: file.alt_text ?? '',
+                caption: '',
+                position: 'left',
+            });
+        } catch {
+            setMediaError('The image could not be loaded.');
+        }
+    };
+
+    const insertImage = (draft: ImageDraft) => {
+        editor.update(() => {
+            $insertNodeToNearestRoot($createInlineImageNode(draft));
+        });
+        setImageDraft(null);
+        editor.focus();
     };
 
     const tool = (
@@ -351,19 +460,25 @@ function Toolbar() {
         icon: ReactNode,
         disabled = false,
     ) => (
-        <Button
-            key={label}
-            type="button"
-            variant={isActive ? 'primary' : 'ghost'}
-            appearance={isActive ? 'fill' : 'outline'}
-            iconOnly
-            aria-label={label}
-            aria-pressed={isActive}
-            disabled={disabled}
-            onPress={onPress}
-        >
-            {icon}
-        </Button>
+        <Tooltip key={label} placement="top">
+            <TooltipTrigger asChild>
+                <span className="inline-flex">
+                    <Button
+                        type="button"
+                        variant={isActive ? 'primary' : 'ghost'}
+                        appearance={isActive ? 'fill' : 'outline'}
+                        iconOnly
+                        aria-label={label}
+                        aria-pressed={isActive}
+                        disabled={disabled}
+                        onPress={onPress}
+                    >
+                        {icon}
+                    </Button>
+                </span>
+            </TooltipTrigger>
+            <TooltipContent className="z-[60] block">{label}</TooltipContent>
+        </Tooltip>
     );
 
     return (
@@ -443,6 +558,18 @@ function Toolbar() {
                     <Grid3x3 className="size-4" />,
                 )}
                 {tool(
+                    'Choose media file from library and paste the link',
+                    false,
+                    () => setMediaOpen(true),
+                    <Images className="size-4" />,
+                )}
+                {tool(
+                    'Insert image file from library',
+                    false,
+                    () => setImageOpen(true),
+                    <ImagePlus className="size-4" />,
+                )}
+                {tool(
                     'Link',
                     active.link || linkOpen,
                     openLinkForm,
@@ -483,6 +610,117 @@ function Toolbar() {
                 )}
             </div>
 
+            {mediaError && (
+                <p role="alert" className="px-2 pt-2 text-sm text-error-500">
+                    {mediaError}
+                </p>
+            )}
+
+            <MediaLibraryPicker
+                open={mediaOpen}
+                onClose={() => setMediaOpen(false)}
+                onSelect={(uuid) => void insertMediaUrl(uuid)}
+            />
+
+            <MediaLibraryPicker
+                open={imageOpen}
+                accept="image/*"
+                onClose={() => setImageOpen(false)}
+                onSelect={(uuid) => {
+                    setImageOpen(false);
+                    void prepareImage(uuid);
+                }}
+            />
+
+            {imageDraft && (
+                <div
+                    onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                            insertImage(imageDraft);
+                        }
+                    }}
+                    className="flex flex-wrap items-end gap-2 border-b border-base-300 p-2"
+                >
+                    <div className="min-w-48 flex-1">
+                        <Input
+                            aria-label="Image alt text"
+                            placeholder="Alt text"
+                            value={imageDraft.altText}
+                            onChange={(event) =>
+                                setImageDraft((draft) =>
+                                    draft
+                                        ? {
+                                              ...draft,
+                                              altText: event.target.value,
+                                          }
+                                        : draft,
+                                )
+                            }
+                            className="w-full"
+                        />
+                    </div>
+                    <div className="min-w-48 flex-1">
+                        <Input
+                            aria-label="Image caption"
+                            placeholder="Caption (optional)"
+                            value={imageDraft.caption}
+                            onChange={(event) =>
+                                setImageDraft((draft) =>
+                                    draft
+                                        ? {
+                                              ...draft,
+                                              caption: event.target.value,
+                                          }
+                                        : draft,
+                                )
+                            }
+                            className="w-full"
+                        />
+                    </div>
+                    {IMAGE_POSITIONS.map(([value, label]) => (
+                        <Button
+                            key={value}
+                            type="button"
+                            variant={
+                                imageDraft.position === value
+                                    ? 'primary'
+                                    : 'ghost'
+                            }
+                            appearance={
+                                imageDraft.position === value
+                                    ? 'fill'
+                                    : 'outline'
+                            }
+                            aria-pressed={imageDraft.position === value}
+                            onPress={() =>
+                                setImageDraft((draft) =>
+                                    draft
+                                        ? { ...draft, position: value }
+                                        : draft,
+                                )
+                            }
+                        >
+                            {label}
+                        </Button>
+                    ))}
+                    <Button
+                        type="button"
+                        variant="primary"
+                        onPress={() => insertImage(imageDraft)}
+                    >
+                        Insert image
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onPress={() => setImageDraft(null)}
+                    >
+                        Cancel
+                    </Button>
+                </div>
+            )}
+
             {linkOpen && (
                 <div
                     onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
@@ -508,6 +746,22 @@ function Toolbar() {
                             </p>
                         )}
                     </div>
+                    {LINK_TARGETS.map(([isNewTab, label]) => (
+                        <Button
+                            key={label}
+                            type="button"
+                            variant={
+                                linkNewTab === isNewTab ? 'primary' : 'ghost'
+                            }
+                            appearance={
+                                linkNewTab === isNewTab ? 'fill' : 'outline'
+                            }
+                            aria-pressed={linkNewTab === isNewTab}
+                            onPress={() => setLinkNewTab(isNewTab)}
+                        >
+                            {label}
+                        </Button>
+                    ))}
                     <Button type="button" variant="primary" onPress={applyLink}>
                         Apply link
                     </Button>
