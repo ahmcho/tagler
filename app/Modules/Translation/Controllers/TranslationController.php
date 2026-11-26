@@ -4,24 +4,25 @@ namespace App\Modules\Translation\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Translation\Enums\TranslationGroupEnum;
+use App\Modules\Translation\Models\Translation;
 use App\Modules\Translation\Requests\ResetTranslationsRequest;
 use App\Modules\Translation\Requests\TranslationRequest;
 use App\Modules\Translation\Resources\TranslationResource;
 use App\Modules\Translation\Services\Contracts\TranslationServiceContract;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TranslationController extends Controller
 {
-    public function __construct(private readonly TranslationServiceContract $service) {}
+    public function __construct(private readonly TranslationServiceContract $service)
+    {
+        $this->authorizeResource(Translation::class, 'translation');
+    }
 
     public function index(TranslationRequest $request): Response
     {
-        Gate::authorize('translations.index');
-
         $paginator = $this->service->getAllPaginated(
             requestParser: $request->parser(),
             columns: ['id', 'lang', 'group', 'table', 'key', 'value', 'updated_at'],
@@ -44,8 +45,6 @@ class TranslationController extends Controller
 
     public function edit(string $group, string $key): Response
     {
-        Gate::authorize('translations.update');
-
         return Inertia::render('translations/edit', [
             'model' => ['id' => $group.'.'.$key],
             'group' => $group,
@@ -57,8 +56,6 @@ class TranslationController extends Controller
 
     public function update(TranslationRequest $request, string $group, string $key): RedirectResponse
     {
-        Gate::authorize('translations.update');
-
         $payload = $request->validated();
 
         $this->service->saveTranslationsForKey(group: $group, key: $key, valuesByLocale: $payload['translations']);
@@ -68,10 +65,30 @@ class TranslationController extends Controller
 
     public function reset(ResetTranslationsRequest $request): RedirectResponse
     {
-        Gate::authorize('translations.update');
-
         $counts = $this->service->resetToFileDefaults(ids: $request->validated('ids'));
 
         return Redirect::back()->with('status', __('translations.translation.reset_result', $counts));
+    }
+
+    /**
+     * The `can` middleware checks `reset` against the `update` policy method.
+     *
+     * @return array<string, string>
+     */
+    protected function resourceAbilityMap(): array
+    {
+        return array_merge(parent::resourceAbilityMap(), [
+            'reset' => 'update',
+        ]);
+    }
+
+    /**
+     * Translation routes use a group and key, not a model, so the policy gets the class name.
+     *
+     * @return list<string>
+     */
+    protected function resourceMethodsWithoutModels(): array
+    {
+        return array_merge(parent::resourceMethodsWithoutModels(), ['edit', 'update', 'reset']);
     }
 }

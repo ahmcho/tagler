@@ -6,6 +6,7 @@ use App\Modules\Auth\Support\AbilityRegistry;
 use App\Modules\Translation\Console\Commands\SyncFileTranslationsToDatabase;
 use App\Modules\Translation\Models\Translation;
 use App\Modules\Translation\Observers\TranslationObserver;
+use App\Modules\Translation\Policies\TranslationPolicy;
 use App\Modules\Translation\Repositories\Contracts\TranslationRepositoryContract;
 use App\Modules\Translation\Repositories\TranslationRepository;
 use App\Modules\Translation\Services\Contracts\TranslationServiceContract;
@@ -14,6 +15,7 @@ use App\Modules\Translation\Support\CachingTranslationLoader;
 use App\Modules\Translation\Support\DatabaseTranslationLoader;
 use Crud\Providers\ModuleServiceProvider;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Gate;
 
 class TranslationServiceProvider extends ModuleServiceProvider
 {
@@ -45,6 +47,7 @@ class TranslationServiceProvider extends ModuleServiceProvider
         ));
 
         Translation::observe(TranslationObserver::class);
+        Gate::policy(Translation::class, TranslationPolicy::class);
 
         $this->commands([SyncFileTranslationsToDatabase::class]);
 
