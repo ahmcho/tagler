@@ -15,6 +15,7 @@ The UI comes from TailGrids (https://tailgrids.com). Its source is copied into `
 - `button.tsx`: the defaults are `variant="primary"`, `appearance="fill"`, `size="sm"`. Outline text buttons use `py-[9px]`, so the border keeps the same height as fill buttons.
 - `input.tsx`: `ref` is added to the props type.
 - `sidebar.tsx`: `useIsMobile` uses `useSyncExternalStore`.
+- `tabs.tsx`: `TabTrigger` is `type="button"`, so a tab click inside a `<form>` does not submit it. `TabRoot` takes optional `value` and `onValueChange` to control the active tab. Settings uses them to ask before it leaves a tab with unsaved changes.
 - `tooltip.tsx`: the `react-hooks/refs` lint rule is disabled for the file.
 - `toast.tsx`: `AvatarToast` and its avatar import are removed, because `avatar.tsx` is not installed. `Toast` uses the project `Button`.
 - `overlay.tsx`, `separator.tsx`: the empty `interface ... extends` declarations are `type` aliases, to pass lint.

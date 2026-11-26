@@ -1,9 +1,12 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Settings } from 'lucide-react';
+import { Settings, TriangleAlert } from 'lucide-react';
 import { DynamicIcon } from 'lucide-react/dynamic';
 import type { IconName } from 'lucide-react/dynamic';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 import SettingController from '@/actions/App/Modules/Settings/Controllers/SettingController';
+import { ResourceConfirmDialog } from '@/components/resource/resource-confirm-dialog';
+import type { PendingConfirm } from '@/components/resource/resource-confirm-dialog';
 import { Button } from '@/components/tailgrids/core/button';
 import {
     Card,
@@ -51,8 +54,37 @@ export default function Application({ tabs, fields }: Props) {
         ),
     });
 
+    const [activeTab, setActiveTab] = useState(tabs[0]?.value ?? '');
+    const [pendingTab, setPendingTab] = useState<PendingConfirm | null>(null);
+
     const updateSetting = (key: string, value: SettingValue) => {
         form.setData('settings', { ...form.data.settings, [key]: value });
+    };
+
+    const requestTab = (nextTab: string) => {
+        if (nextTab === activeTab) {
+            return;
+        }
+
+        if (!form.isDirty) {
+            setActiveTab(nextTab);
+
+            return;
+        }
+
+        setPendingTab({
+            title: 'Unsaved changes',
+            description:
+                'You have unsaved changes on the settings. Save them, or discard them before you switch tabs.',
+            confirmLabel: 'Discard changes',
+            icon: <TriangleAlert />,
+            tone: 'danger',
+            run: ({ onFinish }) => {
+                form.reset();
+                setActiveTab(nextTab);
+                onFinish();
+            },
+        });
     };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -62,17 +94,15 @@ export default function Application({ tabs, fields }: Props) {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                form.setData(
-                    'settings',
-                    Object.fromEntries(
-                        Object.entries(form.data.settings).map(
-                            ([key, value]) => [
-                                key,
-                                value instanceof File ? null : value,
-                            ],
-                        ),
-                    ),
+                const savedSettings = Object.fromEntries(
+                    Object.entries(form.data.settings).map(([key, value]) => [
+                        key,
+                        value instanceof File ? null : value,
+                    ]),
                 );
+
+                form.setData('settings', savedSettings);
+                form.setDefaults('settings', savedSettings);
             },
         });
     };
@@ -91,6 +121,8 @@ export default function Application({ tabs, fields }: Props) {
                 <Card className="md:min-w-0">
                     <TabRoot
                         defaultValue={tabs[0]?.value ?? ''}
+                        value={activeTab}
+                        onValueChange={requestTab}
                         className="border-0 p-0"
                     >
                         <TabList className="bg-transparent!">
@@ -160,6 +192,14 @@ export default function Application({ tabs, fields }: Props) {
                     </CardFooter>
                 </Card>
             </form>
+
+            <ResourceConfirmDialog
+                pending={pendingTab}
+                onClose={() => setPendingTab(null)}
+                onConfirm={() =>
+                    pendingTab?.run({ onFinish: () => setPendingTab(null) })
+                }
+            />
         </>
     );
 }
