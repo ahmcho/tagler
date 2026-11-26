@@ -54,7 +54,6 @@ import { $createQuoteNode, $isQuoteNode } from '@lexical/rich-text';
 import { $setBlocksType } from '@lexical/selection';
 import { INSERT_TABLE_COMMAND, TableExtension } from '@lexical/table';
 import { TailwindExtension } from '@lexical/tailwind';
-import { $isRootTextContentEmpty } from '@lexical/text';
 import { $findMatchingParent, $insertNodeToNearestRoot } from '@lexical/utils';
 import {
     $createParagraphNode,
@@ -104,6 +103,7 @@ import {
 import { mediaApi } from '@/modules/media/api/media-api';
 import { MediaLibraryPicker } from '@/modules/media/picker';
 import { cn } from '@/utils/cn';
+import { $isBodyEmpty } from './editor-body';
 import {
     $createInlineImageNode,
     INLINE_IMAGE_MARKDOWN,
@@ -189,7 +189,7 @@ function loadHtml(editor: LexicalEditor, html: string): void {
  */
 function readHtml(editor: LexicalEditor): string {
     return editor.getEditorState().read(() =>
-        $isRootTextContentEmpty(false, true)
+        $isBodyEmpty()
             ? ''
             : $generateHtmlFromNodes(editor)
                   .replace(/ dir="[^"]*"/g, '')
