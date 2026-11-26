@@ -3,7 +3,7 @@
 namespace App\Modules\Pages\Services;
 
 use App\Modules\Pages\Concerns\HasPageTranslations;
-use App\Modules\Pages\Enums\PageStatus;
+use App\Modules\Pages\Enums\PageStatusEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Models\PageRevision;
 use App\Modules\Pages\Models\PageTranslation;
@@ -123,7 +123,7 @@ class PageService extends BaseCrudService implements PageServiceContract
 
     public function publish(Page $page): Page
     {
-        $page->status = PageStatus::Published;
+        $page->status = PageStatusEnum::Published;
 
         if ($page->publish_date === null) {
             $now = Carbon::now();
@@ -209,7 +209,7 @@ class PageService extends BaseCrudService implements PageServiceContract
      */
     public function unpublish(Page $page): Page
     {
-        $page->status = PageStatus::Draft;
+        $page->status = PageStatusEnum::Draft;
         $page->save();
 
         return $page;

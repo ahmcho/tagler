@@ -1,6 +1,6 @@
 <?php
 
-use App\Modules\Pages\Enums\PageStatus;
+use App\Modules\Pages\Enums\PageStatusEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Models\PageTranslation;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -36,10 +36,10 @@ test('the root path is a 404 when no homepage is assigned', function (): void {
 test('an unpublished homepage gives a 404 and returns when published again', function (): void {
     $home = PageFixtures::create(['is_homepage' => true], ['slug' => 'home', 'path' => '/']);
 
-    $home->update(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null]);
+    $home->update(['status' => PageStatusEnum::Draft, 'publish_date' => null, 'publish_time' => null]);
     $this->get('/')->assertNotFound();
 
-    $home->update(['status' => PageStatus::Published, 'publish_date' => now()->subDay()->toDateString(), 'publish_time' => now()->subDay()->format('H:i')]);
+    $home->update(['status' => PageStatusEnum::Published, 'publish_date' => now()->subDay()->toDateString(), 'publish_time' => now()->subDay()->format('H:i')]);
     $this->get('/')->assertOk();
 });
 
@@ -53,7 +53,7 @@ test('a nested page is served at its full path in its locale', function (): void
 });
 
 test('a nested page is a 404 while its parent is not live', function (): void {
-    $parent = PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'services', 'path' => 'services']);
+    $parent = PageFixtures::create(['status' => PageStatusEnum::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'services', 'path' => 'services']);
     PageFixtures::create(['parent_id' => $parent->id], ['slug' => 'web', 'path' => 'services/web']);
 
     $this->get("/{$this->locale}/services/web")->assertNotFound();
@@ -85,13 +85,13 @@ test('a child is served in a locale only when its parent is live in that locale'
 });
 
 test('a draft page is never served', function (): void {
-    PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'secret', 'path' => 'secret']);
+    PageFixtures::create(['status' => PageStatusEnum::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'secret', 'path' => 'secret']);
 
     $this->get("/{$this->locale}/secret")->assertNotFound();
 });
 
 test('a scheduled page is a 404 until its date and served after it', function (): void {
-    $page = PageFixtures::create(['status' => PageStatus::Scheduled, 'publish_date' => now()->addDay()->toDateString(), 'publish_time' => now()->addDay()->format('H:i')], ['slug' => 'launch', 'path' => 'launch']);
+    $page = PageFixtures::create(['status' => PageStatusEnum::Scheduled, 'publish_date' => now()->addDay()->toDateString(), 'publish_time' => now()->addDay()->format('H:i')], ['slug' => 'launch', 'path' => 'launch']);
 
     $this->get("/{$this->locale}/launch")->assertNotFound();
 
@@ -151,7 +151,7 @@ test('the public page exposes only the visible fields of its translation', funct
 
 test('an unpublished page is not visible through its locale URL even when the translation exists', function (): void {
     $page = PageFixtures::create([], ['locale' => $this->locale, 'slug' => 'about', 'path' => 'about']);
-    Page::query()->whereKey($page->id)->update(['status' => PageStatus::Draft]);
+    Page::query()->whereKey($page->id)->update(['status' => PageStatusEnum::Draft]);
 
     $this->get("/{$this->locale}/about")->assertNotFound();
 });

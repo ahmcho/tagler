@@ -3,9 +3,9 @@
 namespace App\Modules\Pages\Requests;
 
 use App\Modules\Pages\Concerns\FiltersQuery;
-use App\Modules\Pages\Enums\BodyFormat;
+use App\Modules\Pages\Enums\BodyFormatEnum;
 use App\Modules\Pages\Enums\LocaleEnum;
-use App\Modules\Pages\Enums\PageStatus;
+use App\Modules\Pages\Enums\PageStatusEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use Crud\Requests\AppFormRequest;
@@ -36,17 +36,17 @@ class PageRequest extends AppFormRequest
     {
         return match ($this->scenario) {
             self::SCENARIO_INSERT, self::SCENARIO_UPDATE => [
-                'status' => ['required', Rule::enum(PageStatus::class)],
+                'status' => ['required', Rule::enum(PageStatusEnum::class)],
                 'parent_id' => ['nullable', 'integer', 'exists:pages,id'],
-                'publish_date' => ['nullable', 'date_format:Y-m-d', Rule::requiredIf(fn (): bool => $this->enum('status', PageStatus::class) === PageStatus::Scheduled)],
-                'publish_time' => ['nullable', 'date_format:H:i', Rule::requiredIf(fn (): bool => $this->enum('status', PageStatus::class) === PageStatus::Scheduled)],
+                'publish_date' => ['nullable', 'date_format:Y-m-d', Rule::requiredIf(fn (): bool => $this->enum('status', PageStatusEnum::class) === PageStatusEnum::Scheduled)],
+                'publish_time' => ['nullable', 'date_format:H:i', Rule::requiredIf(fn (): bool => $this->enum('status', PageStatusEnum::class) === PageStatusEnum::Scheduled)],
                 'layout' => ['nullable', 'string', 'max:64'],
                 'theme_layout' => ['sometimes', 'boolean'],
                 'translations' => ['required', 'array'],
                 ...$this->translationRules(),
             ],
             default => [
-                'status' => ['nullable', Rule::enum(PageStatus::class)],
+                'status' => ['nullable', Rule::enum(PageStatusEnum::class)],
                 'live' => ['nullable', Rule::in(['1', '0'])],
                 'homepage' => ['nullable', Rule::in(['1', '0'])],
                 'publish_date' => ['nullable', 'string', function (string $attribute, mixed $value, \Closure $fail): void {
@@ -104,7 +104,7 @@ class PageRequest extends AppFormRequest
             $rules["translations.{$locale}.seo_title"] = ['nullable', 'string', 'max:255'];
             $rules["translations.{$locale}.seo_description"] = ['nullable', 'string', 'max:500'];
             $rules["translations.{$locale}.body"] = ['nullable', 'string'];
-            $rules["translations.{$locale}.body_format"] = ['nullable', Rule::enum(BodyFormat::class)];
+            $rules["translations.{$locale}.body_format"] = ['nullable', Rule::enum(BodyFormatEnum::class)];
         }
 
         return $rules;
@@ -138,7 +138,7 @@ class PageRequest extends AppFormRequest
      */
     private function checkScheduledInFuture(Validator $validator): void
     {
-        if ($this->enum('status', PageStatus::class) !== PageStatus::Scheduled) {
+        if ($this->enum('status', PageStatusEnum::class) !== PageStatusEnum::Scheduled) {
             return;
         }
 

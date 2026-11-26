@@ -1,6 +1,6 @@
 <?php
 
-use App\Modules\Pages\Enums\PageStatus;
+use App\Modules\Pages\Enums\PageStatusEnum;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PageFixtures;
 
@@ -22,7 +22,7 @@ test('the children list holds only live children in the current locale, sorted b
     PageFixtures::create(['parent_id' => $parent->id], ['locale' => $this->locale, 'slug' => 'web', 'path' => 'services/web', 'title' => 'Web']);
     PageFixtures::create(['parent_id' => $parent->id], ['locale' => $this->locale, 'slug' => 'design', 'path' => 'services/design', 'title' => 'Design']);
     PageFixtures::create(
-        ['parent_id' => $parent->id, 'status' => PageStatus::Draft],
+        ['parent_id' => $parent->id, 'status' => PageStatusEnum::Draft],
         ['locale' => $this->locale, 'slug' => 'hidden', 'path' => 'services/hidden', 'title' => 'Hidden'],
     );
 

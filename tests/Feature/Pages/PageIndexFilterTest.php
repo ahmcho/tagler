@@ -3,7 +3,7 @@
 use App\Models\User;
 use App\Modules\Auth\Database\Seeders\RolesAndPermissionsSeeder;
 use App\Modules\Pages\Enums\LocaleEnum;
-use App\Modules\Pages\Enums\PageStatus;
+use App\Modules\Pages\Enums\PageStatusEnum;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PageFixtures;
 
@@ -20,8 +20,8 @@ function filterAdmin(): User
 }
 
 test('the status filter keeps only pages with that status', function (): void {
-    PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'draft-page', 'path' => 'draft-page', 'title' => 'Draft page']);
-    PageFixtures::create(['status' => PageStatus::Published], ['slug' => 'live-page', 'path' => 'live-page', 'title' => 'Live page']);
+    PageFixtures::create(['status' => PageStatusEnum::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'draft-page', 'path' => 'draft-page', 'title' => 'Draft page']);
+    PageFixtures::create(['status' => PageStatusEnum::Published], ['slug' => 'live-page', 'path' => 'live-page', 'title' => 'Live page']);
 
     $this->actingAs(filterAdmin())
         ->get(route('pages.index', ['status' => 'draft']))
@@ -32,9 +32,9 @@ test('the status filter keeps only pages with that status', function (): void {
 });
 
 test('the live filter matches pages that visitors can see, and its opposite matches the rest', function (): void {
-    PageFixtures::create(['status' => PageStatus::Published], ['slug' => 'live-page', 'path' => 'live-page', 'title' => 'Live page']);
-    PageFixtures::create(['status' => PageStatus::Scheduled, 'publish_date' => now()->addDay()->toDateString(), 'publish_time' => '09:00'], ['slug' => 'later', 'path' => 'later', 'title' => 'Later']);
-    PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'draft-page', 'path' => 'draft-page', 'title' => 'Draft page']);
+    PageFixtures::create(['status' => PageStatusEnum::Published], ['slug' => 'live-page', 'path' => 'live-page', 'title' => 'Live page']);
+    PageFixtures::create(['status' => PageStatusEnum::Scheduled, 'publish_date' => now()->addDay()->toDateString(), 'publish_time' => '09:00'], ['slug' => 'later', 'path' => 'later', 'title' => 'Later']);
+    PageFixtures::create(['status' => PageStatusEnum::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'draft-page', 'path' => 'draft-page', 'title' => 'Draft page']);
 
     $this->actingAs(filterAdmin())
         ->get(route('pages.index', ['live' => '1']))
@@ -50,8 +50,8 @@ test('the live filter matches pages that visitors can see, and its opposite matc
 });
 
 test('an empty live value does not filter the list', function (): void {
-    PageFixtures::create(['status' => PageStatus::Published], ['slug' => 'live-page', 'path' => 'live-page', 'title' => 'Live page']);
-    PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'draft-page', 'path' => 'draft-page', 'title' => 'Draft page']);
+    PageFixtures::create(['status' => PageStatusEnum::Published], ['slug' => 'live-page', 'path' => 'live-page', 'title' => 'Live page']);
+    PageFixtures::create(['status' => PageStatusEnum::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'draft-page', 'path' => 'draft-page', 'title' => 'Draft page']);
 
     $this->actingAs(filterAdmin())
         ->get(route('pages.index', ['live' => '']))
@@ -59,8 +59,8 @@ test('an empty live value does not filter the list', function (): void {
 });
 
 test('the homepage filter separates the homepage from the other pages', function (): void {
-    PageFixtures::create(['status' => PageStatus::Published, 'is_homepage' => true], ['slug' => 'home', 'path' => '/', 'title' => 'Home']);
-    PageFixtures::create(['status' => PageStatus::Published], ['slug' => 'about', 'path' => 'about', 'title' => 'About']);
+    PageFixtures::create(['status' => PageStatusEnum::Published, 'is_homepage' => true], ['slug' => 'home', 'path' => '/', 'title' => 'Home']);
+    PageFixtures::create(['status' => PageStatusEnum::Published], ['slug' => 'about', 'path' => 'about', 'title' => 'About']);
 
     $this->actingAs(filterAdmin())
         ->get(route('pages.index', ['homepage' => '1']))
@@ -78,7 +78,7 @@ test('the homepage filter separates the homepage from the other pages', function
 test('the publish date range is inclusive and drops pages without a publish date', function (): void {
     PageFixtures::create(['publish_date' => '2026-01-01'], ['slug' => 'early', 'path' => 'early', 'title' => 'Early']);
     PageFixtures::create(['publish_date' => '2026-01-10'], ['slug' => 'middle', 'path' => 'middle', 'title' => 'Middle']);
-    PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'undated', 'path' => 'undated', 'title' => 'Undated']);
+    PageFixtures::create(['status' => PageStatusEnum::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'undated', 'path' => 'undated', 'title' => 'Undated']);
 
     $this->actingAs(filterAdmin())
         ->get(route('pages.index', ['publish_date' => '2026-01-05,2026-01-10']))

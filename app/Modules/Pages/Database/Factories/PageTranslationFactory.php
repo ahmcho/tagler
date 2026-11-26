@@ -2,7 +2,7 @@
 
 namespace App\Modules\Pages\Database\Factories;
 
-use App\Modules\Pages\Enums\BodyFormat;
+use App\Modules\Pages\Enums\BodyFormatEnum;
 use App\Modules\Pages\Models\PageTranslation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -27,7 +27,7 @@ class PageTranslationFactory extends Factory
             'seo_title' => null,
             'seo_description' => null,
             'body' => '<p>'.fake()->paragraph().'</p>',
-            'body_format' => BodyFormat::Html,
+            'body_format' => BodyFormatEnum::Html,
         ];
     }
 }

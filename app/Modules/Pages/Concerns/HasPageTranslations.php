@@ -2,7 +2,7 @@
 
 namespace App\Modules\Pages\Concerns;
 
-use App\Modules\Pages\Enums\BodyFormat;
+use App\Modules\Pages\Enums\BodyFormatEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Support\PageHtmlSanitizer;
 use App\Modules\Pages\Support\PagePath;
@@ -115,22 +115,22 @@ trait HasPageTranslations
      *
      * @param  array<string, mixed>  $translation
      */
-    private function bodyFormatOf(array $translation): BodyFormat
+    private function bodyFormatOf(array $translation): BodyFormatEnum
     {
-        return BodyFormat::tryFrom((string) ($translation['body_format'] ?? '')) ?? BodyFormat::Html;
+        return BodyFormatEnum::tryFrom((string) ($translation['body_format'] ?? '')) ?? BodyFormatEnum::Html;
     }
 
     /**
      * HTML from the editor is sanitised before it is stored, so the public page renders it as is.
      * Markdown is stored as written and rendered when the page is shown.
      */
-    private function cleanBody(?string $body, BodyFormat $format): ?string
+    private function cleanBody(?string $body, BodyFormatEnum $format): ?string
     {
         if (! filled($body)) {
             return null;
         }
 
-        return $format === BodyFormat::Markdown
+        return $format === BodyFormatEnum::Markdown
             ? $body
             : app(PageHtmlSanitizer::class)->sanitize($body);
     }

@@ -4,7 +4,7 @@ namespace App\Modules\Pages\Models;
 
 use App\Modules\Auth\Concerns\HasActivityLogs;
 use App\Modules\Pages\Database\Factories\PageFactory;
-use App\Modules\Pages\Enums\PageStatus;
+use App\Modules\Pages\Enums\PageStatusEnum;
 use App\Modules\Settings\Concerns\HasLocalDates;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -24,7 +24,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int|null $parent_id
- * @property PageStatus $status
+ * @property PageStatusEnum $status
  * @property bool $is_homepage
  * @property string|null $layout
  * @property bool $theme_layout Whether the active theme's template shows this page
@@ -48,7 +48,7 @@ class Page extends Model
     protected function casts(): array
     {
         return [
-            'status' => PageStatus::class,
+            'status' => PageStatusEnum::class,
             'is_homepage' => 'boolean',
             'theme_layout' => 'boolean',
             'publish_date' => 'date',
@@ -86,7 +86,7 @@ class Page extends Model
      */
     public function isLive(CarbonInterface $now): bool
     {
-        if (! in_array($this->status, [PageStatus::Published, PageStatus::Scheduled], true)) {
+        if (! in_array($this->status, [PageStatusEnum::Published, PageStatusEnum::Scheduled], true)) {
             return false;
         }
 

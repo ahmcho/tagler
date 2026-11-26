@@ -18,3 +18,23 @@ test('safe formatting is kept and links get a safe rel', function (): void {
         ->and($clean)->toContain('href="https://example.com"')
         ->and($clean)->toContain('rel="noopener noreferrer"');
 });
+
+test('an image figure keeps its source, alt text, caption and position', function (): void {
+    $html = '<figure data-position="left"><img src="https://cdn.example.com/a.jpg" alt="Harbour" onerror="x()"><figcaption>Old harbour</figcaption></figure>';
+
+    $clean = (new PageHtmlSanitizer)->sanitize($html);
+
+    expect($clean)->toContain('<figure data-position="left">')
+        ->and($clean)->toContain('src="https://cdn.example.com/a.jpg"')
+        ->and($clean)->toContain('alt="Harbour"')
+        ->and($clean)->toContain('<figcaption>Old harbour</figcaption>')
+        ->and($clean)->not->toContain('onerror');
+});
+
+test('a link keeps its target and still gets a safe rel', function (): void {
+    $clean = (new PageHtmlSanitizer)->sanitize('<a href="https://example.com" target="_blank">new</a><a href="/contact" target="_self">same</a>');
+
+    expect($clean)->toContain('target="_blank"')
+        ->and($clean)->toContain('target="_self"')
+        ->and($clean)->toContain('rel="noopener noreferrer"');
+});

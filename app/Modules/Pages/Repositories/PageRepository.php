@@ -3,7 +3,7 @@
 namespace App\Modules\Pages\Repositories;
 
 use App\Modules\Pages\Enums\LocaleEnum;
-use App\Modules\Pages\Enums\PageStatus;
+use App\Modules\Pages\Enums\PageStatusEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Repositories\Contracts\PageRepositoryContract;
 use App\Modules\Pages\Support\PagePath;
@@ -50,7 +50,7 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
             ->whereHas('translations', fn (Builder $translations) => $translations
                 ->where('locale', $locale)
                 ->whereIn('path', $paths))
-            ->whereIn('status', [PageStatus::Published, PageStatus::Scheduled])
+            ->whereIn('status', [PageStatusEnum::Published, PageStatusEnum::Scheduled])
             ->tap(fn (Builder $query) => $this->whereLiveAt($query, $now))
             ->count();
     }
@@ -70,7 +70,7 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
     {
         return $this->model->newQuery()
             ->where('parent_id', $page->id)
-            ->whereIn('status', [PageStatus::Published, PageStatus::Scheduled])
+            ->whereIn('status', [PageStatusEnum::Published, PageStatusEnum::Scheduled])
             ->whereHas('translations', fn (Builder $translations) => $translations->where('locale', $locale))
             ->tap(fn (Builder $query) => $this->whereLiveAt($query, $now))
             ->with('translations')
@@ -83,7 +83,7 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
     public function dueScheduledPages(CarbonInterface $now): Collection
     {
         return $this->model->newQuery()
-            ->where('status', PageStatus::Scheduled)
+            ->where('status', PageStatusEnum::Scheduled)
             ->tap(fn (Builder $query) => $this->whereLiveAt($query, $now))
             ->get();
     }
@@ -141,7 +141,7 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
      */
     private function whereStatusIsLive(Builder $query, CarbonInterface $now): void
     {
-        $query->whereIn('pages.status', [PageStatus::Published, PageStatus::Scheduled])
+        $query->whereIn('pages.status', [PageStatusEnum::Published, PageStatusEnum::Scheduled])
             ->tap(fn (Builder $live) => $this->whereLiveAt($live, $now));
     }
 

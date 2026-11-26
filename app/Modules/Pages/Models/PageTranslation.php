@@ -4,7 +4,7 @@ namespace App\Modules\Pages\Models;
 
 use App\Modules\Auth\Concerns\HasActivityLogs;
 use App\Modules\Pages\Database\Factories\PageTranslationFactory;
-use App\Modules\Pages\Enums\BodyFormat;
+use App\Modules\Pages\Enums\BodyFormatEnum;
 use App\Modules\Pages\Support\MarkdownRenderer;
 use App\Modules\Settings\Concerns\HasLocalDates;
 use Carbon\CarbonInterface;
@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $seo_title
  * @property string|null $seo_description
  * @property string|null $body The body as written: sanitised HTML, or Markdown
- * @property BodyFormat $body_format
+ * @property BodyFormatEnum $body_format
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
  */
@@ -50,7 +50,7 @@ class PageTranslation extends Model
             return null;
         }
 
-        return $this->body_format === BodyFormat::Markdown
+        return $this->body_format === BodyFormatEnum::Markdown
             ? app(MarkdownRenderer::class)->render($this->body)
             : $this->body;
     }
@@ -58,7 +58,7 @@ class PageTranslation extends Model
     protected function casts(): array
     {
         return [
-            'body_format' => BodyFormat::class,
+            'body_format' => BodyFormatEnum::class,
         ];
     }
 

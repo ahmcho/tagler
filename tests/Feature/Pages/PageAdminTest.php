@@ -3,8 +3,8 @@
 use App\Models\User;
 use App\Modules\Auth\Database\Seeders\RolesAndPermissionsSeeder;
 use App\Modules\Auth\Models\Role;
-use App\Modules\Pages\Enums\BodyFormat;
-use App\Modules\Pages\Enums\PageStatus;
+use App\Modules\Pages\Enums\BodyFormatEnum;
+use App\Modules\Pages\Enums\PageStatusEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Models\PageTranslation;
 use Illuminate\Database\QueryException;
@@ -69,7 +69,7 @@ test('an admin creates a top-level page with a translation in the default locale
 });
 
 test('a child page path combines its parent path and its slug in the same locale', function (): void {
-    $parent = PageFixtures::create(['status' => PageStatus::Published], ['slug' => 'services', 'path' => 'services']);
+    $parent = PageFixtures::create(['status' => PageStatusEnum::Published], ['slug' => 'services', 'path' => 'services']);
 
     $this->actingAs(pageAdmin())
         ->post(route('pages.store'), pagePayload(['parent_id' => $parent->id], [
@@ -269,7 +269,7 @@ test('a page with children cannot be deleted and the error reaches the list page
 });
 
 test('a draft page cannot become the homepage', function (): void {
-    $page = PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'about', 'path' => 'about']);
+    $page = PageFixtures::create(['status' => PageStatusEnum::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'about', 'path' => 'about']);
 
     $this->actingAs(pageAdmin())
         ->post(route('pages.homepage', $page))
@@ -302,28 +302,28 @@ test('unpublishing the homepage keeps the homepage flag', function (): void {
 
     $this->actingAs(pageAdmin())->post(route('pages.unpublish', $page))->assertSessionHasNoErrors();
 
-    expect($page->refresh()->status)->toBe(PageStatus::Draft)
+    expect($page->refresh()->status)->toBe(PageStatusEnum::Draft)
         ->and($page->is_homepage)->toBeTrue();
 });
 
 test('publishing sets the publish date when none was set', function (): void {
-    $page = PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'news', 'path' => 'news']);
+    $page = PageFixtures::create(['status' => PageStatusEnum::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'news', 'path' => 'news']);
 
     $this->actingAs(pageAdmin())->post(route('pages.publish', $page))->assertSessionHasNoErrors();
 
-    expect($page->refresh()->status)->toBe(PageStatus::Published)
+    expect($page->refresh()->status)->toBe(PageStatusEnum::Published)
         ->and($page->publish_date)->not->toBeNull()
         ->and($page->publish_time)->not->toBeNull();
 });
 
 test('a user who cannot publish is forbidden from publishing', function (): void {
-    $page = PageFixtures::create(['status' => PageStatus::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'news', 'path' => 'news']);
+    $page = PageFixtures::create(['status' => PageStatusEnum::Draft, 'publish_date' => null, 'publish_time' => null], ['slug' => 'news', 'path' => 'news']);
 
     $this->actingAs(pageViewer())
         ->post(route('pages.publish', $page))
         ->assertForbidden();
 
-    expect($page->refresh()->status)->toBe(PageStatus::Draft);
+    expect($page->refresh()->status)->toBe(PageStatusEnum::Draft);
 });
 
 test('a user who cannot assign the homepage is forbidden from doing so', function (): void {
@@ -392,7 +392,7 @@ test('a markdown body is stored as written, with its format', function (): void 
     $translation = PageTranslation::query()->where('slug', 'md-body')->first();
 
     expect($translation?->body)->toBe(trim($markdown))
-        ->and($translation?->body_format)->toBe(BodyFormat::Markdown);
+        ->and($translation?->body_format)->toBe(BodyFormatEnum::Markdown);
 });
 
 test('the body is sanitised before it is stored', function (): void {
