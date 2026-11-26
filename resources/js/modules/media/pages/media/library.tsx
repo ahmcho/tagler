@@ -1,6 +1,6 @@
 import { FolderPlus, Images } from 'lucide-react';
 import type { ComponentProps } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ResourcePage } from '@/components/resource/resource-page';
 import {
     Alert,
@@ -256,7 +256,20 @@ export default function MediaLibrary({ upload }: Props) {
     );
     const [folderError, setFolderError] = useState<string | null>(null);
 
-    const { query, files, folders } = library;
+    const { query, files, folders, update } = library;
+    const [searchInput, setSearchInput] = useState(query.search);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            const search = searchInput.trim();
+
+            if (search !== query.search) {
+                update({ search });
+            }
+        }, 300);
+
+        return () => window.clearTimeout(timer);
+    }, [searchInput, query.search, update]);
     const selected = files?.data.find((file) => file.id === selectedId) ?? null;
     const canManageFolders = ability('media.folders');
     const path = folderPath(folders, query.folder);
@@ -331,10 +344,8 @@ export default function MediaLibrary({ upload }: Props) {
                         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                             <div className="flex shrink-0 items-center gap-3">
                                 <MediaSearchField
-                                    search={query.search}
-                                    onSearch={(search) =>
-                                        library.update({ search })
-                                    }
+                                    search={searchInput}
+                                    onSearch={setSearchInput}
                                 />
                                 <MediaUploadAction
                                     limits={upload}
