@@ -114,8 +114,6 @@ return [
         ],
     ],
 
-
-
     'translations' => [
         'title' => 'Translations',
         'edit_title' => 'Edit translation',
@@ -261,6 +259,7 @@ return [
         'app_settings_heading' => 'Application Settings',
         'groups' => [
             'general' => ['title' => 'General', 'description' => 'The basic identity of the application.'],
+            'security' => ['title' => 'Security', 'description' => 'Access and link rules for the application.'],
             'appearance' => ['title' => 'Appearance', 'description' => 'How the application looks in the browser.'],
         ],
         'app_name' => 'Application Name',
@@ -283,6 +282,8 @@ return [
         'datetime_format' => 'DateTime Format',
         'datetime_format_description' => 'How dates with a time are shown in the application. Stored values do not change.',
         'time_format' => 'Time Format',
+        'media_link_ttl_minutes' => 'Private media link lifetime (minutes)',
+        'media_link_ttl_minutes_description' => 'How many minutes a signed link to a private media file stays valid. Used when the file has no lifetime of its own.',
         'time_format_description' => 'How times are chosen in the admin, for example when scheduling a page. Stored values do not change.',
         'typed_delete_confirmation_feature' => 'Type name to confirm deletion',
         'typed_delete_confirmation_feature_description' => 'Require the user to type the record name before a delete is confirmed.',
@@ -304,7 +305,6 @@ return [
         ],
         'model_name' => 'Setting',
     ],
-
 
     'auth' => [
         'two_factor_manual_setup_key' => 'Manual setup key',
@@ -353,14 +353,6 @@ return [
         'title' => 'Home',
         'users_card' => 'Users',
     ],
-
-
-
-
-
-
-
-
 
     'ui_kit' => [
         'title' => 'UI Kit',

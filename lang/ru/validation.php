@@ -195,6 +195,8 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'settings.media_link_ttl_minutes' => 'срок действия ссылки',
+    ],
 
 ];

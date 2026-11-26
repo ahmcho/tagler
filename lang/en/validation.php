@@ -197,6 +197,8 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'settings.media_link_ttl_minutes' => 'link lifetime',
+    ],
 
 ];

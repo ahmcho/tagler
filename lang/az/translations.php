@@ -114,8 +114,6 @@ return [
         ],
     ],
 
-
-
     'translations' => [
         'title' => 'Tərcümələr',
         'edit_title' => 'Tərcüməni redaktə et',
@@ -261,6 +259,7 @@ return [
         'app_settings_heading' => 'Tətbiq tənzimləmələri',
         'groups' => [
             'general' => ['title' => 'Ümumi', 'description' => 'Tətbiqin əsas məlumatları.'],
+            'security' => ['title' => 'Təhlükəsizlik', 'description' => 'Tətbiq üçün giriş və keçid qaydaları.'],
             'appearance' => ['title' => 'Görünüş', 'description' => 'Tətbiqin brauzerdə necə göründüyü.'],
         ],
         'app_name' => 'Tətbiq adı',
@@ -283,6 +282,8 @@ return [
         'datetime_format' => 'Tarix və saat formatı',
         'datetime_format_description' => 'Tətbiqdə vaxtı olan tarixlərin göstərilmə formatı. Saxlanılan dəyərlər dəyişmir.',
         'time_format' => 'Vaxt formatı',
+        'media_link_ttl_minutes' => 'Şəxsi media keçidinin müddəti (dəqiqə)',
+        'media_link_ttl_minutes_description' => 'Şəxsi media faylına imzalı keçidin neçə dəqiqə etibarlı qalacağı. Faylın öz müddəti olmadıqda istifadə olunur.',
         'time_format_description' => 'Admin paneldə vaxtın necə seçilməsi, məsələn səhifənin planlaşdırılmasında. Saxlanılan dəyərlər dəyişmir.',
         'typed_delete_confirmation_feature' => 'Silməni adın yazılması ilə təsdiqlə',
         'typed_delete_confirmation_feature_description' => 'Silməni təsdiqləmək üçün istifadəçidən qeydin adını yazmağı tələb edir.',
@@ -304,7 +305,6 @@ return [
         ],
         'model_name' => 'Tənzimləmə',
     ],
-
 
     'auth' => [
         'two_factor_manual_setup_key' => 'Əl ilə quraşdırma açarı',
@@ -353,14 +353,6 @@ return [
         'title' => 'Ana səhifə',
         'users_card' => 'İstifadəçilər',
     ],
-
-
-
-
-
-
-
-
 
     'ui_kit' => [
         'title' => 'UI Elementləri',
