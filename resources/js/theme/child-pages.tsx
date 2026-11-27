@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 
 import type { ThemeChild } from '@/theme/contract';
@@ -22,7 +23,7 @@ export function ChildPages({
             <ul>
                 {items.map((item) => (
                     <li key={item.url}>
-                        <a href={item.url}>{item.title}</a>
+                        <Link href={item.url}>{item.title}</Link>
                     </li>
                 ))}
             </ul>

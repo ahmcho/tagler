@@ -9,6 +9,9 @@ import { templates } from '../../../app/Modules/Theme/themes/default/resources/j
 // Head needs an Inertia app. The test renders its children in place, so the meta tags show in the markup.
 vi.mock('@inertiajs/react', () => ({
     Head: ({ children }: { children?: ReactNode }) => children ?? null,
+    Link: ({ href, children }: { href: string; children?: ReactNode }) => (
+        <a href={href}>{children}</a>
+    ),
 }));
 
 type Manifest = {
