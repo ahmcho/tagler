@@ -38,12 +38,11 @@ Set `ADMIN_EMAIL` in `.env` to give the Admin role to that user when the seeder 
 
 ## Authorization uses policies
 
-Each model has a policy in `app/Modules/Auth/Policies`. The provider registers it with `Gate::policy()`. Auto-discovery is not used.
+Policies are discovered, not registered. A model's policy is named `{Model}Policy` and lives in the `Policies` folder of the model's module, for example `App\Modules\Media\Policies\MediaPolicy` for `App\Modules\Media\Models\Media`. Do not call `Gate::policy()`. `App\Models\User` is the exception: its policy is `App\Policies\UserPolicy`, which Laravel also discovers. `tests/Feature/Auth/PolicyDiscoveryTest.php` checks each model.
 
 - A policy method checks the permission with `holdsPermission()` from `HasPermissionCheck`. That method uses `getAllPermissions()->contains('name', ...)`, so a missing permission returns false and does not throw.
 - A denial returns the translated `translations.common.forbidden` message (`HasTranslatedDenialResponse`).
 - Controllers call `Gate::authorize('viewAny', Role::class)` or `Gate::authorize('update', $role)`.
-- The Translation module still uses `Gate::define` per permission, as its provider defines it. Do not change that unless the user asks.
 - 
 
 ## The `can` prop

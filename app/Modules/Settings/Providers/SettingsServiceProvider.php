@@ -5,13 +5,11 @@ namespace App\Modules\Settings\Providers;
 use App\Modules\Auth\Support\AbilityRegistry;
 use App\Modules\Auth\Support\PermissionRegistry;
 use App\Modules\Settings\Models\Setting;
-use App\Modules\Settings\Policies\SettingPolicy;
 use App\Modules\Settings\Repositories\Contracts\SettingRepositoryContract;
 use App\Modules\Settings\Repositories\SettingRepository;
 use App\Modules\Settings\Services\Contracts\SettingServiceContract;
 use App\Modules\Settings\Services\SettingService;
 use Crud\Providers\ModuleServiceProvider;
-use Illuminate\Support\Facades\Gate;
 
 class SettingsServiceProvider extends ModuleServiceProvider
 {
@@ -32,8 +30,6 @@ class SettingsServiceProvider extends ModuleServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
-
-        Gate::policy(Setting::class, SettingPolicy::class);
 
         $this->registerPermissions();
         $this->registerAbilities();

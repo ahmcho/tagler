@@ -18,7 +18,7 @@ app/Modules/{Module}/
   routes/settings.php      module routes
 ```
 
-Create only the folders the module uses. Do not add new folders directly under `app/` or `database/` without approval. The Auth module also uses `Policies/`, `Support/` and `Requests/` for its authorization and access screens.
+Create only the folders the module uses. Do not add new folders directly under `app/` or `database/` without approval. `app/Policies/` was approved for the `User` policy, which is the only policy outside a module. The Auth module also uses `Policies/`, `Support/` and `Requests/` for its authorization and access screens.
 
 ## Module migrations
 
@@ -78,4 +78,4 @@ $this->mergeConfigFrom(__DIR__.'/../config/auth.php', 'modules.auth');
 
 ## Authorization
 
-Roles and permissions belong to the Auth module (see `.ai/rules/auth.md`). Each module declares its permissions in its provider's `boot()` through `PermissionRegistry`, and its class-level abilities through `AbilityRegistry`. A module with model access registers its policies with `Gate::policy()`. The Translation module keeps its `Gate::define` gates.
+Roles and permissions belong to the Auth module (see `.ai/rules/auth.md`). Each module declares its permissions in its provider's `boot()` through `PermissionRegistry`, and its class-level abilities through `AbilityRegistry`. A module with model access puts its policies in `Policies/`, named `{Model}Policy`. Laravel discovers them, so do not call `Gate::policy()`.

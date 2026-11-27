@@ -6,7 +6,6 @@ use App\Modules\Auth\Support\AbilityRegistry;
 use App\Modules\Auth\Support\PermissionRegistry;
 use App\Modules\Pages\Console\Commands\PublishScheduledPages;
 use App\Modules\Pages\Models\Page;
-use App\Modules\Pages\Policies\PagePolicy;
 use App\Modules\Pages\Repositories\Contracts\PageRepositoryContract;
 use App\Modules\Pages\Repositories\Contracts\PageRevisionRepositoryContract;
 use App\Modules\Pages\Repositories\Contracts\PageTranslationRepositoryContract;
@@ -17,7 +16,6 @@ use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use App\Modules\Pages\Services\PageService;
 use Crud\Providers\ModuleServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Support\Facades\Gate;
 use Inertia\Ssr\Gateway;
 use Inertia\Ssr\HttpGateway;
 
@@ -43,8 +41,6 @@ class PagesServiceProvider extends ModuleServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->mergeConfigFrom(__DIR__.'/../config/pages.php', 'modules.pages');
-
-        Gate::policy(Page::class, PagePolicy::class);
 
         $this->registerPermissions();
         $this->registerAbilities();

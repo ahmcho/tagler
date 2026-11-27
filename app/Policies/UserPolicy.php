@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Auth\Policies;
+namespace App\Policies;
 
 use App\Models\User;
 use App\Modules\Auth\Concerns\HasTranslatedDenialResponse;

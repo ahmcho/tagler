@@ -21,7 +21,7 @@ Before planning or editing, find every row whose globs match the file's path and
 | tests/** | .ai/rules/tests.md |
 | composer.json, composer.lock, package.json, package-lock.json | .ai/rules/dependencies.md |
 | docker/**, docker-compose.yml | .ai/rules/docker.md |
-| app/Modules/*/Policies/** | .ai/rules/policies.md |
+| app/Modules/*/Policies/**, app/Policies/** | .ai/rules/policies.md |
 | app/Modules/*/Repositories/** | .ai/rules/repositories.md |
 | app/Modules/*/Services/** | .ai/rules/services.md |
 | database/seeders/**, app/Modules/*/Database/Seeders/** | .ai/rules/seeders.md |

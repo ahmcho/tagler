@@ -5,9 +5,6 @@ namespace App\Modules\Media\Providers;
 use App\Modules\Auth\Support\AbilityRegistry;
 use App\Modules\Auth\Support\PermissionRegistry;
 use App\Modules\Media\Models\Media;
-use App\Modules\Media\Models\MediaFolder;
-use App\Modules\Media\Policies\MediaFolderPolicy;
-use App\Modules\Media\Policies\MediaPolicy;
 use App\Modules\Media\Repositories\Contracts\MediaFolderRepositoryContract;
 use App\Modules\Media\Repositories\Contracts\MediaRepositoryContract;
 use App\Modules\Media\Repositories\MediaFolderRepository;
@@ -18,7 +15,6 @@ use App\Modules\Media\Services\MediaFolderService;
 use App\Modules\Media\Services\MediaService;
 use Crud\Providers\ModuleServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 
 class MediaServiceProvider extends ModuleServiceProvider
@@ -43,9 +39,6 @@ class MediaServiceProvider extends ModuleServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->mergeConfigFrom(__DIR__.'/../config/media.php', 'modules.media');
-
-        Gate::policy(Media::class, MediaPolicy::class);
-        Gate::policy(MediaFolder::class, MediaFolderPolicy::class);
 
         RateLimiter::for('media-uploads', fn ($request): Limit => Limit::perMinute(60)
             ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));

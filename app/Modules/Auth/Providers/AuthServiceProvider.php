@@ -9,10 +9,6 @@ use App\Modules\Auth\Enums\ModelStatusEnum;
 use App\Modules\Auth\Models\ActivityLog;
 use App\Modules\Auth\Models\Permission;
 use App\Modules\Auth\Models\Role;
-use App\Modules\Auth\Policies\ActivityLogPolicy;
-use App\Modules\Auth\Policies\PermissionPolicy;
-use App\Modules\Auth\Policies\RolePolicy;
-use App\Modules\Auth\Policies\UserPolicy;
 use App\Modules\Auth\Repositories\ActivityLogRepository;
 use App\Modules\Auth\Repositories\Contracts\ActivityLogRepositoryContract;
 use App\Modules\Auth\Repositories\Contracts\PermissionRepositoryContract;
@@ -35,7 +31,6 @@ use App\Modules\Auth\Support\PermissionRegistry;
 use Crud\Providers\ModuleServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -89,7 +84,6 @@ class AuthServiceProvider extends ModuleServiceProvider
         $this->app->singleton(LogoutResponse::class, AdminLogoutResponse::class);
         $this->configureViews();
         $this->configureRateLimiting();
-        $this->registerPolicies();
         $this->registerPermissions();
         $this->registerAbilities();
     }
@@ -165,14 +159,6 @@ class AuthServiceProvider extends ModuleServiceProvider
 
             return Limit::perMinute(5)->by($throttleKey);
         });
-    }
-
-    private function registerPolicies(): void
-    {
-        Gate::policy(Role::class, RolePolicy::class);
-        Gate::policy(Permission::class, PermissionPolicy::class);
-        Gate::policy(User::class, UserPolicy::class);
-        Gate::policy(ActivityLog::class, ActivityLogPolicy::class);
     }
 
     /**

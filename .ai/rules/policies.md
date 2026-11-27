@@ -1,6 +1,7 @@
 ---
 paths:
   - 'app/Modules/*/Policies/**'
+  - 'app/Policies/**'
 ---
 
 # Policies
