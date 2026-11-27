@@ -1,5 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
-import { Settings, ShieldCheck } from 'lucide-react';
+import { Save, Settings, ShieldCheck } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import SecurityController from '@/actions/App/Modules/Auth/Controllers/SecurityController';
 import { PasswordField } from '@/components/password-field';
@@ -28,15 +29,20 @@ type Props = {
 function SectionHeader({
     title,
     description,
+    action,
 }: {
     title: string;
     description: string;
+    action?: ReactNode;
 }) {
     return (
         <CardHeader>
-            <div>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
+            <div className="flex items-start justify-between gap-4">
+                <div>
+                    <CardTitle>{title}</CardTitle>
+                    <CardDescription>{description}</CardDescription>
+                </div>
+                {action}
             </div>
         </CardHeader>
     );
@@ -71,6 +77,30 @@ export default function Security({
 
         prevTwoFactorEnabled.current = twoFactorEnabled;
     }, [twoFactorEnabled, clearTwoFactorAuthData]);
+
+    const twoFactorAction = hasSetupData ? (
+        <Button onPress={() => setShowSetupModal(true)}>
+            <ShieldCheck className="size-4" />
+            Continue setup
+        </Button>
+    ) : (
+        <Form
+            noValidate
+            {...enable.form()}
+            onSuccess={() => setShowSetupModal(true)}
+        >
+            {({ processing }) => (
+                <Button
+                    type="submit"
+                    disabled={processing}
+                    pending={processing}
+                >
+                    <ShieldCheck className="size-4" />
+                    Enable 2FA
+                </Button>
+            )}
+        </Form>
+    );
 
     return (
         <>
@@ -143,7 +173,8 @@ export default function Security({
                                         pending={processing}
                                         data-test="update-password-button"
                                     >
-                                        Save password
+                                        <Save className="size-4" />
+                                        Save
                                     </Button>
                                 </CardFooter>
                             </>
@@ -156,6 +187,9 @@ export default function Security({
                         <SectionHeader
                             title="Two-factor authentication"
                             description="Manage your two-factor authentication settings"
+                            action={
+                                twoFactorEnabled ? undefined : twoFactorAction
+                            }
                         />
                         <CardContent className="space-y-6 pb-5">
                             {twoFactorEnabled ? (
@@ -194,37 +228,6 @@ export default function Security({
                                         be retrieved from a TOTP-supported
                                         application on your phone.
                                     </p>
-
-                                    <div>
-                                        {hasSetupData ? (
-                                            <Button
-                                                onPress={() =>
-                                                    setShowSetupModal(true)
-                                                }
-                                            >
-                                                <ShieldCheck size={18} />
-                                                Continue setup
-                                            </Button>
-                                        ) : (
-                                            <Form
-                                                noValidate
-                                                {...enable.form()}
-                                                onSuccess={() =>
-                                                    setShowSetupModal(true)
-                                                }
-                                            >
-                                                {({ processing }) => (
-                                                    <Button
-                                                        type="submit"
-                                                        disabled={processing}
-                                                        pending={processing}
-                                                    >
-                                                        Enable 2FA
-                                                    </Button>
-                                                )}
-                                            </Form>
-                                        )}
-                                    </div>
                                 </>
                             )}
 
