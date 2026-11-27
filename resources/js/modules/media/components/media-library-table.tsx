@@ -24,7 +24,8 @@ import {
     TableRoot,
     TableRow,
 } from '@/components/tailgrids/core/table';
-import { formatBytes, formatDate } from '../lib/format';
+import { useDateFormat } from '@/hooks/use-date-format';
+import { formatBytes } from '../lib/format';
 import type { MediaFolder, MediaRecord } from '../types';
 import { CATEGORY_ICONS, CATEGORY_LABEL } from './media-file-table';
 import { MediaSkeletonBar } from './media-skeleton-bar';
@@ -82,6 +83,8 @@ export function MediaLibraryTable({
     onDeleteFolder,
     onOpenFile,
 }: Props) {
+    const { formatDate } = useDateFormat();
+
     return (
         <TableRoot fullBleed>
             <MediaLibraryTableHeader />

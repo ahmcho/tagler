@@ -38,8 +38,9 @@ import {
     TooltipTrigger,
 } from '@/components/tailgrids/core/tooltip';
 import { useClipboard } from '@/hooks/use-clipboard';
+import { useDateFormat } from '@/hooks/use-date-format';
 import { mediaApi, MediaApiError } from '../api/media-api';
-import { formatBytes, formatDate } from '../lib/format';
+import { formatBytes } from '../lib/format';
 import { parseLinkLifetime } from '../lib/link-lifetime';
 import type { MediaFolder, MediaRecord } from '../types';
 import { MediaLinkLifetime } from './media-link-lifetime';
@@ -292,6 +293,7 @@ function MediaDetailsBody({
     onRemoved,
     onStructureChanged,
 }: BodyProps) {
+    const { formatDate } = useDateFormat();
     const savedLifetime =
         file.link_ttl_minutes === null ? '' : String(file.link_ttl_minutes);
     const [pendingPublic, setPendingPublic] = useState(

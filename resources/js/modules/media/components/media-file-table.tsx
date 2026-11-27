@@ -16,7 +16,8 @@ import {
     TableRoot,
     TableRow,
 } from '@/components/tailgrids/core/table';
-import { formatBytes, formatDate, MEDIA_CATEGORIES } from '../lib/format';
+import { useDateFormat } from '@/hooks/use-date-format';
+import { formatBytes, MEDIA_CATEGORIES } from '../lib/format';
 import type { MediaCategory, MediaRecord } from '../types';
 import { MediaSkeletonBar } from './media-skeleton-bar';
 
@@ -41,6 +42,8 @@ type Props = {
  * File rows for the dashboard's Recent Files table. A row opens the details sheet.
  */
 export function MediaFileTable({ files, onOpen }: Props) {
+    const { formatDate } = useDateFormat();
+
     return (
         <TableRoot fullBleed>
             <MediaFileTableHeader />

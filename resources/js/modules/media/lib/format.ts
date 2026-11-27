@@ -25,18 +25,6 @@ export function formatBytes(bytes: number): string {
     return `${value.toFixed(value >= 10 ? 0 : 2)} ${units[unit]}`;
 }
 
-export function formatDate(iso: string | null): string {
-    if (!iso) {
-        return '';
-    }
-
-    return new Intl.DateTimeFormat('en', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    }).format(new Date(iso));
-}
-
 /**
  * Path from the top level to the given folder, in order. Unknown folders give an empty path.
  */
