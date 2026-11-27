@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     FileText,
     History,
@@ -21,7 +21,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarMenuSub,
-    SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from '@/components/tailgrids/core/sidebar';
 import { useAbility } from '@/hooks/use-ability';
@@ -33,6 +32,7 @@ import { index as permissionsIndex } from '@/routes/permissions';
 import { index as rolesIndex } from '@/routes/roles';
 import { index as themesIndex } from '@/routes/themes';
 import { index as usersIndex } from '@/routes/users';
+import { cn } from '@/utils/cn';
 
 type NavigationItem = {
     label: string;
@@ -126,6 +126,10 @@ const activeItemClassName =
 
 const activeSubItemClassName = `${activeItemClassName} data-[active=true]:[&>svg]:text-white`;
 
+/** Base classes of the TailGrids sub-button. The sub-item is an Inertia Link, so it does not use SidebarMenuSubButton. */
+const subButtonClassName =
+    'flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-text-100 ring-primary-500 outline-none hover:bg-background-soft-50 hover:text-text-100 focus-visible:ring-2 active:bg-background-soft-50 active:text-text-100 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-primary-50/10 data-[active=true]:text-primary-500 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-text-100/70';
+
 export function AppSidebar({ name, icon }: { name: string; icon: string }) {
     const pathname = usePage().url.split('?')[0];
     const ability = useAbility();
@@ -195,22 +199,24 @@ export function AppSidebar({ name, icon }: { name: string; icon: string }) {
                             <SidebarMenuSub className="group-data-[collapsible=icon]:ml-0 group-data-[collapsible=icon]:block group-data-[collapsible=icon]:border-l-0 group-data-[collapsible=icon]:px-0">
                                 {group.items.map((item) => (
                                     <SidebarMenuSubItem key={item.href}>
-                                        <SidebarMenuSubButton
+                                        <Link
                                             href={item.href}
-                                            isActive={isActive(item)}
+                                            prefetch="hover"
+                                            data-sidebar="menu-sub-button"
+                                            data-active={isActive(item)}
                                             aria-label={item.label}
                                             title={item.label}
-                                            className={`group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 ${activeSubItemClassName}`}
-                                            onClick={(event) => {
-                                                event.preventDefault();
-                                                router.visit(item.href);
-                                            }}
+                                            className={cn(
+                                                subButtonClassName,
+                                                'group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0',
+                                                activeSubItemClassName,
+                                            )}
                                         >
                                             {item.icon}
                                             <span className="group-data-[collapsible=icon]:hidden">
                                                 {item.label}
                                             </span>
-                                        </SidebarMenuSubButton>
+                                        </Link>
                                     </SidebarMenuSubItem>
                                 ))}
                             </SidebarMenuSub>

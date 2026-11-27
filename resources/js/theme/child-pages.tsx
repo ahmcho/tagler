@@ -23,7 +23,9 @@ export function ChildPages({
             <ul>
                 {items.map((item) => (
                     <li key={item.url}>
-                        <Link href={item.url}>{item.title}</Link>
+                        <Link href={item.url} prefetch="hover">
+                            {item.title}
+                        </Link>
                     </li>
                 ))}
             </ul>
