@@ -23,6 +23,7 @@ import {
     RangeCalendarHeading,
     RangeNavButton,
 } from '@/components/tailgrids/core/range-calendar';
+import { formatCalendarDate } from '@/utils/date-format';
 
 type DateRangePickerFieldProps = {
     label: string;
@@ -30,6 +31,8 @@ type DateRangePickerFieldProps = {
     onChange: (next: RangeValue<CalendarDate> | null) => void;
     /** Validation message. Shows under the field and marks it invalid. */
     error?: string;
+    /** PHP date pattern, such as `d.m.Y`, for the button text. Without it the text uses `en-GB`. */
+    displayFormat?: string;
     className?: string;
 };
 
@@ -67,10 +70,17 @@ function formatDayLabel(date: CalendarDate): string {
     );
 }
 
-/** Button text, for example "05 Feb 2026 - 06 Mar 2026". */
-function formatRangeLabel(range: RangeValue<CalendarDate> | null): string {
+/** Button text, for example "05 Feb 2026 - 06 Mar 2026", or in the given pattern. */
+function formatRangeLabel(
+    range: RangeValue<CalendarDate> | null,
+    displayFormat?: string,
+): string {
     if (range === null) {
         return 'Select dates';
+    }
+
+    if (displayFormat) {
+        return `${formatCalendarDate(range.start, displayFormat)} - ${formatCalendarDate(range.end, displayFormat)}`;
     }
 
     return `${formatDayLabel(range.start)} - ${formatDayLabel(range.end)}`;
@@ -82,6 +92,7 @@ export function DateRangePickerField({
     value,
     onChange,
     error,
+    displayFormat,
     className = 'flex w-full flex-col gap-1.5',
 }: DateRangePickerFieldProps) {
     return (
@@ -100,7 +111,7 @@ export function DateRangePickerField({
                     className="w-full justify-start"
                 >
                     <CalendarIcon className="size-5" />
-                    {formatRangeLabel(value)}
+                    {formatRangeLabel(value, displayFormat)}
                 </Button>
             </DatePickerGroup>
             <DatePickerPopover>

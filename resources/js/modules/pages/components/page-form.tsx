@@ -284,7 +284,7 @@ function LocaleTabs({
  */
 export function PageFields({ form, parents, locales, defaultLocale }: Props) {
     const [activeLocale, setActiveLocale] = useState(defaultLocale);
-    const { timeHourCycle } = usePage().props;
+    const { timeHourCycle, dateFormat } = usePage().props;
 
     const scheduleIssue = scheduleError(
         form.data.status,
@@ -310,6 +310,7 @@ export function PageFields({ form, parents, locales, defaultLocale }: Props) {
                         form.clearErrors('publish_date');
                     }}
                     minValue={isScheduled ? today(SERVER_TIME_ZONE) : undefined}
+                    displayFormat={dateFormat}
                     error={publishError(
                         form.errors.publish_date,
                         scheduleIssue,

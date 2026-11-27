@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import {
     DatePickerField,
@@ -32,7 +33,10 @@ type ResourceFilterFieldsProps = {
     onOptionChange: (name: string, option: SelectOption | null) => void;
 };
 
-type FilterValueProps = Omit<ResourceFilterFieldsProps, 'fields' | 'wide'>;
+type FilterValueProps = Omit<ResourceFilterFieldsProps, 'fields' | 'wide'> & {
+    /** The date format chosen in the settings, as a PHP pattern. */
+    dateFormat: string;
+};
 
 function renderSelectFilter(
     field: ResourceSelectFilter,
@@ -52,12 +56,13 @@ function renderSelectFilter(
 
 function renderDateFilter(
     field: ResourceDateFilter,
-    { textValues, onTextChange }: FilterValueProps,
+    { textValues, onTextChange, dateFormat }: FilterValueProps,
 ): ReactNode {
     return (
         <DatePickerField
             key={field.name}
             label={field.label}
+            displayFormat={dateFormat}
             value={toCalendarDate(textValues[field.name] ?? '')}
             onChange={(next) =>
                 onTextChange(field.name, next ? next.toString() : '')
@@ -68,12 +73,13 @@ function renderDateFilter(
 
 function renderDateRangeFilter(
     field: ResourceDateRangeFilter,
-    { textValues, onTextChange }: FilterValueProps,
+    { textValues, onTextChange, dateFormat }: FilterValueProps,
 ): ReactNode {
     return (
         <DateRangePickerField
             key={field.name}
             label={field.label}
+            displayFormat={dateFormat}
             value={toCalendarRange(textValues[field.name] ?? '')}
             onChange={(next) =>
                 onTextChange(field.name, next ? formatCalendarRange(next) : '')
@@ -141,13 +147,17 @@ export function ResourceFilterFields({
     wide,
     ...values
 }: ResourceFilterFieldsProps) {
+    const { dateFormat } = usePage().props;
+
     return (
         <div
             className={
                 wide ? 'grid grid-cols-1 gap-4 sm:grid-cols-2' : 'space-y-4'
             }
         >
-            {fields.map((field) => renderFilterField(field, values))}
+            {fields.map((field) =>
+                renderFilterField(field, { ...values, dateFormat }),
+            )}
         </div>
     );
 }

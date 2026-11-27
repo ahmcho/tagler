@@ -23,6 +23,8 @@ import {
     DatePickerTrigger,
 } from '@/components/tailgrids/core/date-picker';
 import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
+import { cn } from '@/utils/cn';
+import { formatCalendarDate } from '@/utils/date-format';
 
 type DatePickerFieldProps = {
     label: string;
@@ -31,6 +33,11 @@ type DatePickerFieldProps = {
     minValue?: CalendarDate;
     /** Validation message. Shows under the field and marks it invalid. */
     error?: string;
+    /**
+     * PHP date pattern, such as `d.m.Y`. When set, the value is shown as text in this
+     * format and the typed segments are replaced. The value itself is not changed.
+     */
+    displayFormat?: string;
     className?: string;
 };
 
@@ -54,6 +61,7 @@ export function DatePickerField({
     onChange,
     minValue,
     error,
+    displayFormat,
     className = 'flex w-full flex-col gap-1.5',
 }: DatePickerFieldProps) {
     return (
@@ -66,14 +74,37 @@ export function DatePickerField({
             className={className}
         >
             <FieldLabel>{label}</FieldLabel>
-            <DatePickerGroup>
-                <DateInput>
-                    {(segment) => <DateSegment segment={segment} />}
-                </DateInput>
-                <DatePickerTrigger aria-label="Open calendar">
-                    <CalendarIcon className="size-5" />
-                </DatePickerTrigger>
-            </DatePickerGroup>
+            {displayFormat ? (
+                <DatePickerGroup>
+                    <DatePickerTrigger
+                        aria-label={label}
+                        className={cn(
+                            'static flex w-full translate-y-0 items-center justify-between gap-2 rounded-lg border bg-input-background px-4 py-2.5 text-left text-title-50 outline-none focus-visible:ring-4 focus-visible:ring-input-primary-focus-border/20',
+                            error
+                                ? 'border-input-error-focus-border'
+                                : 'border-base-300 focus-visible:border-input-primary-focus-border',
+                        )}
+                    >
+                        <span>
+                            {value
+                                ? formatCalendarDate(value, displayFormat)
+                                : displayFormat
+                                      .replace(/[dm]/g, '__')
+                                      .replace(/Y/g, '____')}
+                        </span>
+                        <CalendarIcon className="size-5" />
+                    </DatePickerTrigger>
+                </DatePickerGroup>
+            ) : (
+                <DatePickerGroup>
+                    <DateInput>
+                        {(segment) => <DateSegment segment={segment} />}
+                    </DateInput>
+                    <DatePickerTrigger aria-label="Open calendar">
+                        <CalendarIcon className="size-5" />
+                    </DatePickerTrigger>
+                </DatePickerGroup>
+            )}
             <DatePickerPopover>
                 <Calendar>
                     <CalendarHeader>
