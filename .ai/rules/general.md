@@ -40,8 +40,7 @@ Match the surrounding code style. Do not refactor unrelated files. Do not add do
 
 ## Git guidelines
 
-Give each commit one prefix: `[FEATURE]` for a new feature, `[FIX]` for a bug fix, `[REFACTOR]` for a refactor, optimization or cleanup, and `[CHORE]` for tooling or dependency work. Make atomic commits: one logical change per commit. Do not append Claude-Session links or other AI-attribution lines to commit messages or PR descriptions.
-
+Give each commit one prefix: `[FEATURE]` for a new feature, `[FIX]` for a bug fix, `[REFACTOR]` for a refactor, optimization or cleanup, and `[CHORE]` for tooling or dependency work. Make atomic commits: one logical change per commit. 
 Stage explicit paths (or use `git add -p`). Check `git diff --staged` before each commit.
 
 ## Docker: vendor/ and node_modules/ are named volumes, not the bind mount
