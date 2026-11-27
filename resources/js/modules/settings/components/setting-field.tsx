@@ -172,7 +172,6 @@ function FileSettingControl({
                     {isUploaded && value === null && (
                         <Button
                             type="button"
-                            variant="ghost"
                             size="sm"
                             className="flex-1 whitespace-nowrap"
                             onPress={onReset}

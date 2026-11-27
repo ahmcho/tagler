@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Settings, TriangleAlert } from 'lucide-react';
+import { Save, Settings, TriangleAlert } from 'lucide-react';
 import { DynamicIcon } from 'lucide-react/dynamic';
 import type { IconName } from 'lucide-react/dynamic';
 import { useState } from 'react';
@@ -187,6 +187,7 @@ export default function Application({ tabs, fields }: Props) {
                             disabled={form.processing}
                             pending={form.processing}
                         >
+                            <Save className="size-4" />
                             Save
                         </Button>
                     </CardFooter>
