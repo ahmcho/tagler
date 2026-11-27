@@ -4,3 +4,4 @@
  */
 export { ChildPages } from '@/theme/child-pages';
 export { PageHead } from '@/theme/page-head';
+export { RichContent } from '@/theme/rich-content';

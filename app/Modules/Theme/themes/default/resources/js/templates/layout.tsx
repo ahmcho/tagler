@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { ChildPages, PageHead } from '@/theme/api';
+import { ChildPages, PageHead, RichContent } from '@/theme/api';
 import type { ThemeTemplateProps } from '@/theme/contract';
 
 /**
@@ -21,10 +21,7 @@ export function ThemeLayout({
             </header>
 
             {body && (
-                <div
-                    className="theme-default__body"
-                    dangerouslySetInnerHTML={{ __html: body }}
-                />
+                <RichContent className="theme-default__body" html={body} />
             )}
 
             <ChildPages items={children} />
