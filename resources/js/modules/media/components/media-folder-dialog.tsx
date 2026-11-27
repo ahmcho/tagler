@@ -1,3 +1,4 @@
+import { Save } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/tailgrids/core/button';
 import {
@@ -80,6 +81,7 @@ export function MediaFolderDialog({
                         type="submit"
                         disabled={busy || name.trim() === ''}
                     >
+                        <Save className="size-4" />
                         {submitLabel}
                     </Button>
                 </DialogFooter>

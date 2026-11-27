@@ -169,7 +169,7 @@ type MediaDetailsFormProps = {
 };
 
 /**
- * Every change in this form waits for the Save details button, which is the last control.
+ * Every change in this form waits for the Save button, which is the last control.
  */
 function MediaDetailsForm({
     canChangeVisibility,
@@ -257,7 +257,7 @@ function MediaDetailsForm({
                     disabled={busy || !canSave}
                 >
                     <Save className="size-4" />
-                    Save details
+                    Save
                 </Button>
             </div>
         </form>
