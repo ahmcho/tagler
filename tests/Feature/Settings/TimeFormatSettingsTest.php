@@ -44,6 +44,7 @@ test('an Admin can save the 24-hour time format', function (): void {
                 'date_format' => 'd.m.Y',
                 'datetime_format' => 'd.m.Y H:i:s',
                 'time_format' => TimeFormatVariantEnum::TwentyFourHour->value,
+                'timezone' => config('app.timezone'),
                 'media_link_ttl_minutes' => '15',
             ],
         ])

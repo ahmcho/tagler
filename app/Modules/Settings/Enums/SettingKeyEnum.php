@@ -3,6 +3,7 @@
 namespace App\Modules\Settings\Enums;
 
 use App\Modules\Settings\Rules\FileUploadRule;
+use DateTimeZone;
 use Illuminate\Validation\Rule;
 
 enum SettingKeyEnum: string
@@ -12,6 +13,7 @@ enum SettingKeyEnum: string
     case DateFormat = 'date_format';
     case DateTimeFormat = 'datetime_format';
     case TimeFormat = 'time_format';
+    case Timezone = 'timezone';
     case MediaLinkTtlMinutes = 'media_link_ttl_minutes';
 
     /**
@@ -22,7 +24,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => InputValueTypeEnum::String,
             self::Favicon => InputValueTypeEnum::File,
-            self::DateFormat, self::DateTimeFormat, self::TimeFormat => InputValueTypeEnum::String,
+            self::DateFormat, self::DateTimeFormat, self::TimeFormat, self::Timezone => InputValueTypeEnum::String,
             self::MediaLinkTtlMinutes => InputValueTypeEnum::Integer,
         };
     }
@@ -35,7 +37,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => SettingInputEnum::Text,
             self::Favicon => SettingInputEnum::File,
-            self::DateFormat, self::DateTimeFormat, self::TimeFormat => SettingInputEnum::Select,
+            self::DateFormat, self::DateTimeFormat, self::TimeFormat, self::Timezone => SettingInputEnum::Select,
             self::MediaLinkTtlMinutes => SettingInputEnum::Number,
         };
     }
@@ -48,7 +50,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => 'general',
             self::Favicon => 'general',
-            self::DateFormat, self::DateTimeFormat, self::TimeFormat => 'general',
+            self::DateFormat, self::DateTimeFormat, self::TimeFormat, self::Timezone => 'general',
             self::MediaLinkTtlMinutes => 'security',
         };
     }
@@ -61,7 +63,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::AppName => 'settings',
             self::Favicon => 'settings',
-            self::DateFormat, self::DateTimeFormat, self::TimeFormat => 'settings',
+            self::DateFormat, self::DateTimeFormat, self::TimeFormat, self::Timezone => 'settings',
             self::MediaLinkTtlMinutes => 'shield-check',
         };
     }
@@ -77,6 +79,7 @@ enum SettingKeyEnum: string
             self::DateFormat => DateFormatVariantEnum::DayMonthYearDot->value,
             self::DateTimeFormat => DateTimeFormatVariantEnum::DayMonthYearDotTimeWithSeconds->value,
             self::TimeFormat => TimeFormatVariantEnum::TwelveHour->value,
+            self::Timezone => config('app.timezone'),
             self::MediaLinkTtlMinutes => '15',
         };
     }
@@ -92,6 +95,10 @@ enum SettingKeyEnum: string
             self::DateFormat => $this->optionsFrom(DateFormatVariantEnum::cases()),
             self::DateTimeFormat => $this->optionsFrom(DateTimeFormatVariantEnum::cases()),
             self::TimeFormat => $this->optionsFrom(TimeFormatVariantEnum::cases()),
+            self::Timezone => array_map(
+                fn (string $identifier): array => ['value' => $identifier, 'label' => $identifier],
+                DateTimeZone::listIdentifiers(),
+            ),
             default => [],
         };
     }

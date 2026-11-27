@@ -285,6 +285,8 @@ return [
         'media_link_ttl_minutes' => 'Private media link lifetime (minutes)',
         'media_link_ttl_minutes_description' => 'How many minutes a signed link to a private media file stays valid. Used when the file has no lifetime of its own.',
         'time_format_description' => 'How times are chosen in the admin, for example when scheduling a page. Stored values do not change.',
+        'timezone' => 'Timezone',
+        'timezone_description' => 'The timezone used to show dates and to schedule pages. Stored dates do not change.',
         'typed_delete_confirmation_feature' => 'Type name to confirm deletion',
         'typed_delete_confirmation_feature_description' => 'Require the user to type the record name before a delete is confirmed.',
         'name' => 'Full Name',

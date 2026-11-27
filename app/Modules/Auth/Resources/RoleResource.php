@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Resources;
 
 use App\Modules\Auth\Models\Role;
+use App\Modules\Settings\Support\LocalDateFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Spatie\Permission\Models\Permission;
@@ -25,7 +26,7 @@ class RoleResource extends JsonResource
                 'id' => $permission->id,
                 'name' => $permission->name,
             ])->values()),
-            'created_at' => $this->created_at?->format('Y-m-d H:i'),
+            'created_at' => $this->created_at ? LocalDateFormatter::dateTime($this->created_at) : null,
             'can' => [
                 'update' => $request->user()?->can('update', $this->resource) ?? false,
                 'delete' => $request->user()?->can('delete', $this->resource) ?? false,

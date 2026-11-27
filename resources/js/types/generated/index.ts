@@ -112,6 +112,7 @@ export enum SettingKeyEnum {
     DateFormat = 'date_format',
     DateTimeFormat = 'datetime_format',
     TimeFormat = 'time_format',
+    Timezone = 'timezone',
     MediaLinkTtlMinutes = 'media_link_ttl_minutes',
 }
 export enum TimeFormatVariantEnum {

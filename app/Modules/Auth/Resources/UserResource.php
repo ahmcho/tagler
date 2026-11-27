@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Resources;
 
 use App\Models\User;
+use App\Modules\Settings\Support\LocalDateFormatter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,7 +27,7 @@ class UserResource extends JsonResource
                 'id' => $role->getKey(),
                 'name' => $role->getAttribute('name'),
             ])->values()),
-            'created_at' => $this->created_at?->format('Y-m-d H:i'),
+            'created_at' => $this->created_at ? LocalDateFormatter::dateTime($this->created_at) : null,
             'can' => [
                 'update' => $request->user()?->can('update', $this->resource) ?? false,
                 'delete' => $request->user()?->can('delete', $this->resource) ?? false,

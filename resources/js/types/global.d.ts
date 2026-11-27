@@ -6,6 +6,9 @@ declare module '@inertiajs/core' {
             name: string;
             favicon: string;
             timeHourCycle: 12 | 24;
+            dateFormat: string;
+            dateTimeFormat: string;
+            timezone: string;
             auth: Auth;
             can: Record<string, boolean>;
             [key: string]: unknown;

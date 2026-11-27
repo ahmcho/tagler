@@ -4,6 +4,7 @@ namespace App\Modules\Auth\Resources;
 
 use App\Models\User;
 use App\Modules\Auth\Models\ActivityLog;
+use App\Modules\Settings\Support\LocalDateFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,7 +28,7 @@ class ActivityLogResource extends JsonResource
             'causer_id' => $this->causer_id,
             'ip_address' => $this->ip_address,
             'changes' => $this->changes()->toArray(),
-            'created_at' => $this->created_at?->format('Y-m-d H:i'),
+            'created_at' => $this->created_at ? LocalDateFormatter::dateTime($this->created_at) : null,
         ];
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Modules\Settings\Enums;
 
-use Carbon\CarbonImmutable;
+use App\Modules\Settings\Support\LocalDateFormatter;
 
 /**
  * The date formats an admin can choose. The value is the PHP date() format string.
@@ -15,10 +15,10 @@ enum DateFormatVariantEnum: string
     case MonthDayYearSlash = 'm/d/Y';
 
     /**
-     * The label is a fixed sample date rendered in this format, so every option shows the same date.
+     * The label is the current date in the application timezone, rendered in this format, so every option shows the same date.
      */
     public function label(): string
     {
-        return CarbonImmutable::parse(now())->format($this->value);
+        return LocalDateFormatter::now()->format($this->value);
     }
 }

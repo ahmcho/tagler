@@ -8,6 +8,7 @@ use App\Modules\Settings\Enums\DateTimeFormatVariantEnum;
 use App\Modules\Settings\Enums\SettingKeyEnum;
 use App\Modules\Settings\Enums\TimeFormatVariantEnum;
 use App\Modules\Settings\Services\Contracts\SettingServiceContract;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
@@ -27,7 +28,9 @@ test('date and datetime format settings offer one select option per enum case', 
         ->toBe(array_map(fn (DateFormatVariantEnum $case) => $case->value, DateFormatVariantEnum::cases()));
 });
 
-test('an enum option label is a fixed sample date in that format', function (): void {
+test('an enum option label is the current date in that format', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-11-20 13:45:30'));
+
     expect(DateFormatVariantEnum::DayMonthYearDot->label())->toBe('20.11.2026')
         ->and(DateFormatVariantEnum::MonthDayYearSlash->label())->toBe('11/20/2026')
         ->and(DateTimeFormatVariantEnum::DayMonthYearDotTimeWithSeconds->label())->toBe('20.11.2026 13:45:30')
@@ -43,6 +46,7 @@ test('an Admin can save a date and datetime format from the list', function (): 
                 'date_format' => DateFormatVariantEnum::YearMonthDayDash->value,
                 'datetime_format' => DateTimeFormatVariantEnum::DayMonthYearSlashTime->value,
                 'time_format' => TimeFormatVariantEnum::TwelveHour->value,
+                'timezone' => config('app.timezone'),
                 'media_link_ttl_minutes' => '15',
             ],
         ])

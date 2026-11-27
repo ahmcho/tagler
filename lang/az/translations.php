@@ -285,6 +285,8 @@ return [
         'media_link_ttl_minutes' => 'Şəxsi media keçidinin müddəti (dəqiqə)',
         'media_link_ttl_minutes_description' => 'Şəxsi media faylına imzalı keçidin neçə dəqiqə etibarlı qalacağı. Faylın öz müddəti olmadıqda istifadə olunur.',
         'time_format_description' => 'Admin paneldə vaxtın necə seçilməsi, məsələn səhifənin planlaşdırılmasında. Saxlanılan dəyərlər dəyişmir.',
+        'timezone' => 'Saat qurşağı',
+        'timezone_description' => 'Tarixlərin göstərilməsi və səhifələrin planlaşdırılması üçün istifadə olunan saat qurşağı. Saxlanılan tarixlər dəyişmir.',
         'typed_delete_confirmation_feature' => 'Silməni adın yazılması ilə təsdiqlə',
         'typed_delete_confirmation_feature_description' => 'Silməni təsdiqləmək üçün istifadəçidən qeydin adını yazmağı tələb edir.',
         'name' => 'Ad Soyad',
