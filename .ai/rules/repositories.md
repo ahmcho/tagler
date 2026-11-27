@@ -38,3 +38,15 @@ A filter key that is not a column, such as a relation filter, is routed by `appl
 ## Trashed-only listing uses `customizeQuery()`
 
 A `deleted_at` condition cannot list trashed rows. The SoftDeletes global scope still removes them. Override `customizeQuery(Builder $query, array $params)` and call `onlyTrashed()` when `$params['trashed'] ?? false` is true. The controller passes `params: ['trashed' => $trashed]` to `getAllPaginated()`.
+
+## Filter and limit in SQL
+
+Filtering, `LIMIT`, existence checks and ordering belong in SQL. Do not load all rows and trim them in PHP. Every `LIMIT` needs an explicit `ORDER BY`. Before you add a condition, read the scopes and base methods the query already passes through, so no condition is applied twice.
+
+## Print the SQL of new queries
+
+For each new query, print the generated SQL with `toSql()` and its bindings, and count the queries it runs, before you present the code.
+
+## No events and no integrations
+
+A repository does not dispatch events and does not call external services. Put that work in the service that calls the repository.

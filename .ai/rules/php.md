@@ -29,6 +29,14 @@ Use named arguments when they make intent clear, such as calls with several para
 
 Prefer PHPDoc blocks. Use inline comments only for complex logic.
 
+## No debug output
+
+Remove `dd()` and `dump()` calls from every file you touch before you finish.
+
+## No new global helpers
+
+Do not add global functions. Use a class method, a service, a translation or a component instead.
+
 ## Format
 
 Run `vendor/bin/pint --dirty --format agent` on the host after editing PHP. Do not run `--test`.
