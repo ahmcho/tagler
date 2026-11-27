@@ -12,6 +12,7 @@ import {
     quotaPercent,
 } from '../lib/format';
 import type { MediaUsage } from '../types';
+import { MediaSkeletonBar } from './media-skeleton-bar';
 
 const RADIUS = 80;
 const STROKE = 28;
@@ -19,13 +20,18 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 type Props = {
     usage: MediaUsage | null;
+    loading: boolean;
     onRefresh: () => void;
 };
 
 /**
  * Donut of used space by category, with a legend. Without a quota the subtitle shows no free space.
  */
-export function MediaStorageDonut({ usage, onRefresh }: Props) {
+export function MediaStorageDonut({ usage, loading, onRefresh }: Props) {
+    if (loading) {
+        return <MediaStorageDonutSkeleton />;
+    }
+
     const used = usage?.bytes ?? 0;
     const quota = usage?.quota_bytes ?? null;
     const percent = quotaPercent(used, quota);
@@ -143,6 +149,67 @@ export function MediaStorageDonut({ usage, onRefresh }: Props) {
                             <span className="text-text-100">
                                 {formatBytes(segment.bytes)}
                             </span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * A chart placeholder: a pulsing ring, two bars under it for the total, and a legend with one row per category.
+ */
+export function MediaStorageDonutSkeleton() {
+    return (
+        <div
+            className="flex h-full flex-col rounded-2xl border border-base-200 bg-card-background-50"
+            aria-busy="true"
+            aria-label="Loading storage details"
+        >
+            <div className="flex items-start justify-between gap-3 p-6">
+                <div>
+                    <h3 className="text-lg font-semibold text-title-50">
+                        Storage Details
+                    </h3>
+                    <MediaSkeletonBar className="mt-2 w-40" />
+                </div>
+                <div className="size-10 animate-pulse rounded-[10px] bg-background-soft-400" />
+            </div>
+
+            <div className="flex flex-1 flex-col gap-6 px-6 pb-6">
+                <div className="relative mx-auto aspect-square w-full max-w-[220px]">
+                    <svg
+                        viewBox="0 0 200 200"
+                        className="size-full -rotate-90"
+                        aria-hidden
+                    >
+                        <circle
+                            cx="100"
+                            cy="100"
+                            r={RADIUS}
+                            fill="none"
+                            strokeWidth={STROKE}
+                            className="animate-pulse stroke-background-soft-400"
+                        />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                        <MediaSkeletonBar className="h-6 w-24" />
+                        <MediaSkeletonBar className="w-20" />
+                    </div>
+                </div>
+
+                <ul className="flex flex-col gap-4">
+                    {MEDIA_CATEGORIES.map((category) => (
+                        <li
+                            key={category.value}
+                            className="flex items-center justify-between"
+                        >
+                            <span className="flex items-center gap-1.5">
+                                <span className="size-2.5 animate-pulse rounded-full bg-background-soft-400" />
+                                <MediaSkeletonBar className="w-20" />
+                            </span>
+                            <MediaSkeletonBar className="w-14" />
                         </li>
                     ))}
                 </ul>

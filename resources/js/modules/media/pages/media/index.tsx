@@ -17,7 +17,10 @@ import {
 import { useAbility } from '@/hooks/use-ability';
 import { libraryPageUrl } from '@/modules/media/api/media-api';
 import { MediaDetailsSheet } from '@/modules/media/components/media-details-sheet';
-import { MediaFileTable } from '@/modules/media/components/media-file-table';
+import {
+    MediaFileTable,
+    MediaFileTableSkeleton,
+} from '@/modules/media/components/media-file-table';
 import { MediaFolderGrid } from '@/modules/media/components/media-folder-grid';
 import { MediaStorageDonut } from '@/modules/media/components/media-storage-donut';
 import { MediaUploadAction } from '@/modules/media/components/media-toolbar';
@@ -48,6 +51,9 @@ export default function MediaIndex({ upload }: Props) {
     const { files, folders, usage } = library;
     const selected = files?.data.find((file) => file.id === selectedId) ?? null;
     const rootFolders = childFolders(folders, 'root');
+    // A failed request keeps its error alert, so the placeholders stop there.
+    const filesLoading = library.loading && !library.error;
+    const summaryLoading = usage === null && !library.error;
 
     const abilities = {
         update: ability('media.update'),
@@ -91,6 +97,7 @@ export default function MediaIndex({ upload }: Props) {
                         <CardContent className="p-6">
                             <MediaFolderGrid
                                 folders={rootFolders}
+                                loading={summaryLoading}
                                 onOpen={(folder) =>
                                     window.open(
                                         libraryPageUrl({ folder: folder.id }),
@@ -104,6 +111,7 @@ export default function MediaIndex({ upload }: Props) {
 
                     <MediaStorageDonut
                         usage={usage}
+                        loading={summaryLoading}
                         onRefresh={() => library.refresh()}
                     />
                 </div>
@@ -116,20 +124,22 @@ export default function MediaIndex({ upload }: Props) {
                         <ViewAllLink />
                     </CardHeader>
                     <CardContent className="p-0">
-                        {files && files.data.length > 0 ? (
+                        {filesLoading ? (
+                            <div className="overflow-x-auto">
+                                <MediaFileTableSkeleton rows={RECENT_LIMIT} />
+                            </div>
+                        ) : files && files.data.length > 0 ? (
                             <div className="overflow-x-auto">
                                 <MediaFileTable
                                     files={files.data}
                                     onOpen={(file) => setSelectedId(file.id)}
                                 />
                             </div>
-                        ) : (
+                        ) : files ? (
                             <p className="p-6 text-center text-sm text-text-100">
-                                {library.loading
-                                    ? 'Loading…'
-                                    : 'No files yet. Upload files to start.'}
+                                No files yet. Upload files to start.
                             </p>
-                        )}
+                        ) : null}
                     </CardContent>
                 </Card>
 
