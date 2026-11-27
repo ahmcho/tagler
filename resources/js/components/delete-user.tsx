@@ -1,4 +1,5 @@
 import { Form } from '@inertiajs/react';
+import { Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import ProfileController from '@/actions/App/Modules/Auth/Controllers/ProfileController';
 import { PasswordField } from '@/components/password-field';
@@ -57,6 +58,7 @@ export default function DeleteUser() {
                     onPress={() => setIsOpen(true)}
                     data-test="delete-user-button"
                 >
+                    <Trash2 className="size-4" />
                     Delete account
                 </Button>
             </CardFooter>

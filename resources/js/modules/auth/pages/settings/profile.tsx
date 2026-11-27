@@ -1,5 +1,5 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
-import { Settings } from 'lucide-react';
+import { Save, Settings } from 'lucide-react';
 import ProfileController from '@/actions/App/Modules/Auth/Controllers/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import { Button } from '@/components/tailgrids/core/button';
@@ -111,6 +111,7 @@ export default function Profile({
                                         pending={processing}
                                         data-test="update-profile-button"
                                     >
+                                        <Save className="size-4" />
                                         Save
                                     </Button>
                                 </CardFooter>
