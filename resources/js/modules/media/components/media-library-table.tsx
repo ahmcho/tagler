@@ -27,6 +27,9 @@ import {
 import { formatBytes, formatDate } from '../lib/format';
 import type { MediaFolder, MediaRecord } from '../types';
 import { CATEGORY_ICONS, CATEGORY_LABEL } from './media-file-table';
+import { MediaSkeletonBar } from './media-skeleton-bar';
+
+const SKELETON_ROW_COUNT = 8;
 
 function FileIcon({ category }: { category: keyof typeof CATEGORY_ICONS }) {
     const Icon = CATEGORY_ICONS[category];
@@ -81,25 +84,7 @@ export function MediaLibraryTable({
 }: Props) {
     return (
         <TableRoot fullBleed>
-            <TableHeader>
-                <TableRow>
-                    <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
-                        Name
-                    </TableHead>
-                    <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
-                        Type
-                    </TableHead>
-                    <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
-                        Size
-                    </TableHead>
-                    <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
-                        Date Modified
-                    </TableHead>
-                    <TableHead className="h-11 px-4 py-3 text-right text-text-100 last:pr-6">
-                        Actions
-                    </TableHead>
-                </TableRow>
-            </TableHeader>
+            <MediaLibraryTableHeader />
             <TableBody>
                 {folders.map((folder) => (
                     <TableRow key={`folder-${folder.id}`}>
@@ -221,5 +206,62 @@ export function MediaLibraryTable({
                 ))}
             </TableBody>
         </TableRoot>
+    );
+}
+
+/** Placeholder rows in the same table as the loaded library, with the real column headers. */
+export function MediaLibraryTableSkeleton() {
+    return (
+        <TableRoot fullBleed aria-busy="true" aria-label="Loading library">
+            <MediaLibraryTableHeader />
+            <TableBody>
+                {Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
+                    <TableRow key={index}>
+                        <TableCell className="py-3 pl-6">
+                            <div className="flex items-center gap-3">
+                                <div className="size-7 shrink-0 animate-pulse rounded-lg bg-background-soft-400" />
+                                <MediaSkeletonBar className="w-56" />
+                            </div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                            <MediaSkeletonBar className="w-16" />
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                            <MediaSkeletonBar className="w-14" />
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                            <MediaSkeletonBar className="w-24" />
+                        </TableCell>
+                        <TableCell className="py-3 pr-6 text-right">
+                            <div className="ml-auto size-10 animate-pulse rounded-[10px] bg-background-soft-400" />
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </TableRoot>
+    );
+}
+
+function MediaLibraryTableHeader() {
+    return (
+        <TableHeader>
+            <TableRow>
+                <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
+                    Name
+                </TableHead>
+                <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
+                    Type
+                </TableHead>
+                <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
+                    Size
+                </TableHead>
+                <TableHead className="h-11 px-4 py-3 text-text-100 first:pl-6">
+                    Date Modified
+                </TableHead>
+                <TableHead className="h-11 px-4 py-3 text-right text-text-100 last:pr-6">
+                    Actions
+                </TableHead>
+            </TableRow>
+        </TableHeader>
     );
 }

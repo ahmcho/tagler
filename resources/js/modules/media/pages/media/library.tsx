@@ -26,7 +26,10 @@ import { useAbility } from '@/hooks/use-ability';
 import { mediaApi, MediaApiError } from '@/modules/media/api/media-api';
 import { MediaDetailsSheet } from '@/modules/media/components/media-details-sheet';
 import { MediaFolderDialog } from '@/modules/media/components/media-folder-dialog';
-import { MediaLibraryTable } from '@/modules/media/components/media-library-table';
+import {
+    MediaLibraryTable,
+    MediaLibraryTableSkeleton,
+} from '@/modules/media/components/media-library-table';
 import {
     MediaLibraryTools,
     MediaSearchField,
@@ -94,11 +97,7 @@ function folderDialogInitialName(dialog: FolderDialog): string {
     return dialog.mode === 'rename' ? dialog.folder.name : '';
 }
 
-function emptyLibraryMessage(loading: boolean, trashed: boolean): string {
-    if (loading) {
-        return 'Loading…';
-    }
-
+function emptyLibraryMessage(trashed: boolean): string {
     return trashed ? 'The trash is empty.' : 'Nothing here yet.';
 }
 
@@ -184,7 +183,7 @@ type MediaLibraryContentProps = {
     files: LibraryFiles;
     folderRows: MediaFolder[];
     canManageFolders: boolean;
-    loading: boolean;
+    initialLoading: boolean;
     trashed: boolean;
     onOpenFolder: (folder: MediaFolder) => void;
     onRenameFolder: (folder: MediaFolder) => void;
@@ -193,12 +192,12 @@ type MediaLibraryContentProps = {
     onPageChange: (page: number) => void;
 };
 
-/** The table or the empty message, then the pager. */
+/** The table, its placeholder on the first load, or the empty message, then the pager. */
 function MediaLibraryContent({
     files,
     folderRows,
     canManageFolders,
-    loading,
+    initialLoading,
     trashed,
     onOpenFolder,
     onRenameFolder,
@@ -212,7 +211,11 @@ function MediaLibraryContent({
 
     return (
         <CardContent className="space-y-6 p-6">
-            {files && hasRows ? (
+            {initialLoading ? (
+                <div className="overflow-x-auto rounded-2xl border border-base-200">
+                    <MediaLibraryTableSkeleton />
+                </div>
+            ) : files && hasRows ? (
                 <div className="overflow-x-auto rounded-2xl border border-base-200">
                     <MediaLibraryTable
                         folders={folderRows}
@@ -224,11 +227,11 @@ function MediaLibraryContent({
                         onOpenFile={onOpenFile}
                     />
                 </div>
-            ) : (
+            ) : files ? (
                 <p className="rounded-2xl border border-dashed border-base-200 p-10 text-center text-sm text-text-100">
-                    {emptyLibraryMessage(loading, trashed)}
+                    {emptyLibraryMessage(trashed)}
                 </p>
-            )}
+            ) : null}
 
             {files && files.meta.last_page > 1 && (
                 <Pagination
@@ -385,7 +388,7 @@ export default function MediaLibrary({ upload }: Props) {
                         files={files}
                         folderRows={folderRows}
                         canManageFolders={canManageFolders}
-                        loading={library.loading}
+                        initialLoading={files === null && !library.error}
                         trashed={query.trashed}
                         onOpenFolder={openFolder}
                         onRenameFolder={(folder) =>
