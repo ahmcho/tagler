@@ -6,8 +6,8 @@ use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Repositories\Contracts\PageRepositoryContract;
 use App\Modules\Pages\Support\PagePath;
+use App\Modules\Settings\Support\LocalDateFormatter;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Carbon;
 
 /**
  * Maps a public URL (locale and path) to the page that serves it. The page
@@ -37,7 +37,7 @@ class PageResolver
 
     private function findLivePage(string $locale, PagePath $path): ?Page
     {
-        $now = Carbon::now();
+        $now = LocalDateFormatter::now();
         $page = $this->pageRepository->findByLocalizedPath($locale, $path);
 
         if ($page === null || ! $page->isLive($now)) {

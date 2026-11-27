@@ -6,6 +6,7 @@ use App\Modules\Auth\Concerns\HasActivityLogs;
 use App\Modules\Pages\Database\Factories\PageFactory;
 use App\Modules\Pages\Enums\PageStatusEnum;
 use App\Modules\Settings\Concerns\HasLocalDates;
+use App\Modules\Settings\Support\LocalDateFormatter;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -52,7 +53,7 @@ class Page extends Model
             return null;
         }
 
-        return Carbon::parse($this->publish_date->toDateString().' '.($this->publish_time ?? '00:00'));
+        return Carbon::parse($this->publish_date->toDateString().' '.($this->publish_time ?? '00:00'), LocalDateFormatter::timezone());
     }
 
     /**

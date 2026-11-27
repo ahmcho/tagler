@@ -12,11 +12,11 @@ use App\Modules\Pages\Repositories\Contracts\PageRevisionRepositoryContract;
 use App\Modules\Pages\Repositories\Contracts\PageTranslationRepositoryContract;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
 use App\Modules\Pages\Support\PagePath;
+use App\Modules\Settings\Support\LocalDateFormatter;
 use Carbon\CarbonInterface;
 use Crud\Services\BaseCrudService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -77,7 +77,7 @@ class PageService extends BaseCrudService implements PageServiceContract
 
     public function assignHomepage(Page $page): Page
     {
-        if (! $page->isLive(Carbon::now())) {
+        if (! $page->isLive(LocalDateFormatter::now())) {
             throw ValidationException::withMessages([
                 'is_homepage' => __('pages.errors.homepage_requires_live_page'),
             ]);
@@ -126,7 +126,7 @@ class PageService extends BaseCrudService implements PageServiceContract
         $page->status = PageStatusEnum::Published;
 
         if ($page->publish_date === null) {
-            $now = Carbon::now();
+            $now = LocalDateFormatter::now();
             $page->publish_date = $now->copy()->startOfDay();
             $page->publish_time = $now->format('H:i');
         }

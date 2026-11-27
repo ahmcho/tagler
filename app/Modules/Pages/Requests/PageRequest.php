@@ -8,6 +8,7 @@ use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Enums\PageStatusEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Services\Contracts\PageServiceContract;
+use App\Modules\Settings\Support\LocalDateFormatter;
 use Crud\Requests\AppFormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\Carbon;
@@ -149,7 +150,7 @@ class PageRequest extends AppFormRequest
 
     /**
      * A scheduled page needs its publish date and time combined into a moment
-     * after now. Both are in the app timezone. Skipped when either part is malformed,
+     * after now. Both are in the timezone chosen in the settings. Skipped when either part is malformed,
      * because the field rules already report that.
      */
     private function checkScheduledInFuture(Validator $validator): void
@@ -162,9 +163,9 @@ class PageRequest extends AppFormRequest
             return;
         }
 
-        $publishAt = Carbon::createFromFormat('!Y-m-d H:i', $this->input('publish_date').' '.$this->input('publish_time'));
+        $publishAt = Carbon::createFromFormat('!Y-m-d H:i', $this->input('publish_date').' '.$this->input('publish_time'), LocalDateFormatter::timezone());
 
-        if ($publishAt === null || $publishAt->lessThanOrEqualTo(Carbon::now())) {
+        if ($publishAt === null || $publishAt->lessThanOrEqualTo(LocalDateFormatter::now())) {
             $validator->errors()->add('publish_time', __('pages.errors.publish_in_past'));
         }
     }

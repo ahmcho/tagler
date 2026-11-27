@@ -4,9 +4,9 @@ namespace App\Modules\Pages\Resources;
 
 use App\Modules\Pages\Enums\LocaleEnum;
 use App\Modules\Pages\Models\Page;
+use App\Modules\Settings\Support\LocalDateFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Carbon;
 
 /**
  * Admin list row. The title and path come from the default locale. `locales` lists every locale the page has.
@@ -21,7 +21,7 @@ class PageResource extends JsonResource
     public function toArray(Request $request): array
     {
         $defaultTranslation = $this->translationFor(LocaleEnum::default());
-        $isLive = $this->isLive(Carbon::now());
+        $isLive = $this->isLive(LocalDateFormatter::now());
 
         return [
             'id' => $this->id,

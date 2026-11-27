@@ -5,7 +5,7 @@ namespace App\Modules\Pages\Services;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Models\PageTranslation;
 use App\Modules\Pages\Repositories\Contracts\PageRepositoryContract;
-use Illuminate\Support\Carbon;
+use App\Modules\Settings\Support\LocalDateFormatter;
 
 /**
  * Lists the live child pages of a page in one locale, sorted by title. Children
@@ -28,7 +28,7 @@ class PageChildrenResolver
 
         $locale = $translation->locale;
 
-        return $this->pages->liveChildrenOf($page, $locale, Carbon::now())
+        return $this->pages->liveChildrenOf($page, $locale, LocalDateFormatter::now())
             ->sortBy(fn (Page $child): string => (string) $child->translationFor($locale)?->title, SORT_NATURAL | SORT_FLAG_CASE)
             ->take((int) config('modules.pages.children.limit'))
             ->map(fn (Page $child): array => [

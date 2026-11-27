@@ -7,11 +7,11 @@ use App\Modules\Pages\Enums\PageStatusEnum;
 use App\Modules\Pages\Models\Page;
 use App\Modules\Pages\Repositories\Contracts\PageRepositoryContract;
 use App\Modules\Pages\Support\PagePath;
+use App\Modules\Settings\Support\LocalDateFormatter;
 use Carbon\CarbonInterface;
 use Crud\Repositories\EloquentRepository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Carbon;
 
 class PageRepository extends EloquentRepository implements PageRepositoryContract
 {
@@ -111,7 +111,7 @@ class PageRepository extends EloquentRepository implements PageRepositoryContrac
             return;
         }
 
-        $now = Carbon::now();
+        $now = LocalDateFormatter::now();
         $isLive = fn (Builder $pages) => $this->whereStatusIsLive($pages, $now);
 
         if ($live === '1') {
