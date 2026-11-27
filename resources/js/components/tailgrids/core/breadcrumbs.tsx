@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { ChevronRight } from '@tailgrids/icons';
 import { cn } from '@/utils/cn';
 
@@ -26,7 +27,7 @@ export function Breadcrumbs({ items, dividerType = 'slash' }: PropsType) {
                 >
                     {index > 0 && <Divider type={dividerType} />}
 
-                    <a
+                    <Link
                         href={item.href}
                         className={cn(
                             'flex items-center gap-1 text-sm [&>svg]:size-4',
@@ -36,7 +37,7 @@ export function Breadcrumbs({ items, dividerType = 'slash' }: PropsType) {
                         {item.icon}
 
                         {item.label}
-                    </a>
+                    </Link>
                 </li>
             ))}
         </ol>
