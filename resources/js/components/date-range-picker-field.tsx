@@ -7,11 +7,10 @@ import {
 } from 'lucide-react';
 import { DateRangePicker } from 'react-aria-components';
 import type { RangeValue } from 'react-aria-components';
-import { DateInput, DateSegment } from '@/components/tailgrids/core/date-field';
+import { Button } from '@/components/tailgrids/core/button';
 import {
     DatePickerGroup,
     DatePickerPopover,
-    DatePickerTrigger,
 } from '@/components/tailgrids/core/date-picker';
 import { FieldError, FieldLabel } from '@/components/tailgrids/core/field';
 import {
@@ -56,7 +55,28 @@ export function formatCalendarRange(range: RangeValue<CalendarDate>): string {
     return `${range.start.toString()},${range.end.toString()}`;
 }
 
-/** A date range field with a popover range calendar. Used by the list filters. */
+const DAY_LABEL_FORMAT = new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+});
+
+function formatDayLabel(date: CalendarDate): string {
+    return DAY_LABEL_FORMAT.format(
+        new Date(date.year, date.month - 1, date.day),
+    );
+}
+
+/** Button text, for example "05 Feb 2026 - 06 Mar 2026". */
+function formatRangeLabel(range: RangeValue<CalendarDate> | null): string {
+    if (range === null) {
+        return 'Select dates';
+    }
+
+    return `${formatDayLabel(range.start)} - ${formatDayLabel(range.end)}`;
+}
+
+/** A date range field: an outline button that opens a popover range calendar. Used by the list filters. */
 export function DateRangePickerField({
     label,
     value,
@@ -73,19 +93,15 @@ export function DateRangePickerField({
             className={className}
         >
             <FieldLabel>{label}</FieldLabel>
-            <DatePickerGroup className="flex items-center gap-2">
-                <DateInput slot="start" className="min-w-0 flex-1">
-                    {(segment) => <DateSegment segment={segment} />}
-                </DateInput>
-                <span aria-hidden="true" className="text-title-50">
-                    –
-                </span>
-                <DateInput slot="end" className="min-w-0 flex-1 pr-12">
-                    {(segment) => <DateSegment segment={segment} />}
-                </DateInput>
-                <DatePickerTrigger aria-label="Open calendar">
+            <DatePickerGroup>
+                <Button
+                    slot="trigger"
+                    appearance="outline"
+                    className="w-full justify-start"
+                >
                     <CalendarIcon className="size-5" />
-                </DatePickerTrigger>
+                    {formatRangeLabel(value)}
+                </Button>
             </DatePickerGroup>
             <DatePickerPopover>
                 <RangeCalendar>
