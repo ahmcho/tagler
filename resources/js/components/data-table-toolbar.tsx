@@ -26,6 +26,7 @@ import {
 } from '@/components/tailgrids/core/dropdown';
 import { Input } from '@/components/tailgrids/core/input';
 import { TextField } from '@/components/tailgrids/core/text-field';
+import { cn } from '@/utils/cn';
 
 function DataTableHeading({
     title,
@@ -116,7 +117,10 @@ function DataTableFilterControl({
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}
                 isDismissable
-                className="flex max-h-[calc(100dvh-2rem)] flex-col"
+                className={cn(
+                    'flex max-h-[calc(100dvh-2rem)] flex-col',
+                    filter.wide && 'max-w-2xl',
+                )}
             >
                 <DialogHeader>
                     <DialogTitle>{filter.title ?? 'Filter'}</DialogTitle>

@@ -62,6 +62,7 @@ export type DataTableFilter = {
     onApply: () => void;
     onReset: () => void;
     activeCount?: number;
+    wide?: boolean;
 };
 
 export type DataTableProps<Row> = {

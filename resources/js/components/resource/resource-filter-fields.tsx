@@ -25,13 +25,14 @@ import type {
 
 type ResourceFilterFieldsProps = {
     fields: ResourceFilterField[];
+    wide?: boolean;
     textValues: Record<string, string>;
     optionValues: Record<string, SelectOption | null>;
     onTextChange: (name: string, value: string) => void;
     onOptionChange: (name: string, option: SelectOption | null) => void;
 };
 
-type FilterValueProps = Omit<ResourceFilterFieldsProps, 'fields'>;
+type FilterValueProps = Omit<ResourceFilterFieldsProps, 'fields' | 'wide'>;
 
 function renderSelectFilter(
     field: ResourceSelectFilter,
@@ -137,10 +138,15 @@ function renderFilterField(
 /** Renders the filter panel body from the declared field list. */
 export function ResourceFilterFields({
     fields,
+    wide,
     ...values
 }: ResourceFilterFieldsProps) {
     return (
-        <div className="space-y-4">
+        <div
+            className={
+                wide ? 'grid grid-cols-1 gap-4 sm:grid-cols-2' : 'space-y-4'
+            }
+        >
             {fields.map((field) => renderFilterField(field, values))}
         </div>
     );

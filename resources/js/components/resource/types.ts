@@ -95,6 +95,8 @@ export type ResourceFilters = {
     title: string;
     description: string;
     fields: ResourceFilterField[];
+    /** Wider dialog with two fields per row from `sm`. */
+    wide?: boolean;
 };
 
 export type ResourceSearch = {

@@ -157,6 +157,7 @@ export default function Index({ pages, filters, locales }: Props) {
                 getRowId={(page) => page.id}
                 emptyState="No pages yet."
                 filters={{
+                    wide: true,
                     title: 'Filter pages',
                     description:
                         'Show only pages that match these values. Text filters match part of the value.',

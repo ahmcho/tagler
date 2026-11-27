@@ -82,9 +82,11 @@ function toDataTableFilter(
         activeCount: index.activeFilterCount,
         onApply: index.applyFilters,
         onReset: index.resetFilters,
+        wide: filters.wide,
         children: (
             <ResourceFilterFields
                 fields={filters.fields}
+                wide={filters.wide}
                 textValues={index.textValues}
                 optionValues={index.optionValues}
                 onTextChange={index.setTextValue}
