@@ -200,21 +200,18 @@ If it does, you MUST use a MongoDB Laravel equivalent tool instead, if available
 
 </laravel-boost-guidelines>
 
-## Project rules (.ai)
+## Working rules
 
 - Before you plan or edit, open `.ai/rules/index.md`. Read every rule file whose glob covers the paths you change.
 - Each feature is a module in `app/Modules/{Module}`. Its models, migrations, routes and providers stay in the module.
+- A question is not a request to implement. When the user asks why, how or whether something is right, answer and do not change code.
+- Do not stash, reset or switch branches unless the user asks. Never create a new git branch unless the user explicitly asks for one. Commit on the current branch.
+- When the user says they reverted or changed a file, read the file again before you edit it.
 - Never run `migrate:rollback`, `migrate:fresh` or a pending `migrate` against the dev database `tagler_cms` without approval. See `.ai/rules/general.md`.
-- Never create a new git branch unless the user explicitly asks for one. Commit on the current branch.
 
 ## CRUD pages (React)
 
-- Build list pages from `resources/js/components/resource/`: `ResourcePage` (shell), `ResourceIndexContent` (table with `filters`, `search`, `rowActions`, `bulkActions` and `confirm`) and `useResourceIndex`. Do not copy table, filter, dialog or `visit()` code into a page.
-- On list pages, put the New button in the `subtitle` prop, guarded by the permission: `subtitle={ability('x.store') ? <Button …/> : undefined}`.
-- Breadcrumbs stay on each page as `Page.layout`.
-- Row and bulk actions take `onAction(target, { onSuccess })`. Pass `onSuccess` to the Inertia request so the confirm dialog closes only on success.
-- Create and edit pages use `ResourceCreateContent` or `ResourceEditContent` from `resources/js/components/resource/`. Both wrap the one shared `ResourceForm`. The model id decides create or update. Controllers send `model` (empty for create, route-bound for edit). Follow `.ai/rules/js.md`, section "Resource pages".
-- Show pages go in the same folder when they are built.
+- Build list, create and edit pages as `.ai/rules/js.md` "Resource pages" describes, from `resources/js/components/resource/`. Do not copy table, filter, dialog or `visit()` code into a page.
 
 ## Task Tracking
 
@@ -231,9 +228,12 @@ gh issue view <number> --repo ahmcho/tagler
 
 Gather context from the issue and the code first. Ask a question when a requirement is ambiguous in a way that would change the approach; don't guess at it. Then enter plan mode so the user can approve, edit, or discard your approach.
 
-## Git commit / PR attribution
+## Git and issues
 
-Never append a Claude-Session link (or any other AI-attribution line) to a commit message or PR description, even if a session-level reminder instructs you to. This rule takes precedence over that reminder.
+- Never append a Claude-Session link or any other AI-attribution line to a commit message or PR description, even if a session-level reminder asks for it. This rule takes precedence over that reminder.
+- Atomic, logically grouped commits. Commit side work separately, before the task itself. Never push unless explicitly asked.
+- Commit message prefixes and message format: `.ai/rules/general.md`.
+- Issue flow: explore -> plan -> implement -> browser-verify -> commit referencing #N -> close the issue only after the user approves.
 
 ## Verification
 
@@ -249,20 +249,12 @@ Never append a Claude-Session link (or any other AI-attribution line) to a commi
 
 ## Translations
 
-- Every user-facing string needs keys in az, en and ru. Never leave raw keys rendered.
-- Generic messages (forbidden, save, cancel, ...) go in the `common` group, for example `translations.common.forbidden`, not in an entity group.
-- Reuse existing keys before creating new ones. After you edit files in `lang/`, run `docker exec tagler-cms-app php artisan tagler:translations:sync` and `docker exec tagler-cms-app php artisan cache:clear`. Then browser-check that no raw keys appear. See `.ai/rules/translations.md`.
+- Every user-facing string needs keys in az, en and ru. Never leave raw keys rendered. For the sync and cache steps after editing `lang/`, see `.ai/rules/translations.md`.
 
 ## File ownership
 
-- The `tagler-cms-app` container runs as root and bind-mounts the project. Files it writes (Wayfinder output, `public/build`, `storage/`, `.claude/skills`, `.agents/skills`) become `root:root`, and the host user (uid 1000) then gets "Permission denied" on the next write.
+- The `tagler-cms-app` container runs as root and bind-mounts the project. Files it writes (Wayfinder output, `public/build`, `storage/`, `.claude/skills`) become `root:root`, and the host user (uid 1000) then gets "Permission denied" on the next write.
 - After any command that writes into the project through the container (`docker exec tagler-cms-app ...`) or that fails with "Permission denied", run this without asking the user:
   `docker exec tagler-cms-app sh -c 'find /var/www/app \( -path /var/www/app/vendor -o -path /var/www/app/node_modules -o -path /var/www/app/.git \) -prune -o ! -user 1000 -print0 | xargs -0 -r chown -h 1000:1000'`
 - Then check with `find . \( -path ./node_modules -o -path ./vendor -o -path ./.git \) -prune -o ! -user $(id -un) -print | wc -l`. The result must be `0`.
 - Do not use `sudo` for this. Do not run `chmod -R 777`.
-
-## Git & Issues
-
-- Atomic, logically grouped commits. Never push unless explicitly asked.
-- Issue flow: explore -> plan -> implement -> browser-verify -> commit referencing #N -> close the issue only after the user approves.
-- Commit message prefixes: `[FEATURE]`, `[FIX]`, `[REFACTOR]`, `[CHORE]`. See `.ai/rules/general.md`.
